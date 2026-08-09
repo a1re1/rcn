@@ -36,11 +36,12 @@ use crate::components::{
     ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
     NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
     PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
-    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner,
-    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
-    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ResizableDirection, ResizablePanelGroup,
+    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
+    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
+    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
+    TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -99,11 +100,12 @@ enum Story {
     CalendarStory,
     DatePickerStory,
     CarouselStory,
+    ResizableStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 53] = [
+    const ALL: [Story; 54] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -157,6 +159,7 @@ impl Story {
         Story::CalendarStory,
         Story::DatePickerStory,
         Story::CarouselStory,
+        Story::ResizableStory,
         // __STORY_ALL__
     ];
 
@@ -215,6 +218,7 @@ impl Story {
             Story::CalendarStory => "Calendar",
             Story::DatePickerStory => "Date Picker",
             Story::CarouselStory => "Carousel",
+            Story::ResizableStory => "Resizable",
             // __STORY_LABELS__
         }
     }
@@ -323,7 +327,9 @@ impl Story {
             }
             Story::DatePickerStory => "A date picker component with range and presets.",
             Story::CarouselStory => "A carousel with motion and swipe built using Embla.",
-            // __STORY_DESCRIPTIONS__
+            Story::ResizableStory => {
+                "Accessible resizable panel groups and layouts with keyboard support."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -608,6 +614,8 @@ pub struct Storybook {
     date_picker_open: bool,
     // Carousel story state
     carousel_index: usize,
+    // Resizable story state
+    resizable_fraction: f32,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -746,6 +754,7 @@ impl Storybook {
             date_picker_month: (2026, 8),
             date_picker_open: false,
             carousel_index: 0,
+            resizable_fraction: 0.5,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -977,6 +986,7 @@ impl Storybook {
             Story::CalendarStory => self.calendar_preview(cx).into_any_element(),
             Story::DatePickerStory => self.date_picker_preview(cx).into_any_element(),
             Story::CarouselStory => self.carousel_preview(cx).into_any_element(),
+            Story::ResizableStory => self.resizable_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1319,6 +1329,7 @@ impl Storybook {
             Story::CalendarStory => Vec::new(),
             Story::DatePickerStory => Vec::new(),
             Story::CarouselStory => Vec::new(),
+            Story::ResizableStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3470,6 +3481,7 @@ impl Storybook {
     }
     fn date_picker_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         DatePicker::new("date-picker-demo", self.date_picker_month)
+            .placeholder("Pick a date")
             .value(self.date_picker_value)
             .open(self.date_picker_open)
             .on_select(cx.listener(|this, date: &CalendarDate, _, cx| {
@@ -3508,6 +3520,48 @@ impl Storybook {
                     ),
                 )
             }))
+    }
+    fn resizable_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let panel = |label: String| {
+            div()
+                .flex()
+                .size_full()
+                .items_center()
+                .justify_center()
+                .text_size(px(14.))
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(theme.foreground)
+                .child(label)
+        };
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                div().w(px(420.)).h(px(160.)).child(
+                    ResizablePanelGroup::new("resizable-vertical")
+                        .direction(ResizableDirection::Vertical)
+                        .fraction(0.4)
+                        .first(panel("Header".into()))
+                        .second(panel("Content".into())),
+                ),
+            )
+            .child(
+                div().w(px(420.)).h(px(200.)).child(
+                    ResizablePanelGroup::new("resizable-demo")
+                        .fraction(self.resizable_fraction)
+                        .on_fraction_change(cx.listener(|this, fraction: &f32, _, cx| {
+                            this.resizable_fraction = *fraction;
+                            cx.notify();
+                        }))
+                        .first(panel(format!("{:.0}%", self.resizable_fraction * 100.)))
+                        .second(panel(format!(
+                            "{:.0}%",
+                            (1. - self.resizable_fraction) * 100.
+                        ))),
+                ),
+            )
     }
 
     // __STORY_PREVIEWS__

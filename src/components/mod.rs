@@ -40,6 +40,7 @@ pub mod pagination;
 pub mod popover;
 pub mod progress;
 pub mod radio_group;
+pub mod resizable;
 pub mod scroll_area;
 pub mod select;
 pub mod separator;
@@ -107,6 +108,7 @@ pub use pagination::{
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use progress::Progress;
 pub use radio_group::{RadioGroup, RadioGroupItem};
+pub use resizable::{ResizableDirection, ResizablePanelGroup};
 pub use scroll_area::ScrollArea;
 pub use select::Select;
 pub use separator::Separator;
