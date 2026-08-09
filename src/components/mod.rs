@@ -13,6 +13,7 @@ pub mod button;
 pub mod button_group;
 pub mod card;
 pub mod checkbox;
+pub mod collapsible;
 pub mod empty;
 pub mod item;
 pub mod kbd;
@@ -43,6 +44,7 @@ pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
 pub use checkbox::Checkbox;
+pub use collapsible::Collapsible;
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
