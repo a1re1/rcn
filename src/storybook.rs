@@ -32,7 +32,7 @@ use crate::components::{
     Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider, Spinner, Switch,
     SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
     TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
-    ToggleGroupItem, ToggleSize, ToggleVariant,
+    ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -68,11 +68,12 @@ enum Story {
     SliderStory,
     PaginationStory,
     ScrollArea,
+    TooltipStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 30] = [
+    const ALL: [Story; 31] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -103,6 +104,7 @@ impl Story {
         Story::SliderStory,
         Story::PaginationStory,
         Story::ScrollArea,
+        Story::TooltipStory,
         // __STORY_ALL__
     ];
 
@@ -138,6 +140,7 @@ impl Story {
             Story::SliderStory => "Slider",
             Story::PaginationStory => "Pagination",
             Story::ScrollArea => "Scroll Area",
+            Story::TooltipStory => "Tooltip",
             // __STORY_LABELS__
         }
     }
@@ -192,6 +195,9 @@ impl Story {
             Story::PaginationStory => "Pagination with page navigation, next and previous links.",
             Story::ScrollArea => {
                 "Augments native scroll functionality for custom, cross-browser styling."
+            }
+            Story::TooltipStory => {
+                "A popup that displays information related to an element on hover."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -371,6 +377,7 @@ pub struct Storybook {
     tabs_variant: TabsVariant,
     // Slider story state
     slider_value: f32,
+    slider_fine: f32,
     // Pagination story state
     pagination_page: usize,
     // __STORY_STATE__
@@ -416,6 +423,7 @@ impl Storybook {
             tabs_active: 0,
             tabs_variant: TabsVariant::Default,
             slider_value: 50.,
+            slider_fine: 0.4,
             pagination_page: 2,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
@@ -656,7 +664,7 @@ impl Storybook {
             Story::Empty => Self::empty_preview(cx).into_any_element(),
             Story::Item => self.item_preview(cx).into_any_element(),
             Story::Table => self.table_preview(cx).into_any_element(),
-            Story::Breadcrumb => Self::breadcrumb_preview().into_any_element(),
+            Story::Breadcrumb => self.breadcrumb_preview(cx).into_any_element(),
             Story::Checkbox => self.checkbox_preview(cx).into_any_element(),
             Story::RadioGroup => self.radio_group_preview(cx).into_any_element(),
             Story::Toggle => self.toggle_preview(cx).into_any_element(),
@@ -667,6 +675,7 @@ impl Storybook {
             Story::SliderStory => self.slider_preview(cx).into_any_element(),
             Story::PaginationStory => self.pagination_preview(cx).into_any_element(),
             Story::ScrollArea => Self::scroll_area_preview(cx).into_any_element(),
+            Story::TooltipStory => Self::tooltip_preview().into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -957,6 +966,7 @@ impl Storybook {
             Story::SliderStory => Vec::new(),
             Story::PaginationStory => Vec::new(),
             Story::ScrollArea => Vec::new(),
+            Story::TooltipStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1996,10 +2006,19 @@ impl Storybook {
             }))
     }
 
-    fn breadcrumb_preview() -> impl IntoElement + use<> {
+    fn breadcrumb_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         Breadcrumb::new().child(
             BreadcrumbList::new()
-                .child(BreadcrumbItem::new().child(BreadcrumbLink::new("bc-home").child("Home")))
+                .child(
+                    BreadcrumbItem::new().child(
+                        BreadcrumbLink::new("bc-home")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.story = Story::Tokens;
+                                cx.notify();
+                            }))
+                            .child("Home"),
+                    ),
+                )
                 .child(BreadcrumbSeparator::new())
                 .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))
                 .child(BreadcrumbSeparator::new())
@@ -2058,22 +2077,32 @@ impl Storybook {
     }
     fn radio_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let options = ["Default", "Comfortable", "Compact"];
-        RadioGroup::new().children(options.into_iter().enumerate().map(|(index, label)| {
-            div()
-                .flex()
-                .flex_row()
-                .items_center()
-                .gap(px(8.))
-                .child(
-                    RadioGroupItem::new(("radio-item", index))
-                        .checked(self.radio_selected == index)
-                        .on_select(cx.listener(move |this, _, _, cx| {
-                            this.radio_selected = index;
-                            cx.notify();
-                        })),
-                )
-                .child(Label::new().child(label))
-        }))
+        RadioGroup::new()
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(RadioGroupItem::new("radio-disabled").disabled(true))
+                    .child(Label::new().disabled(true).child("Disabled option")),
+            )
+            .children(options.into_iter().enumerate().map(|(index, label)| {
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        RadioGroupItem::new(("radio-item", index))
+                            .checked(self.radio_selected == index)
+                            .on_select(cx.listener(move |this, _, _, cx| {
+                                this.radio_selected = index;
+                                cx.notify();
+                            })),
+                    )
+                    .child(Label::new().child(label))
+            }))
     }
     fn toggle_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
@@ -2296,6 +2325,11 @@ impl Storybook {
                                 .child("Account"),
                         )
                         .trigger(
+                            TabsTrigger::new("tab-billing")
+                                .disabled(true)
+                                .child("Billing"),
+                        )
+                        .trigger(
                             TabsTrigger::new("tab-password")
                                 .active(self.tabs_active == 1)
                                 .on_select(cx.listener(|this, _, _, cx| {
@@ -2337,6 +2371,17 @@ impl Storybook {
                     .text_size(px(13.))
                     .text_color(Theme::of(cx).muted_foreground)
                     .child(format!("value: {:.0}", self.slider_value)),
+            )
+            .child(
+                Slider::new("slider-fine")
+                    .min(0.)
+                    .max(1.)
+                    .step(0.01)
+                    .value(self.slider_fine)
+                    .on_change(cx.listener(|this, value: &f32, _, cx| {
+                        this.slider_fine = *value;
+                        cx.notify();
+                    })),
             )
             .child(Slider::new("slider-disabled").value(30.).disabled(true))
     }
@@ -2398,6 +2443,15 @@ impl Storybook {
                             })),
                     ),
             )
+    }
+    fn tooltip_preview() -> impl IntoElement + use<> {
+        div().child(
+            Tooltip::new("tooltip-demo", "Add to library").child(
+                Button::new("tooltip-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .child("Hover me"),
+            ),
+        )
     }
 
     // __STORY_PREVIEWS__
