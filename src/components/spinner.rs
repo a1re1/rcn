@@ -1,17 +1,17 @@
 //! Spinner — port of shadcn base-vega `ui/spinner.tsx`.
 //!
-//! A spinning loader arc (`animate-spin size-4`), colored by `.color(..)`
-//! (defaults to the foreground token, standing in for `text-current`).
+//! A spinning loader arc (`animate-spin size-4`). With no `.color(..)`, the
+//! svg inherits ambient text color (`text-current`); `.color(..)` overrides.
 
 use std::time::Duration;
 
+use gpui::prelude::FluentBuilder;
 use gpui::{
     Animation, AnimationExt as _, App, Hsla, IntoElement, Pixels, RenderOnce, Styled,
     Transformation, Window, percentage, px, svg,
 };
 
 use crate::assets::ICON_LOADER;
-use crate::theme::Theme;
 
 #[derive(IntoElement)]
 pub struct Spinner {
@@ -45,14 +45,13 @@ impl Default for Spinner {
 }
 
 impl RenderOnce for Spinner {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let theme = Theme::of(cx);
-        let color = self.color.unwrap_or(theme.foreground);
+    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        // text-current: inherit ambient text color unless `.color(..)` overrides.
         svg()
             .path(ICON_LOADER)
             .size(self.size)
             .flex_shrink_0()
-            .text_color(color)
+            .when_some(self.color, |this, color| this.text_color(color))
             .with_animation(
                 "spinner",
                 Animation::new(Duration::from_secs(1)).repeat(),

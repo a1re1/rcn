@@ -305,12 +305,27 @@ pub static BUTTON_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Button",
+        signature: "pub fn rounded_full(mut self) -> Self",
+        doc: "`rounded-full` — pill corners (px(9999.)).",
+    },
+    ApiEntry {
+        type_name: "Button",
+        signature: "pub fn icon_inline_start(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Xs/Sm).",
+    },
+    ApiEntry {
+        type_name: "Button",
+        signature: "pub fn icon_inline_end(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-2` / `pr-1.5` for Xs/Sm).",
+    },
+    ApiEntry {
+        type_name: "Button",
         signature: "pub(crate) fn group_position(mut self, position: GroupPosition) -> Self",
         doc: "Used by ButtonGroup to join neighboring buttons.",
     },
 ];
 
-pub static BUTTON_USAGE: &str = "let theme = Theme::of(cx);\nlet icon_only = matches!(\n    self.button_size,\n    ButtonSize::Icon | ButtonSize::IconXs | ButtonSize::IconSm | ButtonSize::IconLg\n);\nlet button = Button::new(\"preview-button\")\n    .variant(self.button_variant)\n    .size(self.button_size)\n    .disabled(self.button_disabled);\nif icon_only {\n    button.child(\n        gpui::svg()\n            .path(theme.icons.chevron_right())\n            .size(px(16.))\n            .text_color(theme.foreground),\n    )\n} else {\n    button.child(\"Button\")\n}\n    ";
+pub static BUTTON_USAGE: &str = "let theme = Theme::of(cx);\nlet icon_only = matches!(\n    self.button_size,\n    ButtonSize::Icon | ButtonSize::IconXs | ButtonSize::IconSm | ButtonSize::IconLg\n);\nlet button = Button::new(\"preview-button\")\n    .variant(self.button_variant)\n    .size(self.button_size)\n    .disabled(self.button_disabled);\nif icon_only {\n    button.child(\n        gpui::svg()\n            .path(theme.icons.chevron_right())\n            .size(px(16.)),\n    )\n} else {\n    button.child(\"Button\")\n}\n    ";
 
 pub static BUTTON_GROUP_API: &[ApiEntry] = &[
     ApiEntry {
