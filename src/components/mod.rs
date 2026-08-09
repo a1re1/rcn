@@ -11,6 +11,7 @@ pub mod badge;
 pub mod button;
 pub mod card;
 pub mod empty;
+pub mod item;
 pub mod kbd;
 pub mod label;
 pub mod popover;
@@ -31,6 +32,10 @@ pub use card::{
 };
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
+};
+pub use item::{
+    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,
 };
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
