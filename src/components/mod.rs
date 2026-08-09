@@ -25,6 +25,7 @@ pub mod item;
 pub mod kbd;
 pub mod label;
 pub mod menubar;
+pub mod native_select;
 pub mod pagination;
 pub mod popover;
 pub mod progress;
@@ -77,6 +78,7 @@ pub use item::{
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use menubar::{Menubar, MenubarItem, MenubarMenu};
+pub use native_select::NativeSelect;
 pub use pagination::{
     Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious,
 };

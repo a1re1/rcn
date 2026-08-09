@@ -31,13 +31,13 @@ use crate::components::{
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item,
     ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
-    Menubar, MenubarItem, MenubarMenu, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
-    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
-    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    Menubar, MenubarItem, MenubarMenu, NativeSelect, Pagination, PaginationEllipsis,
+    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
+    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner,
+    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle,
+    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -83,11 +83,12 @@ enum Story {
     ContextMenuStory,
     MenubarStory,
     SelectStory,
+    NativeSelectStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 40] = [
+    const ALL: [Story; 41] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -128,6 +129,7 @@ impl Story {
         Story::ContextMenuStory,
         Story::MenubarStory,
         Story::SelectStory,
+        Story::NativeSelectStory,
         // __STORY_ALL__
     ];
 
@@ -173,6 +175,7 @@ impl Story {
             Story::ContextMenuStory => "Context Menu",
             Story::MenubarStory => "Menubar",
             Story::SelectStory => "Select",
+            Story::NativeSelectStory => "Native Select",
             // __STORY_LABELS__
         }
     }
@@ -253,6 +256,9 @@ impl Story {
             Story::MenubarStory => "A visually persistent menu common in desktop applications.",
             Story::SelectStory => {
                 "Displays a list of options for the user to pick from, triggered by a button."
+            }
+            Story::NativeSelectStory => {
+                "A native select element for choosing from a list of options."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -454,6 +460,9 @@ pub struct Storybook {
     // Select story state
     select_value: Option<usize>,
     select_open: bool,
+    // Native select story state
+    native_select_value: Option<usize>,
+    native_select_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -510,6 +519,8 @@ impl Storybook {
             menubar_open: None,
             select_value: None,
             select_open: false,
+            native_select_value: Some(0),
+            native_select_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -770,6 +781,7 @@ impl Storybook {
             Story::ContextMenuStory => self.context_menu_preview(cx).into_any_element(),
             Story::MenubarStory => self.menubar_preview(cx).into_any_element(),
             Story::SelectStory => self.select_preview(cx).into_any_element(),
+            Story::NativeSelectStory => self.native_select_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1099,6 +1111,7 @@ impl Storybook {
             Story::ContextMenuStory => Vec::new(),
             Story::MenubarStory => Vec::new(),
             Story::SelectStory => Vec::new(),
+            Story::NativeSelectStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2985,6 +2998,21 @@ impl Storybook {
             }))
             .on_open_change(cx.listener(|this, open: &bool, _, cx| {
                 this.select_open = *open;
+                cx.notify();
+            }))
+    }
+    fn native_select_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        NativeSelect::new("native-select-status")
+            .placeholder("Select status")
+            .options(["Todo", "In Progress", "Done", "Cancelled"])
+            .value(self.native_select_value)
+            .open(self.native_select_open)
+            .on_change(cx.listener(|this, value: &usize, _, cx| {
+                this.native_select_value = Some(*value);
+                cx.notify();
+            }))
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.native_select_open = *open;
                 cx.notify();
             }))
     }
