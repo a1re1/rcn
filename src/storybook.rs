@@ -37,8 +37,8 @@ use crate::components::{
     RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
     SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Toast, ToastViewport, Toggle, ToggleGroup,
-    ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle,
+    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -88,11 +88,12 @@ enum Story {
     NavigationMenuStory,
     ToastStory,
     InputStory,
+    TextareaStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 44] = [
+    const ALL: [Story; 45] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -137,6 +138,7 @@ impl Story {
         Story::NavigationMenuStory,
         Story::ToastStory,
         Story::InputStory,
+        Story::TextareaStory,
         // __STORY_ALL__
     ];
 
@@ -186,6 +188,7 @@ impl Story {
             Story::NavigationMenuStory => "Navigation Menu",
             Story::ToastStory => "Toast",
             Story::InputStory => "Input",
+            Story::TextareaStory => "Textarea",
             // __STORY_LABELS__
         }
     }
@@ -273,7 +276,9 @@ impl Story {
             Story::NavigationMenuStory => "A collection of links for navigating websites.",
             Story::ToastStory => "A succinct message that is displayed temporarily.",
             Story::InputStory => "Displays a form input field.",
-            // __STORY_DESCRIPTIONS__
+            Story::TextareaStory => {
+                "Displays a form textarea or a component that looks like a textarea."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -533,6 +538,8 @@ pub struct Storybook {
     // Input story state
     input_demo: gpui::Entity<Input>,
     input_disabled: gpui::Entity<Input>,
+    // Textarea story state
+    textarea_input: gpui::Entity<Input>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -546,6 +553,12 @@ impl Storybook {
         let input_demo = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Email");
+            input
+        });
+        let textarea_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
             input
         });
         let input_disabled = cx.new(|cx| {
@@ -606,6 +619,7 @@ impl Storybook {
             toast_visible: false,
             input_demo,
             input_disabled,
+            textarea_input,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -828,6 +842,7 @@ impl Storybook {
             Story::NavigationMenuStory => self.navigation_menu_preview(cx).into_any_element(),
             Story::ToastStory => self.toast_preview(cx).into_any_element(),
             Story::InputStory => self.input_preview(cx).into_any_element(),
+            Story::TextareaStory => self.textarea_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1161,6 +1176,7 @@ impl Storybook {
             Story::NavigationMenuStory => Vec::new(),
             Story::ToastStory => Vec::new(),
             Story::InputStory => Vec::new(),
+            Story::TextareaStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3179,6 +3195,11 @@ impl Storybook {
                         format!("value: {value}")
                     }),
             )
+    }
+    fn textarea_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w(px(288.))
+            .child(Textarea::new(self.textarea_input.clone()).rows(4))
     }
 
     // __STORY_PREVIEWS__

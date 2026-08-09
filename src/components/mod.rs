@@ -42,6 +42,7 @@ pub mod spinner;
 pub mod switch;
 pub mod table;
 pub mod tabs;
+pub mod textarea;
 pub mod toast;
 pub mod toggle;
 pub mod toggle_group;
@@ -102,6 +103,7 @@ pub use table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };
 pub use tabs::{Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant};
+pub use textarea::Textarea;
 pub use toast::{Toast, ToastViewport};
 pub use toggle::{Toggle, ToggleSize, ToggleVariant};
 pub use toggle_group::{ToggleGroup, ToggleGroupItem};
