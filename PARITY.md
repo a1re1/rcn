@@ -1,7 +1,7 @@
 # shadcn parity audit checklist
 
 Second pass over every component: audit against the real shadcn source
-(pulled via `tools/pull-shadcn.sh <name>` into the reference project) plus
+(pulled via `scripts/pull-shadcn.sh <name>` into the reference project) plus
 the libraries underneath it (`@base-ui-components/react` behavior,
 `tw-animate-css` motion), then close the gaps. One PR per component.
 
@@ -21,7 +21,7 @@ Each audit covers:
 
 - [x] `src/motion.rs` — cubic-bezier easing (browser-verified), tw-animate
   durations, focus-ring shadows
-- [x] `tools/pull-shadcn.sh` — pull any component's real source via the
+- [x] `scripts/pull-shadcn.sh` — pull any component's real source via the
   shadcn CLI into `scratchpad`'s reference project
 - [x] Reference project with `@base-ui-components/react` + `tw-animate-css`
   sources on disk
