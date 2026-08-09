@@ -31,7 +31,7 @@ use crate::components::{
     DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer,
     DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem,
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
-    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
+    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Icon, Input,
     InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
@@ -1325,42 +1325,6 @@ impl Storybook {
         match self.story {
             Story::Button => vec![
                 (
-                    "Variants",
-                    div()
-                        .flex()
-                        .flex_row()
-                        .flex_wrap()
-                        .items_center()
-                        .gap(px(8.))
-                        .child(Button::new("ex-btn-default").child("Button"))
-                        .child(
-                            Button::new("ex-btn-outline")
-                                .variant(ButtonVariant::Outline)
-                                .child("Outline"),
-                        )
-                        .child(
-                            Button::new("ex-btn-secondary")
-                                .variant(ButtonVariant::Secondary)
-                                .child("Secondary"),
-                        )
-                        .child(
-                            Button::new("ex-btn-ghost")
-                                .variant(ButtonVariant::Ghost)
-                                .child("Ghost"),
-                        )
-                        .child(
-                            Button::new("ex-btn-destructive")
-                                .variant(ButtonVariant::Destructive)
-                                .child("Destructive"),
-                        )
-                        .child(
-                            Button::new("ex-btn-link")
-                                .variant(ButtonVariant::Link)
-                                .child("Link"),
-                        )
-                        .into_any_element(),
-                ),
-                (
                     "Sizes",
                     div()
                         .flex()
@@ -1395,13 +1359,146 @@ impl Storybook {
                             Button::new("ex-btn-icon")
                                 .variant(ButtonVariant::Outline)
                                 .size(ButtonSize::Icon)
-                                .child(
-                                    gpui::svg()
-                                        .path(theme.icons.chevron_right())
-                                        .size(px(16.))
-                                        .text_color(theme.foreground),
-                                ),
+                                .child(Icon::new(theme.icons.chevron_right())),
                         )
+                        .into_any_element(),
+                ),
+                (
+                    "Default",
+                    Button::new("ex-btn-default")
+                        .child("Button")
+                        .into_any_element(),
+                ),
+                (
+                    "Outline",
+                    Button::new("ex-btn-outline")
+                        .variant(ButtonVariant::Outline)
+                        .child("Outline")
+                        .into_any_element(),
+                ),
+                (
+                    "Secondary",
+                    Button::new("ex-btn-secondary")
+                        .variant(ButtonVariant::Secondary)
+                        .child("Secondary")
+                        .into_any_element(),
+                ),
+                (
+                    "Ghost",
+                    Button::new("ex-btn-ghost")
+                        .variant(ButtonVariant::Ghost)
+                        .child("Ghost")
+                        .into_any_element(),
+                ),
+                (
+                    "Destructive",
+                    Button::new("ex-btn-destructive")
+                        .variant(ButtonVariant::Destructive)
+                        .child("Destructive")
+                        .into_any_element(),
+                ),
+                (
+                    "Link",
+                    Button::new("ex-btn-link")
+                        .variant(ButtonVariant::Link)
+                        .child("Link")
+                        .into_any_element(),
+                ),
+                (
+                    "Icon",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Button::new("ex-btn-icon-default")
+                                .size(ButtonSize::Icon)
+                                .child(Icon::new(theme.icons.chevron_right())),
+                        )
+                        .child(
+                            Button::new("ex-btn-icon-sm")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::IconSm)
+                                .child(Icon::new(theme.icons.chevron_right())),
+                        )
+                        .child(
+                            Button::new("ex-btn-icon-lg")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::IconLg)
+                                .child(Icon::new(theme.icons.chevron_right())),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Icon",
+                    Button::new("ex-btn-with-icon")
+                        .icon_inline_start()
+                        .child(Icon::new(theme.icons.check()))
+                        .child("Confirm")
+                        .into_any_element(),
+                ),
+                (
+                    "Rounded",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Button::new("ex-btn-rounded").rounded_full().child("Button"))
+                        .child(
+                            Button::new("ex-btn-rounded-outline")
+                                .variant(ButtonVariant::Outline)
+                                .rounded_full()
+                                .child("Outline"),
+                        )
+                        .child(
+                            Button::new("ex-btn-rounded-icon")
+                                .size(ButtonSize::Icon)
+                                .rounded_full()
+                                .child(Icon::new(theme.icons.chevron_right())),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Spinner",
+                    Button::new("ex-btn-spinner")
+                        .disabled(true)
+                        .icon_inline_start()
+                        .child(Spinner::new())
+                        .child("Loading")
+                        .into_any_element(),
+                ),
+                (
+                    "Button Group",
+                    ButtonGroup::new()
+                        .item(
+                            Button::new("ex-btn-group-archive")
+                                .variant(ButtonVariant::Outline)
+                                .child("Archive"),
+                        )
+                        .item(
+                            Button::new("ex-btn-group-report")
+                                .variant(ButtonVariant::Outline)
+                                .child("Report"),
+                        )
+                        .item(
+                            Button::new("ex-btn-group-snooze")
+                                .variant(ButtonVariant::Outline)
+                                .child("Snooze"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "As Link",
+                    Button::new("ex-btn-as-link")
+                        .variant(ButtonVariant::Link)
+                        .child("Login")
+                        .on_click(|_, _, cx| {
+                            cx.open_url("https://ui.shadcn.com/docs/components/base/button")
+                        })
                         .into_any_element(),
                 ),
                 (
@@ -2580,12 +2677,7 @@ impl Storybook {
             .size(self.button_size)
             .disabled(self.button_disabled);
         if icon_only {
-            button.child(
-                gpui::svg()
-                    .path(theme.icons.chevron_right())
-                    .size(px(16.))
-                    .text_color(theme.foreground),
-            )
+            button.child(Icon::new(theme.icons.chevron_right()))
         } else {
             button.child("Button")
         }

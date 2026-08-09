@@ -305,12 +305,27 @@ pub static BUTTON_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Button",
+        signature: "pub fn rounded_full(mut self) -> Self",
+        doc: "`rounded-full` — pill corners (px(9999.)).",
+    },
+    ApiEntry {
+        type_name: "Button",
+        signature: "pub fn icon_inline_start(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Xs/Sm).",
+    },
+    ApiEntry {
+        type_name: "Button",
+        signature: "pub fn icon_inline_end(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-2` / `pr-1.5` for Xs/Sm).",
+    },
+    ApiEntry {
+        type_name: "Button",
         signature: "pub(crate) fn group_position(mut self, position: GroupPosition) -> Self",
         doc: "Used by ButtonGroup to join neighboring buttons.",
     },
 ];
 
-pub static BUTTON_USAGE: &str = "let theme = Theme::of(cx);\nlet icon_only = matches!(\n    self.button_size,\n    ButtonSize::Icon | ButtonSize::IconXs | ButtonSize::IconSm | ButtonSize::IconLg\n);\nlet button = Button::new(\"preview-button\")\n    .variant(self.button_variant)\n    .size(self.button_size)\n    .disabled(self.button_disabled);\nif icon_only {\n    button.child(\n        gpui::svg()\n            .path(theme.icons.chevron_right())\n            .size(px(16.))\n            .text_color(theme.foreground),\n    )\n} else {\n    button.child(\"Button\")\n}\n    ";
+pub static BUTTON_USAGE: &str = "let theme = Theme::of(cx);\nlet icon_only = matches!(\n    self.button_size,\n    ButtonSize::Icon | ButtonSize::IconXs | ButtonSize::IconSm | ButtonSize::IconLg\n);\nlet button = Button::new(\"preview-button\")\n    .variant(self.button_variant)\n    .size(self.button_size)\n    .disabled(self.button_disabled);\nif icon_only {\n    button.child(Icon::new(theme.icons.chevron_right()))\n} else {\n    button.child(\"Button\")\n}\n    ";
 
 pub static BUTTON_GROUP_API: &[ApiEntry] = &[
     ApiEntry {
@@ -951,6 +966,21 @@ pub static HOVER_CARD_API: &[ApiEntry] = &[
 ];
 
 pub static HOVER_CARD_USAGE: &str = "div().child(\n    HoverCard::new(\"hover-card-demo\")\n        .content(|cx| {\n            let theme = Theme::of(cx).clone();\n            div()\n                .flex()\n                .flex_row()\n                .gap(px(12.))\n                .child(Avatar::new(\"VC\"))\n                .child(\n                    div()\n                        .flex()\n                        .flex_col()\n                        .gap(px(4.))\n                        .child(\n                            div()\n                                .text_size(px(14.))\n                                .font_weight(FontWeight::SEMIBOLD)\n                                .child(\"@nextjs\"),\n                        )\n                        .child(div().text_size(px(14.)).child(\n                            \"The React Framework - created and maintained by @vercel.\",\n                        ))\n                        .child(\n                            div()\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"Joined December 2021\"),\n                        ),\n                )\n                .into_any_element()\n        })\n        .child(\n            Button::new(\"hover-card-trigger\")\n                .variant(ButtonVariant::Link)\n                .child(\"@nextjs\"),\n        ),\n)\n    ";
+
+pub static ICON_API: &[ApiEntry] = &[
+    ApiEntry {
+        type_name: "Icon",
+        signature: "pub fn new(path: impl Into<SharedString>) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Icon",
+        signature: "pub fn rotate(mut self, angle: impl Into<Radians>) -> Self",
+        doc: "Rotate the drawing about its center (the svg `transform: rotate(..)` used by spinner animations).",
+    },
+];
+
+pub static ICON_USAGE: &str = "";
 
 pub static INPUT_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2305,6 +2335,12 @@ pub static COMPONENT_DOCS: &[ComponentDocs] = &[
         source_path: "src/components/hover_card.rs",
         usage: HOVER_CARD_USAGE,
         api: HOVER_CARD_API,
+    },
+    ComponentDocs {
+        module: "icon",
+        source_path: "src/components/icon.rs",
+        usage: ICON_USAGE,
+        api: ICON_API,
     },
     ComponentDocs {
         module: "input",

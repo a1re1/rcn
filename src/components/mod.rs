@@ -30,6 +30,7 @@ pub mod dropdown_menu;
 pub mod empty;
 pub mod field;
 pub mod hover_card;
+pub mod icon;
 pub mod input;
 pub mod input_group;
 pub mod input_otp;
@@ -101,6 +102,7 @@ pub use empty::{
 };
 pub use field::{Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet};
 pub use hover_card::HoverCard;
+pub use icon::Icon;
 pub use input::Input;
 pub use input_group::{InputGroup, InputGroupAddon};
 pub use input_otp::InputOtp;
