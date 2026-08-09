@@ -39,7 +39,7 @@ lands with a storybook story exercising its variants.
 - [x] button-group
 - [x] collapsible
 - [x] tabs
-- [ ] slider
+- [x] slider
 - [ ] pagination
 - [ ] scroll-area
 

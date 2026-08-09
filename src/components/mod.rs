@@ -23,6 +23,7 @@ pub mod progress;
 pub mod radio_group;
 pub mod separator;
 pub mod skeleton;
+pub mod slider;
 pub mod spinner;
 pub mod switch;
 pub mod table;
@@ -60,6 +61,7 @@ pub use progress::Progress;
 pub use radio_group::{RadioGroup, RadioGroupItem};
 pub use separator::Separator;
 pub use skeleton::Skeleton;
+pub use slider::Slider;
 pub use spinner::Spinner;
 pub use switch::{Switch, SwitchSize};
 pub use table::{

@@ -28,10 +28,10 @@ use crate::components::{
     EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription,
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
-    ToggleGroupItem, ToggleSize, ToggleVariant,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Slider, Spinner,
+    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle,
+    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -64,11 +64,12 @@ enum Story {
     ButtonGroup,
     Collapsible,
     Tabs,
+    SliderStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 27] = [
+    const ALL: [Story; 28] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -96,6 +97,7 @@ impl Story {
         Story::ButtonGroup,
         Story::Collapsible,
         Story::Tabs,
+        Story::SliderStory,
         // __STORY_ALL__
     ];
 
@@ -128,6 +130,7 @@ impl Story {
             Story::ButtonGroup => "Button Group",
             Story::Collapsible => "Collapsible",
             Story::Tabs => "Tabs",
+            Story::SliderStory => "Slider",
             // __STORY_LABELS__
         }
     }
@@ -176,7 +179,9 @@ impl Story {
             }
             Story::Collapsible => "An interactive component which expands and collapses a panel.",
             Story::Tabs => "A set of layered sections of content displayed one at a time.",
-            // __STORY_DESCRIPTIONS__
+            Story::SliderStory => {
+                "An input where the user selects a value from within a given range."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -353,6 +358,8 @@ pub struct Storybook {
     // Tabs story state
     tabs_active: usize,
     tabs_variant: TabsVariant,
+    // Slider story state
+    slider_value: f32,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -395,6 +402,7 @@ impl Storybook {
             collapsible_open: false,
             tabs_active: 0,
             tabs_variant: TabsVariant::Default,
+            slider_value: 50.,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -642,6 +650,7 @@ impl Storybook {
             Story::ButtonGroup => Self::button_group_preview(cx).into_any_element(),
             Story::Collapsible => self.collapsible_preview(cx).into_any_element(),
             Story::Tabs => self.tabs_preview(cx).into_any_element(),
+            Story::SliderStory => self.slider_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -929,6 +938,7 @@ impl Storybook {
                 ),
                 &theme,
             )],
+            Story::SliderStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2289,6 +2299,28 @@ impl Storybook {
                     )
                 })),
         )
+    }
+    fn slider_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .w(px(288.))
+            .child(
+                Slider::new("slider-demo")
+                    .value(self.slider_value)
+                    .on_change(cx.listener(|this, value: &f32, _, cx| {
+                        this.slider_value = *value;
+                        cx.notify();
+                    })),
+            )
+            .child(
+                div()
+                    .text_size(px(13.))
+                    .text_color(Theme::of(cx).muted_foreground)
+                    .child(format!("value: {:.0}", self.slider_value)),
+            )
+            .child(Slider::new("slider-disabled").value(30.).disabled(true))
     }
 
     // __STORY_PREVIEWS__
