@@ -25,7 +25,7 @@ lands with a storybook story exercising its variants.
 - [x] card
 - [x] alert
 - [x] progress
-- [ ] empty
+- [x] empty
 - [ ] item
 - [ ] table
 - [ ] breadcrumb
