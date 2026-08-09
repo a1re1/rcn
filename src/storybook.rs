@@ -25,22 +25,22 @@ use crate::components::{
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent, CardDescription,
-    CardFooter, CardHeader, CardSize, CardTitle, Checkbox, Collapsible, Combobox, Command,
-    CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription,
-    DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader,
-    DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription,
-    EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError,
-    FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp,
-    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
-    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
-    Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry,
-    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
-    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
-    RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
-    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
-    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle,
-    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    CardFooter, CardHeader, CardSize, CardTitle, Carousel, Checkbox, Collapsible, Combobox,
+    Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog,
+    DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
+    DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
+    FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup,
+    InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
+    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
+    ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
+    NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
+    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
+    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner,
+    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
+    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -98,11 +98,12 @@ enum Story {
     ComboboxStory,
     CalendarStory,
     DatePickerStory,
+    CarouselStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 52] = [
+    const ALL: [Story; 53] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -155,6 +156,7 @@ impl Story {
         Story::ComboboxStory,
         Story::CalendarStory,
         Story::DatePickerStory,
+        Story::CarouselStory,
         // __STORY_ALL__
     ];
 
@@ -212,6 +214,7 @@ impl Story {
             Story::ComboboxStory => "Combobox",
             Story::CalendarStory => "Calendar",
             Story::DatePickerStory => "Date Picker",
+            Story::CarouselStory => "Carousel",
             // __STORY_LABELS__
         }
     }
@@ -319,6 +322,7 @@ impl Story {
                 "A date field component that allows users to enter and edit date."
             }
             Story::DatePickerStory => "A date picker component with range and presets.",
+            Story::CarouselStory => "A carousel with motion and swipe built using Embla.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -602,6 +606,8 @@ pub struct Storybook {
     date_picker_value: Option<CalendarDate>,
     date_picker_month: (i32, u32),
     date_picker_open: bool,
+    // Carousel story state
+    carousel_index: usize,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -739,6 +745,7 @@ impl Storybook {
             date_picker_value: None,
             date_picker_month: (2026, 8),
             date_picker_open: false,
+            carousel_index: 0,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -969,6 +976,7 @@ impl Storybook {
             Story::ComboboxStory => self.combobox_preview(cx).into_any_element(),
             Story::CalendarStory => self.calendar_preview(cx).into_any_element(),
             Story::DatePickerStory => self.date_picker_preview(cx).into_any_element(),
+            Story::CarouselStory => self.carousel_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1310,6 +1318,7 @@ impl Storybook {
             Story::ComboboxStory => Vec::new(),
             Story::CalendarStory => Vec::new(),
             Story::DatePickerStory => Vec::new(),
+            Story::CarouselStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3474,6 +3483,30 @@ impl Storybook {
             .on_open_change(cx.listener(|this, open: &bool, _, cx| {
                 this.date_picker_open = *open;
                 cx.notify();
+            }))
+    }
+    fn carousel_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        Carousel::new("carousel-demo")
+            .index(self.carousel_index)
+            .on_index_change(cx.listener(|this, index: &usize, _, cx| {
+                this.carousel_index = *index;
+                cx.notify();
+            }))
+            .children((1..=5).map(|number| {
+                Card::new().size(CardSize::Sm).child(
+                    CardContent::new().size(CardSize::Sm).child(
+                        div()
+                            .flex()
+                            .size(px(160.))
+                            .items_center()
+                            .justify_center()
+                            .text_size(px(36.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(theme.foreground)
+                            .child(number.to_string()),
+                    ),
+                )
             }))
     }
 
