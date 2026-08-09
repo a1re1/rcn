@@ -54,7 +54,7 @@ lands with a storybook story exercising its variants.
 - [x] dropdown-menu
 - [x] context-menu
 - [x] menubar
-- [ ] select
+- [x] select
 - [ ] native-select
 - [ ] navigation-menu
 - [ ] toast
