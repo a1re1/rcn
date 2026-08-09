@@ -62,7 +62,7 @@ lands with a storybook story exercising its variants.
 ## Wave 4 — text input
 
 - [x] input
-- [ ] textarea
+- [x] textarea
 - [ ] field
 - [x] input-group
 - [x] input-otp

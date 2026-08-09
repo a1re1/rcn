@@ -46,6 +46,9 @@ pub struct Input {
     content: SharedString,
     placeholder: SharedString,
     disabled: bool,
+    /// Render without the input chrome (border/height/padding) so wrappers
+    /// like Textarea and InputGroup can supply their own shell.
+    bare: bool,
     selected_range: Range<usize>,
     selection_reversed: bool,
     marked_range: Option<Range<usize>>,
@@ -61,6 +64,7 @@ impl Input {
             content: "".into(),
             placeholder: "".into(),
             disabled: false,
+            bare: false,
             selected_range: 0..0,
             selection_reversed: false,
             marked_range: None,
@@ -96,6 +100,10 @@ impl Input {
 
     pub fn set_disabled(&mut self, disabled: bool) {
         self.disabled = disabled;
+    }
+
+    pub fn set_bare(&mut self, bare: bool) {
+        self.bare = bare;
     }
 
     pub fn text(&self) -> &str {
@@ -669,17 +677,19 @@ impl Render for Input {
             .flex()
             .flex_row()
             .items_center()
-            .h(px(36.))
             .w_full()
-            .rounded(theme.radius_md())
-            .border_1()
-            .border_color(if focused { theme.ring } else { theme.input })
-            .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
-            .px(px(12.))
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.foreground)
-            .shadow_xs()
+            .when(!self.bare, |el| {
+                el.h(px(36.))
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(if focused { theme.ring } else { theme.input })
+                    .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
+                    .px(px(12.))
+                    .shadow_xs()
+            })
             .when(self.disabled, |el| el.opacity(0.5))
             .child(TextElement { input: cx.entity() })
     }
