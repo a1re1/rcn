@@ -37,6 +37,9 @@ pub struct Theme {
     pub input: Hsla,
     pub ring: Hsla,
 
+    /// Chart series colors (shadcn `--chart-1`..`--chart-5`).
+    pub chart: [Hsla; 5],
+
     /// Base radius (shadcn `--radius: 0.625rem` = 10px). The sm/md/lg/xl
     /// scale derives from it, mirroring shadcn's calc() chain.
     pub radius: Pixels,
@@ -105,6 +108,13 @@ impl Theme {
             border: rgb(0xe5e5e5).into(),
             input: rgb(0xe5e5e5).into(),
             ring: rgb(0xa1a1a1).into(),
+            chart: [
+                oklch(0.809, 0.105, 251.8),
+                oklch(0.623, 0.214, 259.8),
+                oklch(0.546, 0.245, 262.9),
+                oklch(0.488, 0.243, 264.4),
+                oklch(0.424, 0.199, 265.6),
+            ],
             radius: px(10.),
             font_sans: None,
             font_heading: None,
@@ -136,6 +146,13 @@ impl Theme {
             border: rgba(0xffffff1a).into(),
             input: rgba(0xffffff26).into(),
             ring: rgb(0x737373).into(),
+            chart: [
+                oklch(0.809, 0.105, 251.8),
+                oklch(0.623, 0.214, 259.8),
+                oklch(0.546, 0.245, 262.9),
+                oklch(0.488, 0.243, 264.4),
+                oklch(0.424, 0.199, 265.6),
+            ],
             radius: px(10.),
             font_sans: None,
             font_heading: None,
@@ -277,6 +294,17 @@ fn themed_from_block(mut theme: Theme, block: &str) -> (Theme, usize) {
                 } else {
                     theme.font_heading = Some(family);
                 }
+                applied += 1;
+            }
+            continue;
+        }
+        if let Some(chart_index) = name
+            .strip_prefix("chart-")
+            .and_then(|n| n.parse::<usize>().ok())
+            .filter(|n| (1..=5).contains(n))
+        {
+            if let Some(color) = parse_css_color(value) {
+                theme.chart[chart_index - 1] = color;
                 applied += 1;
             }
             continue;
