@@ -50,7 +50,7 @@ lands with a storybook story exercising its variants.
 - [x] dialog
 - [x] alert-dialog
 - [x] sheet
-- [ ] drawer
+- [x] drawer
 - [ ] dropdown-menu
 - [ ] context-menu
 - [ ] menubar

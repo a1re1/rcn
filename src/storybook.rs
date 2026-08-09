@@ -26,16 +26,17 @@ use crate::components::{
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Checkbox, Collapsible, Dialog, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, HoverCard, Item, ItemActions, ItemContent, ItemDescription,
-    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Sheet, SheetDescription,
-    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
-    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
+    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
+    HoverCard, Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader,
+    ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup,
+    Label, Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious,
+    Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
+    ScrollArea, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
+    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
+    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
+    TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
+    Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -76,11 +77,12 @@ enum Story {
     DialogStory,
     AlertDialogStory,
     SheetStory,
+    DrawerStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 35] = [
+    const ALL: [Story; 36] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -116,6 +118,7 @@ impl Story {
         Story::DialogStory,
         Story::AlertDialogStory,
         Story::SheetStory,
+        Story::DrawerStory,
         // __STORY_ALL__
     ];
 
@@ -156,6 +159,7 @@ impl Story {
             Story::DialogStory => "Dialog",
             Story::AlertDialogStory => "Alert Dialog",
             Story::SheetStory => "Sheet",
+            Story::DrawerStory => "Drawer",
             // __STORY_LABELS__
         }
     }
@@ -225,6 +229,9 @@ impl Story {
             }
             Story::SheetStory => {
                 "Extends the Dialog component to display content that complements the main content of the screen."
+            }
+            Story::DrawerStory => {
+                "A drawer component for rendering content from the bottom of the screen."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -414,6 +421,8 @@ pub struct Storybook {
     // Sheet story state
     sheet_open: bool,
     sheet_side: SheetSide,
+    // Drawer story state
+    drawer_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -463,6 +472,7 @@ impl Storybook {
             alert_dialog_open: false,
             sheet_open: false,
             sheet_side: SheetSide::Right,
+            drawer_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -718,6 +728,7 @@ impl Storybook {
             Story::DialogStory => self.dialog_preview(cx).into_any_element(),
             Story::AlertDialogStory => self.alert_dialog_preview(cx).into_any_element(),
             Story::SheetStory => self.sheet_preview(cx).into_any_element(),
+            Story::DrawerStory => self.drawer_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1042,6 +1053,7 @@ impl Storybook {
                 ),
                 &theme,
             )],
+            Story::DrawerStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2702,6 +2714,51 @@ impl Storybook {
                                 }))
                                 .child("Save changes"),
                         ),
+                    ),
+            )
+    }
+    fn drawer_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .child(
+                Button::new("drawer-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.drawer_open = true;
+                        cx.notify();
+                    }))
+                    .child("Open Drawer"),
+            )
+            .child(
+                Drawer::new("drawer-demo")
+                    .open(self.drawer_open)
+                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                        this.drawer_open = *open;
+                        cx.notify();
+                    }))
+                    .child(
+                        DrawerHeader::new()
+                            .child(DrawerTitle::new().child("Move Goal"))
+                            .child(DrawerDescription::new().child("Set your daily activity goal.")),
+                    )
+                    .child(
+                        DrawerFooter::new()
+                            .child(
+                                Button::new("drawer-cancel")
+                                    .variant(ButtonVariant::Outline)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.drawer_open = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Cancel"),
+                            )
+                            .child(
+                                Button::new("drawer-submit")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.drawer_open = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Submit"),
+                            ),
                     ),
             )
     }
