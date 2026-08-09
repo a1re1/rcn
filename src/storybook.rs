@@ -24,13 +24,13 @@ use crate::components::{
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Checkbox, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
-    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
-    ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Spinner, Switch, SwitchSize, Table,
-    TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Toggle,
-    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
+    CardSize, CardTitle, Checkbox, Collapsible, Empty, EmptyContent, EmptyDescription, EmptyHeader,
+    EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription,
+    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Spinner, Switch,
+    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
+    TableRow, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -61,11 +61,12 @@ enum Story {
     Toggle,
     ToggleGroup,
     ButtonGroup,
+    Collapsible,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 25] = [
+    const ALL: [Story; 26] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -91,6 +92,7 @@ impl Story {
         Story::Toggle,
         Story::ToggleGroup,
         Story::ButtonGroup,
+        Story::Collapsible,
         // __STORY_ALL__
     ];
 
@@ -121,6 +123,7 @@ impl Story {
             Story::Toggle => "Toggle",
             Story::ToggleGroup => "Toggle Group",
             Story::ButtonGroup => "Button Group",
+            Story::Collapsible => "Collapsible",
             // __STORY_LABELS__
         }
     }
@@ -166,7 +169,9 @@ impl Story {
             Story::ToggleGroup => "A set of two-state buttons that can be toggled on or off.",
             Story::ButtonGroup => {
                 "A container that groups related buttons together with a consistent style."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::Collapsible => "An interactive component which expands and collapses a panel.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -338,6 +343,8 @@ pub struct Storybook {
     toggle_outline_pressed: bool,
     // Toggle group story state
     toggle_group_on: [bool; 3],
+    // Collapsible story state
+    collapsible_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -377,6 +384,7 @@ impl Storybook {
             toggle_pressed: true,
             toggle_outline_pressed: false,
             toggle_group_on: [true, false, false],
+            collapsible_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -622,6 +630,7 @@ impl Storybook {
             Story::Toggle => self.toggle_preview(cx).into_any_element(),
             Story::ToggleGroup => self.toggle_group_preview(cx).into_any_element(),
             Story::ButtonGroup => Self::button_group_preview(cx).into_any_element(),
+            Story::Collapsible => self.collapsible_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -880,6 +889,18 @@ impl Storybook {
             Story::Toggle => Vec::new(),
             Story::ToggleGroup => Vec::new(),
             Story::ButtonGroup => Vec::new(),
+            Story::Collapsible => vec![Self::control_row(
+                "open",
+                Switch::new("ctl-collapsible-open")
+                    .checked(self.collapsible_open)
+                    .size(SwitchSize::Sm)
+                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                        this.collapsible_open = *open;
+                        cx.notify();
+                    }))
+                    .into_any_element(),
+                &theme,
+            )],
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2127,6 +2148,61 @@ impl Storybook {
                     .child(ButtonGroupSeparator::new())
                     .child(ButtonGroupText::new().child("12 followers")),
             )
+    }
+    fn collapsible_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let repo_row = |text: &'static str| {
+            div()
+                .rounded(theme.radius_md())
+                .border_1()
+                .border_color(theme.border)
+                .px(px(16.))
+                .py(px(8.))
+                .text_size(px(14.))
+                .line_height(px(20.))
+                .child(text)
+        };
+        div().w(px(350.)).child(
+            Collapsible::new("collapsible-repos")
+                .open(self.collapsible_open)
+                .on_toggle(cx.listener(|this, _, _, cx| {
+                    this.collapsible_open = !this.collapsible_open;
+                    cx.notify();
+                }))
+                .trigger(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .justify_between()
+                        .gap(px(16.))
+                        .child(
+                            div()
+                                .text_size(px(14.))
+                                .font_weight(FontWeight::MEDIUM)
+                                .child("@peduarte starred 3 repositories"),
+                        )
+                        .child(
+                            gpui::svg()
+                                .path(if self.collapsible_open {
+                                    theme.icons.chevron_up()
+                                } else {
+                                    theme.icons.chevron_down()
+                                })
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                )
+                .content(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .gap(px(8.))
+                        .child(repo_row("@radix-ui/primitives"))
+                        .child(repo_row("@radix-ui/colors"))
+                        .child(repo_row("@stitches/react")),
+                ),
+        )
     }
 
     // __STORY_PREVIEWS__

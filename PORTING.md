@@ -37,7 +37,7 @@ lands with a storybook story exercising its variants.
 - [x] toggle
 - [x] toggle-group
 - [x] button-group
-- [ ] collapsible
+- [x] collapsible
 - [ ] tabs
 - [ ] slider
 - [ ] pagination
