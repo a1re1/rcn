@@ -111,16 +111,27 @@ impl RenderOnce for Avatar {
 }
 
 /// flex -space-x-2, each avatar ringed with the background color.
+///
+/// The group sizes its rings itself (gpui can't restyle children the way the
+/// source's `*:data-[slot=avatar]:ring-2` selector does), so give it the same
+/// size as the avatars inside.
 #[derive(IntoElement)]
 pub struct AvatarGroup {
+    size: AvatarSize,
     children: Vec<AnyElement>,
 }
 
 impl AvatarGroup {
     pub fn new() -> Self {
         Self {
+            size: AvatarSize::default(),
             children: Vec::new(),
         }
+    }
+
+    pub fn size(mut self, size: AvatarSize) -> Self {
+        self.size = size;
+        self
     }
 }
 
@@ -139,15 +150,24 @@ impl ParentElement for AvatarGroup {
 impl RenderOnce for AvatarGroup {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
+        // ring-2 ring-background: an opaque background disc 2px larger than
+        // the avatar. A fixed-size disc (rather than a border on an
+        // auto-sized wrapper) keeps the circles round under the negative
+        // overlap margins.
+        let ring = px(self.size.pixels() + 4.);
         div()
             .flex()
             .flex_row()
+            .items_center()
             .children(self.children.into_iter().enumerate().map(|(index, child)| {
-                // ring-2 ring-background, -space-x-2
                 div()
+                    .flex()
+                    .flex_shrink_0()
+                    .items_center()
+                    .justify_center()
+                    .size(ring)
                     .rounded_full()
-                    .border_2()
-                    .border_color(theme.background)
+                    .bg(theme.background)
                     .when(index > 0, |el| el.ml(px(-8.)))
                     .child(child)
             }))
@@ -178,23 +198,17 @@ impl AvatarGroupCount {
 impl RenderOnce for AvatarGroupCount {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
+        // The enclosing AvatarGroup supplies the ring and overlap.
         div()
+            .flex()
+            .flex_shrink_0()
+            .size(px(self.size.pixels()))
+            .items_center()
+            .justify_center()
             .rounded_full()
-            .border_2()
-            .border_color(theme.background)
-            .ml(px(-8.))
-            .child(
-                div()
-                    .flex()
-                    .flex_shrink_0()
-                    .size(px(self.size.pixels()))
-                    .items_center()
-                    .justify_center()
-                    .rounded_full()
-                    .bg(theme.muted)
-                    .text_color(theme.muted_foreground)
-                    .text_size(px(self.size.text_size()))
-                    .child(format!("+{}", self.count)),
-            )
+            .bg(theme.muted)
+            .text_color(theme.muted_foreground)
+            .text_size(px(self.size.text_size()))
+            .child(format!("+{}", self.count))
     }
 }

@@ -1230,6 +1230,7 @@ impl Storybook {
             .child(Avatar::new("CN").size(self.avatar_size))
             .child(
                 AvatarGroup::new()
+                    .size(self.avatar_size)
                     .child(Avatar::new("CN").size(self.avatar_size))
                     .child(Avatar::new("ER").size(self.avatar_size))
                     .child(Avatar::new("LR").size(self.avatar_size))
