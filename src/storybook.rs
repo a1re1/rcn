@@ -300,10 +300,60 @@ impl Storybook {
         self.import_status = None;
     }
 
+    /// Back-fill the token controls from an imported theme so the panel
+    /// reflects it and later adjustments continue from the imported look
+    /// instead of reverting to the previous settings.
+    fn sync_settings_from(&mut self, light: &Theme) {
+        let primary = light.primary;
+        // A near-black primary is the stock neutral default; anything else is
+        // a brand color the sliders should show.
+        if primary.s < 0.02 && primary.l < 0.1 {
+            self.tokens.custom_primary = false;
+        } else {
+            self.tokens.custom_primary = true;
+            self.tokens.hue = primary.h;
+            self.tokens.saturation = primary.s;
+            self.tokens.lightness = primary.l;
+        }
+        self.tokens.radius = (light.radius / px(1.)).clamp(0., 24.);
+
+        // Infer the closest base gray family from the tinted neutrals.
+        let distance = |base: BaseColor| -> f32 {
+            let candidate = Theme::with_base(base, false);
+            [
+                (candidate.secondary, light.secondary),
+                (candidate.border, light.border),
+                (candidate.muted_foreground, light.muted_foreground),
+            ]
+            .into_iter()
+            .map(|(a, b)| {
+                let (a, b): (gpui::Rgba, gpui::Rgba) = (a.into(), b.into());
+                (a.r - b.r).powi(2) + (a.g - b.g).powi(2) + (a.b - b.b).powi(2)
+            })
+            .sum()
+        };
+        self.tokens.base = BaseColor::ALL
+            .into_iter()
+            .min_by(|a, b| distance(*a).total_cmp(&distance(*b)))
+            .unwrap_or_default();
+
+        // Fonts only sync when the imported family is in the picker list;
+        // otherwise the imported theme keeps carrying them until edited.
+        self.tokens.font_sans = FONTS
+            .iter()
+            .filter_map(|(_, family)| *family)
+            .find(|family| Some(*family) == light.font_sans.as_deref());
+        self.tokens.font_heading = FONTS
+            .iter()
+            .filter_map(|(_, family)| *family)
+            .find(|family| Some(*family) == light.font_heading.as_deref());
+    }
+
     fn import_from_clipboard(&mut self, cx: &mut Context<Self>) {
         let text = cx.read_from_clipboard().and_then(|item| item.text());
         match text.as_deref().and_then(Theme::from_shadcn_css) {
             Some(pair) => {
+                self.sync_settings_from(&pair.0);
                 self.imported = Some(pair);
                 self.import_status = Some(("Theme imported — light + dark applied.".into(), true));
                 self.apply_tokens(cx);
@@ -1280,5 +1330,50 @@ impl Render for Storybook {
 impl Default for Storybook {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Importing a theme must back-fill the controls: primary onto the
+    /// sliders, radius onto its slider, and the nearest base gray family.
+    #[test]
+    fn import_syncs_controls() {
+        let css = r#"
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.147 0.004 49.3);
+  --primary: oklch(0.553 0.195 38.402);
+  --secondary: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.547 0.021 43.1);
+  --border: oklch(0.922 0.005 34.3);
+  --radius: 0;
+}"#;
+        let (light, _) = Theme::from_shadcn_css(css).expect("should parse");
+        let mut storybook = Storybook::new();
+        storybook.sync_settings_from(&light);
+        assert!(storybook.tokens.custom_primary);
+        assert!(
+            storybook.tokens.hue < 0.12,
+            "red-orange brand should land on a warm hue, got {}",
+            storybook.tokens.hue
+        );
+        assert!(storybook.tokens.saturation > 0.3);
+        assert_eq!(storybook.tokens.radius, 0.);
+        // Warm-tinted neutrals sit closest to the stone family.
+        assert_eq!(storybook.tokens.base, BaseColor::Stone);
+    }
+
+    /// A stock-neutral theme (black primary) must not flip the sliders into
+    /// custom-brand mode.
+    #[test]
+    fn neutral_import_keeps_default_primary() {
+        let mut storybook = Storybook::new();
+        storybook.tokens.custom_primary = true;
+        storybook.sync_settings_from(&Theme::light());
+        assert!(!storybook.tokens.custom_primary);
+        assert_eq!(storybook.tokens.base, BaseColor::Neutral);
     }
 }
