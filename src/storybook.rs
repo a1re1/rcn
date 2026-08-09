@@ -19,7 +19,8 @@ use gpui::{
 
 use crate::assets::IconLibrary;
 use crate::components::{
-    Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, AspectRatio,
+    Accordion, AccordionItem, Alert, AlertDescription, AlertDialog, AlertDialogDescription,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertTitle, AlertVariant, AspectRatio,
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
@@ -72,11 +73,12 @@ enum Story {
     TooltipStory,
     HoverCardStory,
     DialogStory,
+    AlertDialogStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 33] = [
+    const ALL: [Story; 34] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -110,6 +112,7 @@ impl Story {
         Story::TooltipStory,
         Story::HoverCardStory,
         Story::DialogStory,
+        Story::AlertDialogStory,
         // __STORY_ALL__
     ];
 
@@ -148,6 +151,7 @@ impl Story {
             Story::TooltipStory => "Tooltip",
             Story::HoverCardStory => "Hover Card",
             Story::DialogStory => "Dialog",
+            Story::AlertDialogStory => "Alert Dialog",
             // __STORY_LABELS__
         }
     }
@@ -211,6 +215,9 @@ impl Story {
             }
             Story::DialogStory => {
                 "A window overlaid on the primary window, rendering the content underneath inert."
+            }
+            Story::AlertDialogStory => {
+                "A modal dialog that interrupts the user with important content and expects a response."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -395,6 +402,8 @@ pub struct Storybook {
     pagination_page: usize,
     // Dialog story state
     dialog_open: bool,
+    // Alert dialog story state
+    alert_dialog_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -441,6 +450,7 @@ impl Storybook {
             slider_fine: 0.4,
             pagination_page: 2,
             dialog_open: false,
+            alert_dialog_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -694,6 +704,7 @@ impl Storybook {
             Story::TooltipStory => Self::tooltip_preview().into_any_element(),
             Story::HoverCardStory => Self::hover_card_preview().into_any_element(),
             Story::DialogStory => self.dialog_preview(cx).into_any_element(),
+            Story::AlertDialogStory => self.alert_dialog_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -998,6 +1009,7 @@ impl Storybook {
                     .into_any_element(),
                 &theme,
             )],
+            Story::AlertDialogStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2575,6 +2587,50 @@ impl Storybook {
                                         cx.notify();
                                     }))
                                     .child("Save changes"),
+                            ),
+                    ),
+            )
+    }
+    fn alert_dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .child(
+                Button::new("alert-dialog-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.alert_dialog_open = true;
+                        cx.notify();
+                    }))
+                    .child("Show Dialog"),
+            )
+            .child(
+                AlertDialog::new("alert-dialog-demo")
+                    .open(self.alert_dialog_open)
+                    .child(
+                        AlertDialogHeader::new()
+                            .child(AlertDialogTitle::new().child("Are you absolutely sure?"))
+                            .child(AlertDialogDescription::new().child(
+                                "This action cannot be undone. This will permanently delete your \
+                                 account and remove your data from our servers.",
+                            )),
+                    )
+                    .child(
+                        AlertDialogFooter::new()
+                            .child(
+                                Button::new("alert-dialog-cancel")
+                                    .variant(ButtonVariant::Outline)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.alert_dialog_open = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Cancel"),
+                            )
+                            .child(
+                                Button::new("alert-dialog-action")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.alert_dialog_open = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Continue"),
                             ),
                     ),
             )
