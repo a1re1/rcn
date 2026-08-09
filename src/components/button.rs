@@ -25,6 +25,17 @@ pub enum ButtonVariant {
     Link,
 }
 
+/// Position of a button inside a [`crate::components::ButtonGroup`]:
+/// ends keep their outer rounding, middles go square, and non-first
+/// buttons collapse their left border.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum GroupPosition {
+    First,
+    Middle,
+    Last,
+    Only,
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
 pub enum ButtonSize {
     #[default]
@@ -46,6 +57,7 @@ pub struct Button {
     variant: ButtonVariant,
     size: ButtonSize,
     disabled: bool,
+    group_position: Option<GroupPosition>,
     on_click: Option<ClickHandler>,
     children: Vec<AnyElement>,
 }
@@ -57,6 +69,7 @@ impl Button {
             variant: ButtonVariant::default(),
             size: ButtonSize::default(),
             disabled: false,
+            group_position: None,
             on_click: None,
             children: Vec::new(),
         }
@@ -82,6 +95,12 @@ impl Button {
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_click = Some(Box::new(handler));
+        self
+    }
+
+    /// Used by ButtonGroup to join neighboring buttons.
+    pub(crate) fn group_position(mut self, position: GroupPosition) -> Self {
+        self.group_position = Some(position);
         self
     }
 }
@@ -193,6 +212,13 @@ impl RenderOnce for Button {
             }
             // text-primary underline-offset-4 hover:underline
             ButtonVariant::Link => base.text_color(theme.primary).hover(|s| s.underline()),
+        };
+
+        let styled = match self.group_position {
+            None | Some(GroupPosition::Only) => styled,
+            Some(GroupPosition::First) => styled.rounded_r(px(0.)),
+            Some(GroupPosition::Middle) => styled.rounded(px(0.)).ml(px(-1.)),
+            Some(GroupPosition::Last) => styled.rounded_l(px(0.)).ml(px(-1.)),
         };
 
         // active:translate-y-px; disabled:opacity-50 + no pointer events.
