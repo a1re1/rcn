@@ -3,15 +3,26 @@
 //! the controls panel binds each of the component's props (variant, size,
 //! state flags) to interactive widgets — built from the library's own Button
 //! and Switch.
+//!
+//! The Tokens story is special: its controls are global, modeled on
+//! ui.shadcn.com/create — pick a base gray family, a brand color (presets or
+//! custom hue/saturation/lightness sliders), and a radius, or shuffle the
+//! whole thing — and every other story picks the changes up live through the
+//! `Theme` global.
 
-use gpui::{AnyElement, App, ClickEvent, Context, FontWeight, Window, div, prelude::*, px};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use gpui::{
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, Empty, FontWeight, Hsla, Window, div,
+    hsla, prelude::*, px, relative, rgb,
+};
 
 use crate::components::{
     Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
     BadgeVariant, Button, ButtonSize, ButtonVariant, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Switch, SwitchSize,
 };
-use crate::theme::Theme;
+use crate::theme::{BaseColor, Theme, oklch};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Story {
@@ -49,7 +60,10 @@ impl Story {
 
     fn description(self) -> &'static str {
         match self {
-            Story::Tokens => "The shadcn design tokens: every color variable and the radius scale.",
+            Story::Tokens => {
+                "Global design tokens. Tune the base palette, brand color, and radius — or \
+                 shuffle — and every component picks the changes up live."
+            }
             Story::Button => "Displays a button or a component that looks like a button.",
             Story::Badge => "Displays a badge or a component that looks like a badge.",
             Story::Avatar => "An image element with a fallback for representing the user.",
@@ -102,8 +116,77 @@ const AVATAR_SIZES: [(&str, AvatarSize); 3] = [
 const SWITCH_SIZES: [(&str, SwitchSize); 2] =
     [("sm", SwitchSize::Sm), ("default", SwitchSize::Default)];
 
+/// Brand-color presets from shadcn's create page, as oklch (l, c, h) at the
+/// light-mode anchor (tailwind's 600-ish step). `None` is the neutral
+/// default (black / near-white).
+const THEME_PRESETS: [(&str, Option<(f32, f32, f32)>); 8] = [
+    ("default", None),
+    ("blue", Some((0.546, 0.245, 262.9))),
+    ("green", Some((0.627, 0.194, 149.2))),
+    ("orange", Some((0.646, 0.222, 41.1))),
+    ("red", Some((0.577, 0.245, 27.3))),
+    ("rose", Some((0.586, 0.253, 17.6))),
+    ("violet", Some((0.541, 0.281, 293.0))),
+    ("yellow", Some((0.795, 0.184, 86.0))),
+];
+
+/// The global token adjustments layered over the stock shadcn themes.
+struct TokenSettings {
+    base: BaseColor,
+    /// When false, primary stays the stock neutral (black / near-white).
+    custom_primary: bool,
+    /// Custom brand color in HSL, each 0..1 (gpui's `Hsla` space).
+    hue: f32,
+    saturation: f32,
+    lightness: f32,
+    radius: f32,
+}
+
+impl Default for TokenSettings {
+    fn default() -> Self {
+        Self {
+            base: BaseColor::Neutral,
+            custom_primary: false,
+            hue: 0.6,
+            saturation: 0.7,
+            lightness: 0.5,
+            radius: 10.,
+        }
+    }
+}
+
+impl TokenSettings {
+    /// The brand primary for the given mode, if customized. Dark mode lifts
+    /// the lightness a step, like shadcn's dark palettes do.
+    fn primary(&self, dark: bool) -> Option<Hsla> {
+        self.custom_primary.then(|| {
+            let l = if dark {
+                (self.lightness + 0.08).min(0.85)
+            } else {
+                self.lightness
+            };
+            hsla(self.hue, self.saturation, l, 1.)
+        })
+    }
+}
+
+/// Typed payload identifying which slider a drag belongs to.
+struct SliderDrag(&'static str);
+
+/// Invisible drag preview: sliders drag a value, not a visual.
+struct DragPreview;
+
+impl Render for DragPreview {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        Empty
+    }
+}
+
 pub struct Storybook {
     story: Story,
+    dark: bool,
+    tokens: TokenSettings,
+    rng: u64,
     // Button controls
     button_variant: ButtonVariant,
     button_size: ButtonSize,
@@ -123,8 +206,15 @@ pub struct Storybook {
 
 impl Storybook {
     pub fn new() -> Self {
+        let seed = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.subsec_nanos() as u64 ^ d.as_secs())
+            .unwrap_or(0x9e3779b9);
         Self {
-            story: Story::Button,
+            story: Story::Tokens,
+            dark: false,
+            tokens: TokenSettings::default(),
+            rng: seed | 1,
             button_variant: ButtonVariant::Default,
             button_size: ButtonSize::Default,
             button_disabled: false,
@@ -138,14 +228,46 @@ impl Storybook {
         }
     }
 
-    fn toggle_theme(&mut self, _: &ClickEvent, _window: &mut Window, cx: &mut Context<Self>) {
-        let next = if Theme::of(cx).dark {
-            Theme::light()
-        } else {
-            Theme::dark()
-        };
-        cx.set_global(next);
+    /// Rebuild the global `Theme` from the current token settings and mode.
+    fn apply_tokens(&self, cx: &mut Context<Self>) {
+        let mut theme = Theme::with_base(self.tokens.base, self.dark);
+        if let Some(primary) = self.tokens.primary(self.dark) {
+            theme.primary = primary;
+            theme.primary_foreground = if primary.l > 0.65 {
+                rgb(0x171717).into()
+            } else {
+                rgb(0xfafafa).into()
+            };
+            theme.ring = primary;
+        }
+        theme.radius = px(self.tokens.radius);
+        cx.set_global(theme);
         cx.notify();
+    }
+
+    fn toggle_theme(&mut self, _: &ClickEvent, _window: &mut Window, cx: &mut Context<Self>) {
+        self.dark = !self.dark;
+        self.apply_tokens(cx);
+    }
+
+    /// xorshift64 — good enough to shuffle a palette, no dependency needed.
+    fn rand(&mut self) -> f32 {
+        let mut x = self.rng;
+        x ^= x << 13;
+        x ^= x >> 7;
+        x ^= x << 17;
+        self.rng = x;
+        (x >> 40) as f32 / (1u64 << 24) as f32
+    }
+
+    fn shuffle(&mut self, cx: &mut Context<Self>) {
+        self.tokens.custom_primary = true;
+        self.tokens.hue = self.rand();
+        self.tokens.saturation = 0.5 + 0.45 * self.rand();
+        self.tokens.lightness = 0.35 + 0.35 * self.rand();
+        self.tokens.base = BaseColor::ALL[(self.rand() * 5.) as usize % 5];
+        self.tokens.radius = [0., 4., 6., 8., 10., 12., 16., 20.][(self.rand() * 8.) as usize % 8];
+        self.apply_tokens(cx);
     }
 
     // ---- chrome ------------------------------------------------------------
@@ -280,7 +402,7 @@ impl Storybook {
     fn controls_panel(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let rows: Vec<AnyElement> = match self.story {
-            Story::Tokens => Vec::new(),
+            Story::Tokens => self.token_controls(cx),
             Story::Button => vec![
                 Self::control_row(
                     "variant",
@@ -289,7 +411,10 @@ impl Storybook {
                         &BUTTON_VARIANTS,
                         self.button_variant,
                         cx,
-                        |this, v| this.button_variant = v,
+                        |this, v, cx| {
+                            this.button_variant = v;
+                            cx.notify();
+                        },
                     ),
                     &theme,
                 ),
@@ -300,7 +425,10 @@ impl Storybook {
                         &BUTTON_SIZES,
                         self.button_size,
                         cx,
-                        |this, v| this.button_size = v,
+                        |this, v, cx| {
+                            this.button_size = v;
+                            cx.notify();
+                        },
                     ),
                     &theme,
                 ),
@@ -324,7 +452,10 @@ impl Storybook {
                     &BADGE_VARIANTS,
                     self.badge_variant,
                     cx,
-                    |this, v| this.badge_variant = v,
+                    |this, v, cx| {
+                        this.badge_variant = v;
+                        cx.notify();
+                    },
                 ),
                 &theme,
             )],
@@ -335,7 +466,10 @@ impl Storybook {
                     &AVATAR_SIZES,
                     self.avatar_size,
                     cx,
-                    |this, v| this.avatar_size = v,
+                    |this, v, cx| {
+                        this.avatar_size = v;
+                        cx.notify();
+                    },
                 ),
                 &theme,
             )],
@@ -359,7 +493,10 @@ impl Storybook {
                         &SWITCH_SIZES,
                         self.switch_size,
                         cx,
-                        |this, v| this.switch_size = v,
+                        |this, v, cx| {
+                            this.switch_size = v;
+                            cx.notify();
+                        },
                     ),
                     &theme,
                 ),
@@ -388,7 +525,10 @@ impl Storybook {
                     ],
                     self.accordion_open,
                     cx,
-                    |this, v| this.accordion_open = v,
+                    |this, v, cx| {
+                        this.accordion_open = v;
+                        cx.notify();
+                    },
                 ),
                 &theme,
             )],
@@ -424,30 +564,28 @@ impl Storybook {
                     .font_weight(FontWeight::MEDIUM)
                     .child("Controls"),
             )
-            .map(|el| {
-                if rows.is_empty() {
-                    el.child(
-                        div()
-                            .p(px(16.))
-                            .text_size(px(13.))
-                            .text_color(theme.muted_foreground)
-                            .child("This story has no controls."),
-                    )
-                } else {
-                    el.child(
+            .child(
+                div()
+                    .id("controls")
+                    .flex()
+                    .flex_col()
+                    .flex_1()
+                    .overflow_y_scroll()
+                    .child(
                         div()
                             .flex()
                             .flex_col()
                             .gap(px(16.))
                             .p(px(16.))
                             .children(rows),
-                    )
-                }
-            })
+                    ),
+            )
     }
 
+    // ---- control widgets ---------------------------------------------------
+
     /// One labeled control row: prop name above the widget.
-    fn control_row(label: &'static str, control: AnyElement, theme: &Theme) -> AnyElement {
+    fn control_row(label: impl Into<String>, control: AnyElement, theme: &Theme) -> AnyElement {
         div()
             .flex()
             .flex_col()
@@ -458,7 +596,7 @@ impl Storybook {
                     .line_height(px(16.))
                     .font_weight(FontWeight::MEDIUM)
                     .text_color(theme.muted_foreground)
-                    .child(label),
+                    .child(label.into()),
             )
             .child(control)
             .into_any_element()
@@ -471,7 +609,7 @@ impl Storybook {
         options: &[(&'static str, T)],
         current: T,
         cx: &mut Context<Self>,
-        set: impl Fn(&mut Self, T) + Copy + 'static,
+        set: impl Fn(&mut Self, T, &mut Context<Self>) + Copy + 'static,
     ) -> AnyElement {
         div()
             .flex()
@@ -488,18 +626,261 @@ impl Storybook {
                         ButtonVariant::Outline
                     })
                     .size(ButtonSize::Xs)
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        set(this, value);
-                        cx.notify();
-                    }))
+                    .on_click(cx.listener(move |this, _, _, cx| set(this, value, cx)))
                     .child(*label)
             }))
             .into_any_element()
     }
 
+    /// A horizontal slider over 0..1. Dragging anywhere (even past the track)
+    /// keeps updating; `set` receives the new fraction.
+    fn slider(
+        id: &'static str,
+        fraction: f32,
+        cx: &mut Context<Self>,
+        set: impl Fn(&mut Self, f32) + Copy + 'static,
+    ) -> AnyElement {
+        let theme = Theme::of(cx).clone();
+        let fraction = fraction.clamp(0., 1.);
+        div()
+            .id(id)
+            .h(px(16.))
+            .w_full()
+            .flex()
+            .items_center()
+            .on_drag(SliderDrag(id), |_, _, _, cx| cx.new(|_| DragPreview))
+            .on_drag_move(
+                cx.listener(move |this, event: &DragMoveEvent<SliderDrag>, _, cx| {
+                    if event.drag(cx).0 == id {
+                        let f = ((event.event.position.x - event.bounds.origin.x)
+                            / event.bounds.size.width)
+                            .clamp(0., 1.);
+                        set(this, f);
+                        this.apply_tokens(cx);
+                    }
+                }),
+            )
+            .child(
+                div()
+                    .relative()
+                    .w_full()
+                    .h(px(4.))
+                    .rounded_full()
+                    .bg(theme.input)
+                    .child(
+                        div()
+                            .h_full()
+                            .w(relative(fraction))
+                            .rounded_full()
+                            .bg(theme.primary),
+                    )
+                    .child(Self::slider_thumb(fraction, &theme)),
+            )
+            .into_any_element()
+    }
+
+    /// The hue slider: same interaction as [`Self::slider`], but the track is
+    /// a rainbow.
+    fn hue_slider(
+        id: &'static str,
+        fraction: f32,
+        cx: &mut Context<Self>,
+        set: impl Fn(&mut Self, f32) + Copy + 'static,
+    ) -> AnyElement {
+        let theme = Theme::of(cx).clone();
+        let fraction = fraction.clamp(0., 1.);
+        const SLICES: usize = 16;
+        div()
+            .id(id)
+            .h(px(16.))
+            .w_full()
+            .flex()
+            .items_center()
+            .on_drag(SliderDrag(id), |_, _, _, cx| cx.new(|_| DragPreview))
+            .on_drag_move(
+                cx.listener(move |this, event: &DragMoveEvent<SliderDrag>, _, cx| {
+                    if event.drag(cx).0 == id {
+                        let f = ((event.event.position.x - event.bounds.origin.x)
+                            / event.bounds.size.width)
+                            .clamp(0., 1.);
+                        set(this, f);
+                        this.apply_tokens(cx);
+                    }
+                }),
+            )
+            .child(
+                div()
+                    .relative()
+                    .w_full()
+                    .h(px(4.))
+                    .flex()
+                    .flex_row()
+                    .children((0..SLICES).map(|i| {
+                        div()
+                            .flex_1()
+                            .h_full()
+                            .bg(hsla(i as f32 / SLICES as f32, 0.8, 0.55, 1.))
+                            .when(i == 0, |el| el.rounded_l_full())
+                            .when(i == SLICES - 1, |el| el.rounded_r_full())
+                    }))
+                    .child(Self::slider_thumb(fraction, &theme)),
+            )
+            .into_any_element()
+    }
+
+    fn slider_thumb(fraction: f32, theme: &Theme) -> AnyElement {
+        div()
+            .absolute()
+            .top(px(-4.))
+            .left(relative(fraction))
+            .ml(px(-6.))
+            .size(px(12.))
+            .rounded_full()
+            .bg(theme.background)
+            .border_1()
+            .border_color(theme.ring)
+            .shadow_xs()
+            .into_any_element()
+    }
+
+    // ---- token (global) controls -------------------------------------------
+
+    fn token_controls(&self, cx: &mut Context<Self>) -> Vec<AnyElement> {
+        let theme = Theme::of(cx).clone();
+
+        let base_row = Self::choices(
+            "base-color",
+            &BaseColor::ALL.map(|b| (b.label(), b)),
+            self.tokens.base,
+            cx,
+            |this, v, cx| {
+                this.tokens.base = v;
+                this.apply_tokens(cx);
+            },
+        );
+
+        let current_primary = self.tokens.primary(false);
+        let preset_row = div()
+            .flex()
+            .flex_row()
+            .flex_wrap()
+            .gap(px(6.))
+            .children(
+                THEME_PRESETS
+                    .iter()
+                    .enumerate()
+                    .map(|(index, (_name, preset))| {
+                        let swatch: Hsla = match preset {
+                            Some((l, c, h)) => oklch(*l, *c, *h),
+                            None => {
+                                if theme.dark {
+                                    rgb(0xe5e5e5).into()
+                                } else {
+                                    rgb(0x000000).into()
+                                }
+                            }
+                        };
+                        let selected = match (preset, current_primary) {
+                            (None, None) => true,
+                            (Some((l, c, h)), Some(current)) => {
+                                let p = oklch(*l, *c, *h);
+                                (p.h - current.h).abs() < 0.01 && (p.l - current.l).abs() < 0.02
+                            }
+                            _ => false,
+                        };
+                        let value = *preset;
+                        div()
+                            .id(("theme-preset", index))
+                            .size(px(22.))
+                            .rounded_full()
+                            .bg(swatch)
+                            .border_2()
+                            .border_color(if selected { theme.ring } else { theme.border })
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                match value {
+                                    Some((l, c, h)) => {
+                                        let p = oklch(l, c, h);
+                                        this.tokens.custom_primary = true;
+                                        this.tokens.hue = p.h;
+                                        this.tokens.saturation = p.s;
+                                        this.tokens.lightness = p.l;
+                                    }
+                                    None => this.tokens.custom_primary = false,
+                                }
+                                this.apply_tokens(cx);
+                            }))
+                    }),
+            )
+            .into_any_element();
+
+        let hue = self.tokens.hue;
+        let saturation = self.tokens.saturation;
+        let lightness = self.tokens.lightness;
+        let radius = self.tokens.radius;
+
+        vec![
+            Self::control_row("base color", base_row, &theme),
+            Self::control_row("brand color", preset_row, &theme),
+            Self::control_row(
+                format!("hue · {:.0}°", hue * 360.),
+                Self::hue_slider("hue-slider", hue, cx, |this, f| {
+                    this.tokens.custom_primary = true;
+                    this.tokens.hue = f;
+                }),
+                &theme,
+            ),
+            Self::control_row(
+                format!("saturation · {:.0}%", saturation * 100.),
+                Self::slider("saturation-slider", saturation, cx, |this, f| {
+                    this.tokens.custom_primary = true;
+                    this.tokens.saturation = f;
+                }),
+                &theme,
+            ),
+            Self::control_row(
+                format!("lightness · {:.0}%", lightness * 100.),
+                Self::slider("lightness-slider", lightness, cx, |this, f| {
+                    this.tokens.custom_primary = true;
+                    this.tokens.lightness = f;
+                }),
+                &theme,
+            ),
+            Self::control_row(
+                format!("radius · {:.0}px", radius),
+                Self::slider("radius-slider", radius / 24., cx, |this, f| {
+                    this.tokens.radius = (f * 24.).round();
+                }),
+                &theme,
+            ),
+            div()
+                .flex()
+                .flex_row()
+                .gap(px(8.))
+                .pt(px(4.))
+                .child(
+                    Button::new("shuffle-tokens")
+                        .variant(ButtonVariant::Default)
+                        .size(ButtonSize::Sm)
+                        .on_click(cx.listener(|this, _, _, cx| this.shuffle(cx)))
+                        .child("Shuffle"),
+                )
+                .child(
+                    Button::new("reset-tokens")
+                        .variant(ButtonVariant::Outline)
+                        .size(ButtonSize::Sm)
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.tokens = TokenSettings::default();
+                            this.apply_tokens(cx);
+                        }))
+                        .child("Reset"),
+                )
+                .into_any_element(),
+        ]
+    }
+
     // ---- stories -----------------------------------------------------------
 
-    fn tokens_preview(&self, cx: &App) -> impl IntoElement + use<> {
+    fn tokens_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let swatches = [
             ("background", theme.background),
@@ -581,6 +962,35 @@ impl Storybook {
                         )
                 }),
             ))
+            // Live sample so slider feedback is instant without switching
+            // stories.
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .gap(px(12.))
+                    .pt(px(8.))
+                    .border_t_1()
+                    .border_color(theme.border)
+                    .child(Button::new("tokens-button").child("Button"))
+                    .child(
+                        Button::new("tokens-outline")
+                            .variant(ButtonVariant::Outline)
+                            .child("Outline"),
+                    )
+                    .child(Badge::new().child("Badge"))
+                    .child(
+                        Switch::new("tokens-switch")
+                            .checked(self.switch_checked)
+                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                                this.switch_checked = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .child(Avatar::new("CN")),
+            )
     }
 
     fn button_preview(&self, cx: &App) -> impl IntoElement + use<> {
