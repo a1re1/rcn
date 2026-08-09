@@ -20,7 +20,8 @@ use gpui::{
 use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
-    BadgeVariant, Button, ButtonSize, ButtonVariant, Kbd, KbdGroup, Label, Popover,
+    BadgeVariant, Button, ButtonSize, ButtonVariant, Card, CardAction, CardContent,
+    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Kbd, KbdGroup, Label, Popover,
     PopoverDescription, PopoverHeader, PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
@@ -38,10 +39,11 @@ enum Story {
     Skeleton,
     Label,
     Kbd,
+    Card,
 }
 
 impl Story {
-    const ALL: [Story; 11] = [
+    const ALL: [Story; 12] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -53,6 +55,7 @@ impl Story {
         Story::Skeleton,
         Story::Label,
         Story::Kbd,
+        Story::Card,
     ];
 
     fn label(self) -> &'static str {
@@ -68,6 +71,7 @@ impl Story {
             Story::Skeleton => "Skeleton",
             Story::Label => "Label",
             Story::Kbd => "Kbd",
+            Story::Card => "Card",
         }
     }
 
@@ -91,6 +95,7 @@ impl Story {
             Story::Skeleton => "Use to show a placeholder while content is loading.",
             Story::Label => "Renders an accessible label associated with controls.",
             Story::Kbd => "Used to display textual user input from keyboard.",
+            Story::Card => "Displays a card with header, content, and footer.",
         }
     }
 }
@@ -132,6 +137,8 @@ const AVATAR_SIZES: [(&str, AvatarSize); 3] = [
 
 const SWITCH_SIZES: [(&str, SwitchSize); 2] =
     [("sm", SwitchSize::Sm), ("default", SwitchSize::Default)];
+
+const CARD_SIZES: [(&str, CardSize); 2] = [("default", CardSize::Default), ("sm", CardSize::Sm)];
 
 /// Font choices: fonts bundled with macOS, so every pick resolves. `None`
 /// is gpui's default UI font.
@@ -245,6 +252,8 @@ pub struct Storybook {
     // Accordion / Popover state
     accordion_open: Option<usize>,
     popover_open: bool,
+    // Card controls
+    card_size: CardSize,
 }
 
 impl Storybook {
@@ -270,6 +279,7 @@ impl Storybook {
             switch_disabled: false,
             accordion_open: Some(0),
             popover_open: false,
+            card_size: CardSize::Default,
         }
     }
 
@@ -497,6 +507,7 @@ impl Storybook {
             Story::Skeleton => Self::skeleton_preview().into_any_element(),
             Story::Label => Self::label_preview().into_any_element(),
             Story::Kbd => Self::kbd_preview().into_any_element(),
+            Story::Card => self.card_preview(cx).into_any_element(),
         };
         div()
             .id("canvas")
@@ -686,6 +697,20 @@ impl Storybook {
             Story::Skeleton => Vec::new(),
             Story::Label => Vec::new(),
             Story::Kbd => Vec::new(),
+            Story::Card => vec![Self::control_row(
+                "size",
+                Self::choices(
+                    "card-size",
+                    &CARD_SIZES,
+                    self.card_size,
+                    cx,
+                    |this, v, cx| {
+                        this.card_size = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             Story::Popover => vec![Self::control_row(
                 "open",
                 Switch::new("ctl-popover-open")
@@ -1440,6 +1465,57 @@ impl Storybook {
                     .child("+")
                     .child(Kbd::new().child("B")),
             )
+    }
+
+    fn card_preview(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx);
+        let size = self.card_size;
+        // Card is RenderOnce+ParentElement (not Styled); width goes on a wrapper.
+        div().w(px(350.)).child(
+            Card::new()
+                .size(size)
+                .child(
+                    CardHeader::new()
+                        .size(size)
+                        .child(
+                            div()
+                                .flex()
+                                .flex_row()
+                                .items_start()
+                                .child(CardTitle::new().child("Login to your account"))
+                                .child(
+                                    CardAction::new().child(
+                                        Button::new("card-sign-up")
+                                            .variant(ButtonVariant::Outline)
+                                            .size(ButtonSize::Sm)
+                                            .child("Sign Up"),
+                                    ),
+                                ),
+                        )
+                        .child(
+                            CardDescription::new()
+                                .child("Enter your details below to login to your account"),
+                        ),
+                )
+                .child(
+                    CardContent::new().size(size).child(
+                        div()
+                            .h(px(64.))
+                            .w_full()
+                            .rounded(theme.radius_md())
+                            .bg(theme.muted),
+                    ),
+                )
+                .child(
+                    CardFooter::new().size(size).child(
+                        div().w_full().child(
+                            Button::new("card-login")
+                                .variant(ButtonVariant::Default)
+                                .child("Login"),
+                        ),
+                    ),
+                ),
+        )
     }
 
     fn popover_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
