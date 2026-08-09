@@ -22,7 +22,7 @@ lands with a storybook story exercising its variants.
 - [x] kbd
 - [ ] spinner
 - [ ] aspect-ratio
-- [ ] card
+- [x] card
 - [ ] alert
 - [ ] progress
 - [ ] empty
