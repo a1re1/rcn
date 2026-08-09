@@ -33,7 +33,7 @@ use crate::components::{
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
     Menubar, MenubarItem, MenubarMenu, Pagination, PaginationEllipsis, PaginationLink,
     PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Sheet, SheetDescription,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
     SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
     TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
@@ -82,11 +82,12 @@ enum Story {
     DropdownMenuStory,
     ContextMenuStory,
     MenubarStory,
+    SelectStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 39] = [
+    const ALL: [Story; 40] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -126,6 +127,7 @@ impl Story {
         Story::DropdownMenuStory,
         Story::ContextMenuStory,
         Story::MenubarStory,
+        Story::SelectStory,
         // __STORY_ALL__
     ];
 
@@ -170,6 +172,7 @@ impl Story {
             Story::DropdownMenuStory => "Dropdown Menu",
             Story::ContextMenuStory => "Context Menu",
             Story::MenubarStory => "Menubar",
+            Story::SelectStory => "Select",
             // __STORY_LABELS__
         }
     }
@@ -248,7 +251,9 @@ impl Story {
                 "Displays a menu located at the pointer, triggered by a right click."
             }
             Story::MenubarStory => "A visually persistent menu common in desktop applications.",
-            // __STORY_DESCRIPTIONS__
+            Story::SelectStory => {
+                "Displays a list of options for the user to pick from, triggered by a button."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -446,6 +451,9 @@ pub struct Storybook {
     context_menu_at: Option<gpui::Point<gpui::Pixels>>,
     // Menubar story state
     menubar_open: Option<usize>,
+    // Select story state
+    select_value: Option<usize>,
+    select_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -500,6 +508,8 @@ impl Storybook {
             dropdown_status_checked: true,
             context_menu_at: None,
             menubar_open: None,
+            select_value: None,
+            select_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -759,6 +769,7 @@ impl Storybook {
             Story::DropdownMenuStory => self.dropdown_menu_preview(cx).into_any_element(),
             Story::ContextMenuStory => self.context_menu_preview(cx).into_any_element(),
             Story::MenubarStory => self.menubar_preview(cx).into_any_element(),
+            Story::SelectStory => self.select_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1087,6 +1098,7 @@ impl Storybook {
             Story::DropdownMenuStory => Vec::new(),
             Story::ContextMenuStory => Vec::new(),
             Story::MenubarStory => Vec::new(),
+            Story::SelectStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2960,6 +2972,21 @@ impl Storybook {
                     )
                     .item(MenubarItem::new("mb-fullscreen").child("Toggle Fullscreen")),
             )
+    }
+    fn select_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        Select::new("select-fruit")
+            .placeholder("Select a fruit")
+            .options(["Apple", "Banana", "Blueberry", "Grapes", "Pineapple"])
+            .value(self.select_value)
+            .open(self.select_open)
+            .on_change(cx.listener(|this, value: &usize, _, cx| {
+                this.select_value = Some(*value);
+                cx.notify();
+            }))
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.select_open = *open;
+                cx.notify();
+            }))
     }
 
     // __STORY_PREVIEWS__
