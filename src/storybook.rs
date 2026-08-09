@@ -949,9 +949,12 @@ impl Storybook {
             )
             .child(
                 div()
+                    .id("storybook-nav")
                     .flex()
                     .flex_col()
                     .flex_1()
+                    .min_h(px(0.))
+                    .overflow_y_scroll()
                     .gap(px(2.))
                     .px(px(8.))
                     .children(Story::ALL.into_iter().enumerate().map(|(index, story)| {
