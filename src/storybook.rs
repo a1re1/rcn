@@ -23,27 +23,28 @@ use crate::components::{
     AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertTitle, AlertVariant, AspectRatio,
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
-    BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
-    ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent, CardDescription,
-    CardFooter, CardHeader, CardSize, CardTitle, Carousel, ChartSeries, Checkbox, Collapsible,
-    Combobox, Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog,
-    DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
-    DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
-    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
-    FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
-    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
-    ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, Message, MessageAlign,
-    MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader, NativeSelect,
-    NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
-    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ResizableDirection, ResizablePanelGroup,
-    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
-    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
-    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    BreadcrumbSeparator, Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button,
+    ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar,
+    CalendarDate, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize,
+    CardTitle, Carousel, ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup,
+    CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
+    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
+    FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
+    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem,
+    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
+    MessageHeader, NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink,
+    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
+    ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
+    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
+    SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger,
+    Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
+    TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger,
+    TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
+    ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -107,11 +108,12 @@ enum Story {
     DataTableStory,
     ChartStory,
     MessageStory,
+    BubbleStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 58] = [
+    const ALL: [Story; 59] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -170,6 +172,7 @@ impl Story {
         Story::DataTableStory,
         Story::ChartStory,
         Story::MessageStory,
+        Story::BubbleStory,
         // __STORY_ALL__
     ];
 
@@ -233,6 +236,7 @@ impl Story {
             Story::DataTableStory => "Data Table",
             Story::ChartStory => "Chart",
             Story::MessageStory => "Message",
+            Story::BubbleStory => "Bubble",
             // __STORY_LABELS__
         }
     }
@@ -348,6 +352,7 @@ impl Story {
             Story::DataTableStory => "Powerful table and datagrids built on the table primitives.",
             Story::ChartStory => "Beautiful charts built with the theme's chart tokens.",
             Story::MessageStory => "A chat message row with avatar, content, and meta rows.",
+            Story::BubbleStory => "Chat bubbles with variants and floating reactions.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -640,6 +645,8 @@ pub struct Storybook {
     sidebar_active: usize,
     // Data table story state
     data_table_desc: bool,
+    // Bubble story state
+    bubble_variant: BubbleVariant,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -782,6 +789,7 @@ impl Storybook {
             sidebar_open: true,
             sidebar_active: 0,
             data_table_desc: true,
+            bubble_variant: BubbleVariant::Muted,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -1018,6 +1026,7 @@ impl Storybook {
             Story::DataTableStory => self.data_table_preview(cx).into_any_element(),
             Story::ChartStory => self.chart_preview(cx).into_any_element(),
             Story::MessageStory => self.message_preview(cx).into_any_element(),
+            Story::BubbleStory => self.bubble_preview().into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1365,6 +1374,27 @@ impl Storybook {
             Story::DataTableStory => Vec::new(),
             Story::ChartStory => Vec::new(),
             Story::MessageStory => Vec::new(),
+            Story::BubbleStory => vec![Self::control_row(
+                "variant",
+                Self::choices(
+                    "bubble-variant",
+                    &[
+                        ("default", BubbleVariant::Default),
+                        ("secondary", BubbleVariant::Secondary),
+                        ("muted", BubbleVariant::Muted),
+                        ("tinted", BubbleVariant::Tinted),
+                        ("outline", BubbleVariant::Outline),
+                        ("ghost", BubbleVariant::Ghost),
+                    ],
+                    self.bubble_variant,
+                    cx,
+                    |this, v, cx| {
+                        this.bubble_variant = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3799,6 +3829,41 @@ impl Storybook {
                                 true,
                             ))
                             .child(MessageFooter::new().child("Read 10:45")),
+                    ),
+                ),
+        )
+    }
+    fn bubble_preview(&self) -> impl IntoElement + use<> {
+        div().w(px(384.)).child(
+            MessageGroup::new()
+                .child(
+                    Message::new().child(
+                        MessageContent::new().child(
+                            Bubble::new()
+                                .variant(self.bubble_variant)
+                                .content("This bubble follows the variant control.")
+                                .child(
+                                    BubbleReactions::new()
+                                        .side(BubbleSide::Bottom)
+                                        .align(BubbleAlign::End)
+                                        .child("\u{2764}\u{fe0f} 2"),
+                                ),
+                        ),
+                    ),
+                )
+                .child(
+                    Message::new().align(MessageAlign::End).child(
+                        MessageContent::new().align(MessageAlign::End).child(
+                            Bubble::new()
+                                .variant(BubbleVariant::Default)
+                                .content("And this one is the sender side.")
+                                .child(
+                                    BubbleReactions::new()
+                                        .side(BubbleSide::Top)
+                                        .align(BubbleAlign::Start)
+                                        .child("\u{1f44d}"),
+                                ),
+                        ),
                     ),
                 ),
         )

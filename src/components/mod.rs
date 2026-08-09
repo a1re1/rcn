@@ -10,6 +10,7 @@ pub mod aspect_ratio;
 pub mod avatar;
 pub mod badge;
 pub mod breadcrumb;
+pub mod bubble;
 pub mod button;
 pub mod button_group;
 pub mod calendar;
@@ -72,6 +73,7 @@ pub use breadcrumb::{
     Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator,
 };
+pub use bubble::{Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use calendar::{Calendar, CalendarDate};
