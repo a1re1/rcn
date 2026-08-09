@@ -33,7 +33,7 @@ lands with a storybook story exercising its variants.
 ## Wave 2 — interactive controls
 
 - [x] checkbox
-- [ ] radio-group
+- [x] radio-group
 - [ ] toggle
 - [ ] toggle-group
 - [ ] button-group
