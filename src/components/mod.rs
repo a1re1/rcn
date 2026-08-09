@@ -83,9 +83,11 @@ pub use bubble::{Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use calendar::{Calendar, CalendarDate};
-pub use card::{
-    Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
-};
+pub use card::{Card, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle};
+// Standalone action part for manually composed headers (shadcn API parity);
+// the storybook goes through CardHeader::action, which wraps it.
+#[allow(unused_imports)]
+pub use card::CardAction;
 pub use carousel::Carousel;
 pub use chart::{BarChart, ChartSeries};
 pub use checkbox::Checkbox;

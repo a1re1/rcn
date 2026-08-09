@@ -1,21 +1,27 @@
-//! Card — port of shadcn base-vega `ui/card.tsx`.
+//! Card — port of shadcn base-nova `ui/card.tsx`.
 //!
 //! Compound card layout: Card shell plus Header / Title / Description / Action /
 //! Content / Footer. Size (`default` | `sm`) drives the shared spacing token
-//! (24px / 16px).
+//! (16px / 12px). Parts also accept an explicit `.spacing(Pixels)` override that
+//! mirrors shadcn's `[--card-spacing:*]` arbitrary value.
 //!
 //! Omissions vs source (no gpui equivalent yet):
 //! - CSS variable cascade (`--card-spacing`) — each part takes `.size(CardSize)`
-//!   explicitly and applies its own horizontal padding (gpui has no CSS variable
-//!   cascade). Callers should pass the same size used on the parent Card.
-//! - `@container` / grid template header (`has-data-[slot=card-action]:grid-cols-…`)
-//! - first/last child image rounding (`*: [img:first-child]:rounded-t-xl`, etc.)
-//! - `group-data-[size=sm]/card:text-sm` title size shrink
+//!   and/or `.spacing(Pixels)` explicitly (gpui has no CSS variable cascade).
+//!   Callers should pass the same size/spacing used on the parent Card.
+//! - `:has` selectors — `has-[>img:first-child]:pt-0` → explicit `.flush_top()`;
+//!   `has-data-[slot=card-footer]:pb-0` → CardFooter always applies `mb(-spacing)`
+//!   so the card root's bottom `py` is cancelled when the footer is the last child.
 //! - `[.border-b]:pb-(--card-spacing)` / `[.border-t]:pt-(--card-spacing)` utilities
+//! - `@container` / grid template header (`has-data-[slot=card-action]:grid-cols-…`)
+//!   → explicit `CardHeader::action()` slot (row with 1fr + auto columns)
+//! - first/last child image rounding (`*:[img:first-child]:rounded-t-xl`, etc.) —
+//!   free via the card's `overflow_hidden` + rounded shell for full-bleed media
+//! - RTL docs example not ported
 
 use gpui::{
-    AnyElement, App, FontWeight, IntoElement, ParentElement, RenderOnce, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    AnyElement, App, FontWeight, IntoElement, ParentElement, Pixels, RenderOnce, Styled, Window,
+    div, prelude::FluentBuilder as _, px,
 };
 
 use crate::theme::{Theme, alpha};
@@ -23,28 +29,35 @@ use crate::theme::{Theme, alpha};
 /// Card spacing size. Maps to shadcn `data-size` / `--card-spacing`.
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
 pub enum CardSize {
-    /// 24px spacing (`--spacing(6)`).
+    /// 16px spacing (`--spacing(4)`).
     #[default]
     Default,
-    /// 16px spacing (`--spacing(4)`).
+    /// 12px spacing (`--spacing(3)`).
     Sm,
 }
 
 impl CardSize {
     fn spacing(self) -> f32 {
         match self {
-            CardSize::Default => 24.,
-            CardSize::Sm => 16.,
+            CardSize::Default => 16.,
+            CardSize::Sm => 12.,
         }
     }
 }
 
-/// flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card
-/// py-(--card-spacing) text-sm text-card-foreground shadow-xs ring-1
-/// ring-foreground/10
+/// group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl
+/// bg-card py-(--card-spacing) text-sm text-card-foreground ring-1
+/// ring-foreground/10 [--card-spacing:--spacing(4)]
+/// has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0
+/// data-[size=sm]:[--card-spacing:--spacing(3)]
+///
+/// Footer `pb-0` is emulated by CardFooter applying `mb(-spacing)` (footer must
+/// be the last child). Leading full-bleed media uses `.flush_top()` (`pt-0`).
 #[derive(IntoElement)]
 pub struct Card {
     size: CardSize,
+    spacing_override: Option<Pixels>,
+    flush_top: bool,
     children: Vec<AnyElement>,
 }
 
@@ -52,6 +65,8 @@ impl Card {
     pub fn new() -> Self {
         Self {
             size: CardSize::Default,
+            spacing_override: None,
+            flush_top: false,
             children: Vec::new(),
         }
     }
@@ -59,6 +74,25 @@ impl Card {
     pub fn size(mut self, size: CardSize) -> Self {
         self.size = size;
         self
+    }
+
+    /// Override the size preset spacing (shadcn `[--card-spacing:*]`).
+    pub fn spacing(mut self, spacing: Pixels) -> Self {
+        self.spacing_override = Some(spacing);
+        self
+    }
+
+    /// Drop top padding for a full-bleed leading image
+    /// (`has-[>img:first-child]:pt-0`). Corner rounding of the media comes free
+    /// from the card's `overflow_hidden` + rounded shell.
+    pub fn flush_top(mut self) -> Self {
+        self.flush_top = true;
+        self
+    }
+
+    fn spacing_px(&self) -> Pixels {
+        self.spacing_override
+            .unwrap_or_else(|| px(self.size.spacing()))
     }
 }
 
@@ -77,7 +111,7 @@ impl ParentElement for Card {
 impl RenderOnce for Card {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
-        let spacing = px(self.size.spacing());
+        let spacing = self.spacing_px();
 
         div()
             .flex()
@@ -87,22 +121,29 @@ impl RenderOnce for Card {
             .rounded(theme.radius_xl())
             .bg(theme.card)
             .py(spacing)
+            .when(self.flush_top, |el| el.pt(px(0.)))
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.card_foreground)
-            .shadow_xs()
             .border_1()
             .border_color(alpha(theme.foreground, 0.1))
             .children(self.children)
     }
 }
 
-/// flex flex-col gap-1 px-(--card-spacing)
+/// group/card-header @container/card-header grid auto-rows-min items-start
+/// gap-1 rounded-t-xl px-(--card-spacing)
+/// has-data-[slot=card-action]:grid-cols-[1fr_auto]
+/// has-data-[slot=card-description]:grid-rows-[auto_auto]
 ///
-/// Size must be set to match the parent Card — gpui has no CSS variable cascade.
+/// Size/spacing must match the parent Card — gpui has no CSS variable cascade.
+/// When `.action(...)` is set, renders as a row: left column (title + description)
+/// + action at the end (`grid-cols-[1fr_auto]` / `row-span-2`).
 #[derive(IntoElement)]
 pub struct CardHeader {
     size: CardSize,
+    spacing_override: Option<Pixels>,
+    action: Option<AnyElement>,
     children: Vec<AnyElement>,
 }
 
@@ -110,6 +151,8 @@ impl CardHeader {
     pub fn new() -> Self {
         Self {
             size: CardSize::Default,
+            spacing_override: None,
+            action: None,
             children: Vec::new(),
         }
     }
@@ -117,6 +160,25 @@ impl CardHeader {
     pub fn size(mut self, size: CardSize) -> Self {
         self.size = size;
         self
+    }
+
+    /// Override the size preset spacing (shadcn `[--card-spacing:*]`).
+    pub fn spacing(mut self, spacing: Pixels) -> Self {
+        self.spacing_override = Some(spacing);
+        self
+    }
+
+    /// Slot for a trailing header action (button, badge, …). Mirrors nova's
+    /// `has-data-[slot=card-action]:grid-cols-[1fr_auto]` layout: children sit in
+    /// a flex-1 column, action is self-start at the row end.
+    pub fn action(mut self, action: impl IntoElement) -> Self {
+        self.action = Some(action.into_any_element());
+        self
+    }
+
+    fn spacing_px(&self) -> Pixels {
+        self.spacing_override
+            .unwrap_or_else(|| px(self.size.spacing()))
     }
 }
 
@@ -134,26 +196,51 @@ impl ParentElement for CardHeader {
 
 impl RenderOnce for CardHeader {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let spacing = self.spacing_px();
+        let body = div()
             .flex()
             .flex_col()
             .gap(px(4.))
-            .px(px(self.size.spacing()))
-            .children(self.children)
+            .flex_1()
+            .min_w_0()
+            .children(self.children);
+
+        div()
+            .flex()
+            .when(self.action.is_some(), |el| {
+                el.flex_row().items_start().gap(px(4.))
+            })
+            .when(self.action.is_none(), |el| el.flex_col().gap(px(4.)))
+            .px(spacing)
+            .child(body)
+            .when_some(self.action, |el, action| {
+                el.child(CardAction::new().child(action))
+            })
     }
 }
 
-/// cn-font-heading text-base leading-normal font-medium
+/// cn-font-heading text-base leading-snug font-medium
+/// group-data-[size=sm]/card:text-sm
 #[derive(IntoElement)]
 pub struct CardTitle {
+    size: CardSize,
     children: Vec<AnyElement>,
 }
 
 impl CardTitle {
     pub fn new() -> Self {
         Self {
+            size: CardSize::Default,
             children: Vec::new(),
         }
+    }
+
+    /// Title size follows the parent card's `data-size`
+    /// (`group-data-[size=sm]/card:text-sm`). Default = 16px / 22px (leading-snug);
+    /// Sm = 14px / 19px.
+    pub fn size(mut self, size: CardSize) -> Self {
+        self.size = size;
+        self
     }
 }
 
@@ -172,10 +259,14 @@ impl ParentElement for CardTitle {
 impl RenderOnce for CardTitle {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
+        let (text_size, line_height) = match self.size {
+            CardSize::Default => (px(16.), px(22.)),
+            CardSize::Sm => (px(14.), px(19.)),
+        };
 
         div()
-            .text_size(px(16.))
-            .line_height(px(24.))
+            .text_size(text_size)
+            .line_height(line_height)
             .font_weight(FontWeight::MEDIUM)
             .when_some(theme.heading_font(), |el, f| el.font_family(f))
             .children(self.children)
@@ -219,8 +310,11 @@ impl RenderOnce for CardDescription {
     }
 }
 
+/// col-start-2 row-span-2 row-start-1 self-start justify-self-end
+///
 /// Aligned to the end of a flex row (source places action in a grid end cell).
-/// Use inside a flex-row parent, or nest with title/description in a row wrapper.
+/// `CardHeader::action(...)` wraps its element in this part; it also composes
+/// standalone for call sites that build the header row themselves.
 #[derive(IntoElement)]
 pub struct CardAction {
     children: Vec<AnyElement>,
@@ -248,16 +342,20 @@ impl ParentElement for CardAction {
 
 impl RenderOnce for CardAction {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().ml_auto().children(self.children)
+        div().ml_auto().self_start().children(self.children)
     }
 }
 
-/// flex flex-col gap-3 px-(--card-spacing)
+/// px-(--card-spacing)
 ///
-/// Size must be set to match the parent Card — gpui has no CSS variable cascade.
+/// Size/spacing must match the parent Card — gpui has no CSS variable cascade.
+/// Use `.flush_bottom()` (`-mb-(--card-spacing)`) for edge-to-edge content above
+/// a footer.
 #[derive(IntoElement)]
 pub struct CardContent {
     size: CardSize,
+    spacing_override: Option<Pixels>,
+    flush_bottom: bool,
     children: Vec<AnyElement>,
 }
 
@@ -265,6 +363,8 @@ impl CardContent {
     pub fn new() -> Self {
         Self {
             size: CardSize::Default,
+            spacing_override: None,
+            flush_bottom: false,
             children: Vec::new(),
         }
     }
@@ -272,6 +372,24 @@ impl CardContent {
     pub fn size(mut self, size: CardSize) -> Self {
         self.size = size;
         self
+    }
+
+    /// Override the size preset spacing (shadcn `[--card-spacing:*]`).
+    pub fn spacing(mut self, spacing: Pixels) -> Self {
+        self.spacing_override = Some(spacing);
+        self
+    }
+
+    /// Negative bottom margin equal to the card spacing
+    /// (`-mb-(--card-spacing)`) so content can run edge-to-edge above a footer.
+    pub fn flush_bottom(mut self) -> Self {
+        self.flush_bottom = true;
+        self
+    }
+
+    fn spacing_px(&self) -> Pixels {
+        self.spacing_override
+            .unwrap_or_else(|| px(self.size.spacing()))
     }
 }
 
@@ -289,21 +407,25 @@ impl ParentElement for CardContent {
 
 impl RenderOnce for CardContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        let spacing = self.spacing_px();
+
         div()
-            .flex()
-            .flex_col()
-            .gap(px(12.))
-            .px(px(self.size.spacing()))
+            .px(spacing)
+            .when(self.flush_bottom, |el| el.mb(-spacing))
             .children(self.children)
     }
 }
 
-/// flex items-center px-(--card-spacing)
+/// flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)
 ///
-/// Size must be set to match the parent Card — gpui has no CSS variable cascade.
+/// Size/spacing must match the parent Card — gpui has no CSS variable cascade.
+/// Always applies `mb(-spacing)` so the card root's bottom `py` is cancelled
+/// (`has-data-[slot=card-footer]:pb-0`). **The footer must be the last child**
+/// of the Card for this emulation to hold.
 #[derive(IntoElement)]
 pub struct CardFooter {
     size: CardSize,
+    spacing_override: Option<Pixels>,
     children: Vec<AnyElement>,
 }
 
@@ -311,6 +433,7 @@ impl CardFooter {
     pub fn new() -> Self {
         Self {
             size: CardSize::Default,
+            spacing_override: None,
             children: Vec::new(),
         }
     }
@@ -318,6 +441,17 @@ impl CardFooter {
     pub fn size(mut self, size: CardSize) -> Self {
         self.size = size;
         self
+    }
+
+    /// Override the size preset spacing (shadcn `[--card-spacing:*]`).
+    pub fn spacing(mut self, spacing: Pixels) -> Self {
+        self.spacing_override = Some(spacing);
+        self
+    }
+
+    fn spacing_px(&self) -> Pixels {
+        self.spacing_override
+            .unwrap_or_else(|| px(self.size.spacing()))
     }
 }
 
@@ -334,12 +468,20 @@ impl ParentElement for CardFooter {
 }
 
 impl RenderOnce for CardFooter {
-    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let theme = Theme::of(cx);
+        let spacing = self.spacing_px();
+
         div()
             .flex()
             .flex_row()
             .items_center()
-            .px(px(self.size.spacing()))
+            .p(spacing)
+            .border_t_1()
+            .border_color(theme.border)
+            .bg(alpha(theme.muted, 0.5))
+            // Cancel the card root's bottom py — footer must be last child.
+            .mb(-spacing)
             .children(self.children)
     }
 }

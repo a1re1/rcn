@@ -26,11 +26,11 @@ use crate::components::{
     BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Bubble,
     BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button, ButtonGroup,
     ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar, CalendarDate, Card,
-    CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
-    Carousel, ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem,
-    ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
-    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Carousel,
+    ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem, ContextMenu,
+    ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader,
+    DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu,
+    DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
     FieldSet, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
@@ -49,7 +49,7 @@ use crate::components::{
     TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
     ToggleVariant, Tooltip,
 };
-use crate::theme::{BaseColor, Theme, oklch};
+use crate::theme::{BaseColor, Theme, alpha, oklch};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Story {
@@ -756,6 +756,11 @@ pub struct Storybook {
     popover_open: bool,
     // Card controls
     card_size: CardSize,
+    card_email_input: gpui::Entity<Input>,
+    card_password_input: gpui::Entity<Input>,
+    card_spacing: f32,
+    card_spacing_email: gpui::Entity<Input>,
+    card_spacing_password: gpui::Entity<Input>,
 }
 
 impl Storybook {
@@ -811,8 +816,29 @@ impl Storybook {
             input.set_bare(true);
             input
         });
+        let card_email_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("m@example.com");
+            input
+        });
+        let card_password_input = cx.new(|cx| Input::new(cx));
+        let card_spacing_email = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("m@example.com");
+            input
+        });
+        let card_spacing_password = cx.new(|cx| Input::new(cx));
         // Live-refresh stories that derive UI from input text.
-        for input in [&command_input, &input_otp, &input_demo, &combobox_search] {
+        for input in [
+            &command_input,
+            &input_otp,
+            &input_demo,
+            &combobox_search,
+            &card_email_input,
+            &card_password_input,
+            &card_spacing_email,
+            &card_spacing_password,
+        ] {
             cx.observe(input, |_, _, cx| cx.notify()).detach();
         }
         let input_disabled = cx.new(|cx| {
@@ -904,6 +930,11 @@ impl Storybook {
             // __STORY_STATE_INIT__
             popover_open: false,
             card_size: CardSize::Default,
+            card_email_input,
+            card_password_input,
+            card_spacing: 16.,
+            card_spacing_email,
+            card_spacing_password,
         }
     }
 
@@ -1783,23 +1814,389 @@ impl Storybook {
                     )
                     .into_any_element(),
             )],
-            Story::Card => vec![(
-                "Small size",
-                Card::new()
-                    .size(CardSize::Sm)
-                    .child(
-                        CardHeader::new()
-                            .size(CardSize::Sm)
-                            .child(CardTitle::new().child("Small card"))
-                            .child(CardDescription::new().child("Compact card layout.")),
-                    )
-                    .child(
-                        CardContent::new()
-                            .size(CardSize::Sm)
-                            .child("A short content line."),
-                    )
-                    .into_any_element(),
-            )],
+            Story::Card => {
+                let spacing = px(self.card_spacing);
+                let feature_row = |text: &'static str| {
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(8.))
+                        .child(
+                            Icon::new(theme.icons.chevron_right())
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground)
+                                .mt(px(2.)),
+                        )
+                        .child(div().child(text))
+                };
+                vec![
+                    (
+                        "Small size",
+                        div()
+                            .w(px(320.))
+                            .child(
+                                Card::new()
+                                    .size(CardSize::Sm)
+                                    .child(
+                                        CardHeader::new()
+                                            .size(CardSize::Sm)
+                                            .child(
+                                                CardTitle::new()
+                                                    .size(CardSize::Sm)
+                                                    .child("Scheduled reports"),
+                                            )
+                                            .child(
+                                                CardDescription::new().child(
+                                                    "Weekly snapshots. No more manual exports.",
+                                                ),
+                                            ),
+                                    )
+                                    .child(
+                                        CardContent::new().size(CardSize::Sm).child(
+                                            div()
+                                                .flex()
+                                                .flex_col()
+                                                .gap(px(8.))
+                                                .py(px(8.))
+                                                .child(feature_row(
+                                                    "Choose a schedule (daily, or weekly).",
+                                                ))
+                                                .child(feature_row(
+                                                    "Send to channels or specific teammates.",
+                                                ))
+                                                .child(feature_row(
+                                                    "Include charts, tables, and key metrics.",
+                                                )),
+                                        ),
+                                    )
+                                    .child(
+                                        CardFooter::new().size(CardSize::Sm).child(
+                                            div()
+                                                .w_full()
+                                                .flex()
+                                                .flex_col()
+                                                .gap(px(8.))
+                                                .child(
+                                                    div().w_full().child(
+                                                        Button::new("card-sm-setup")
+                                                            .size(ButtonSize::Sm)
+                                                            .child("Set up scheduled reports"),
+                                                    ),
+                                                )
+                                                .child(
+                                                    div().w_full().child(
+                                                        Button::new("card-sm-new")
+                                                            .variant(ButtonVariant::Outline)
+                                                            .size(ButtonSize::Sm)
+                                                            .child("See what's new"),
+                                                    ),
+                                                ),
+                                        ),
+                                    ),
+                            )
+                            .into_any_element(),
+                    ),
+                    (
+                        "Spacing",
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(16.))
+                            .child(
+                                div().flex().justify_center().child(
+                                    ToggleGroup::new()
+                                        .variant(ToggleVariant::Outline)
+                                        .size(ToggleSize::Sm)
+                                        .item(
+                                            ToggleGroupItem::new("card-sp-16")
+                                                .pressed(self.card_spacing == 16.)
+                                                .on_change(cx.listener(
+                                                    |this, pressed: &bool, _, cx| {
+                                                        if *pressed {
+                                                            this.card_spacing = 16.;
+                                                            cx.notify();
+                                                        }
+                                                    },
+                                                ))
+                                                .child("16px"),
+                                        )
+                                        .item(
+                                            ToggleGroupItem::new("card-sp-20")
+                                                .pressed(self.card_spacing == 20.)
+                                                .on_change(cx.listener(
+                                                    |this, pressed: &bool, _, cx| {
+                                                        if *pressed {
+                                                            this.card_spacing = 20.;
+                                                            cx.notify();
+                                                        }
+                                                    },
+                                                ))
+                                                .child("20px"),
+                                        )
+                                        .item(
+                                            ToggleGroupItem::new("card-sp-24")
+                                                .pressed(self.card_spacing == 24.)
+                                                .on_change(cx.listener(
+                                                    |this, pressed: &bool, _, cx| {
+                                                        if *pressed {
+                                                            this.card_spacing = 24.;
+                                                            cx.notify();
+                                                        }
+                                                    },
+                                                ))
+                                                .child("24px"),
+                                        )
+                                        .item(
+                                            ToggleGroupItem::new("card-sp-32")
+                                                .pressed(self.card_spacing == 32.)
+                                                .on_change(cx.listener(
+                                                    |this, pressed: &bool, _, cx| {
+                                                        if *pressed {
+                                                            this.card_spacing = 32.;
+                                                            cx.notify();
+                                                        }
+                                                    },
+                                                ))
+                                                .child("32px"),
+                                        ),
+                                ),
+                            )
+                            .child(
+                                div().w(px(384.)).child(
+                                    Card::new()
+                                        .spacing(spacing)
+                                        .child(
+                                            CardHeader::new()
+                                                .spacing(spacing)
+                                                .action(
+                                                    Button::new("card-sp-sign-up")
+                                                        .variant(ButtonVariant::Link)
+                                                        .child("Sign Up"),
+                                                )
+                                                .child(
+                                                    CardTitle::new()
+                                                        .child("Login to your account"),
+                                                )
+                                                .child(
+                                                    CardDescription::new().child(
+                                                        "Enter your email below to login to your account",
+                                                    ),
+                                                ),
+                                        )
+                                        .child(
+                                            CardContent::new().spacing(spacing).child(
+                                                div()
+                                                    .flex()
+                                                    .flex_col()
+                                                    .gap(px(24.))
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_col()
+                                                            .gap(px(8.))
+                                                            .child(Label::new().child("Email"))
+                                                            .child(
+                                                                self.card_spacing_email.clone(),
+                                                            ),
+                                                    )
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_col()
+                                                            .gap(px(8.))
+                                                            .child(
+                                                                div()
+                                                                    .flex()
+                                                                    .flex_row()
+                                                                    .items_center()
+                                                                    .child(
+                                                                        Label::new()
+                                                                            .child("Password"),
+                                                                    )
+                                                                    .child(
+                                                                        div()
+                                                                            .id("card-sp-forgot")
+                                                                            .ml_auto()
+                                                                            .text_size(px(14.))
+                                                                            .line_height(px(20.))
+                                                                            .cursor_pointer()
+                                                                            .hover(|s| {
+                                                                                s.underline()
+                                                                            })
+                                                                            .child(
+                                                                                "Forgot your password?",
+                                                                            ),
+                                                                    ),
+                                                            )
+                                                            .child(
+                                                                self.card_spacing_password.clone(),
+                                                            ),
+                                                    ),
+                                            ),
+                                        )
+                                        .child(
+                                            CardFooter::new().spacing(spacing).child(
+                                                div()
+                                                    .w_full()
+                                                    .flex()
+                                                    .flex_col()
+                                                    .gap(px(8.))
+                                                    .child(
+                                                        div().w_full().child(
+                                                            Button::new("card-sp-login")
+                                                                .child("Login"),
+                                                        ),
+                                                    )
+                                                    .child(
+                                                        div().w_full().child(
+                                                            Button::new("card-sp-login-google")
+                                                                .variant(ButtonVariant::Outline)
+                                                                .child("Login with Google"),
+                                                        ),
+                                                    ),
+                                            ),
+                                        ),
+                                ),
+                            )
+                            .into_any_element(),
+                    ),
+                    (
+                        "Edge to edge",
+                        div()
+                            .w(px(384.))
+                            .child(
+                                Card::new()
+                                    .child(
+                                        CardHeader::new()
+                                            .child(CardTitle::new().child("Terms of Service"))
+                                            .child(
+                                                CardDescription::new().child(
+                                                    "Review the terms before accepting the agreement.",
+                                                ),
+                                            ),
+                                    )
+                                    .child(
+                                        CardContent::new().flush_bottom().child(
+                                            div()
+                                                .mx(px(-16.))
+                                                .border_t_1()
+                                                .border_color(theme.border)
+                                                .bg(alpha(theme.muted, 0.5))
+                                                .child(
+                                                    // max-h-48 px/py live on the scroller itself.
+                                                    ScrollArea::new("card-edge-scroll")
+                                                        .h(px(192.))
+                                                        .child(
+                                                            div()
+                                                                .flex()
+                                                                .flex_col()
+                                                                .gap(px(16.))
+                                                                .px(px(16.))
+                                                                .py(px(16.))
+                                                                .text_size(px(14.))
+                                                                .line_height(px(23.))
+                                                                .child(
+                                                                    "These terms govern your use of the workspace, including access to shared documents, project files, and collaboration tools.",
+                                                                )
+                                                                .child(
+                                                                    "You are responsible for the content you upload and for ensuring that your team has the appropriate permissions to view or edit it.",
+                                                                )
+                                                                .child(
+                                                                    "We may update features or limits as the service evolves. When those changes materially affect your workflow, we will notify your workspace administrators.",
+                                                                )
+                                                                .child(
+                                                                    "By continuing, you agree to keep your account credentials secure and to follow your organization's acceptable use policies.",
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    )
+                                    .child(
+                                        CardFooter::new().child(
+                                            div()
+                                                .w_full()
+                                                .flex()
+                                                .flex_row()
+                                                .justify_end()
+                                                .gap(px(8.))
+                                                .child(
+                                                    Button::new("card-edge-decline")
+                                                        .variant(ButtonVariant::Outline)
+                                                        .child("Decline"),
+                                                )
+                                                .child(
+                                                    Button::new("card-edge-accept")
+                                                        .child("Accept"),
+                                                ),
+                                        ),
+                                    ),
+                            )
+                            .into_any_element(),
+                    ),
+                    (
+                        "Image",
+                        div()
+                            .w(px(384.))
+                            .child(
+                                Card::new()
+                                    .flush_top()
+                                    .child(
+                                        div()
+                                            .relative()
+                                            .w_full()
+                                            .h(px(216.))
+                                            // Grayscale gradient standing in for the docs'
+                                            // avatar.vercel.sh cover (rendered grayscale +
+                                            // brightness-60 there).
+                                            .bg(gpui::linear_gradient(
+                                                135.,
+                                                gpui::linear_color_stop(
+                                                    gpui::hsla(0., 0., 0.55, 1.),
+                                                    0.,
+                                                ),
+                                                gpui::linear_color_stop(
+                                                    gpui::hsla(0., 0., 0.3, 1.),
+                                                    1.,
+                                                ),
+                                            ))
+                                            .child(
+                                                // bg-black/35 overlay from the docs example.
+                                                div()
+                                                    .absolute()
+                                                    .inset_0()
+                                                    .bg(gpui::hsla(0., 0., 0., 0.35)),
+                                            ),
+                                    )
+                                    .child(
+                                        CardHeader::new()
+                                            .action(
+                                                Badge::new()
+                                                    .variant(BadgeVariant::Secondary)
+                                                    .child("Featured"),
+                                            )
+                                            .child(
+                                                CardTitle::new()
+                                                    .child("Design systems meetup"),
+                                            )
+                                            .child(
+                                                CardDescription::new().child(
+                                                    "A practical talk on component APIs, accessibility, and shipping faster.",
+                                                ),
+                                            ),
+                                    )
+                                    .child(
+                                        CardFooter::new().child(
+                                            div().w_full().child(
+                                                Button::new("card-img-view")
+                                                    .child("View Event"),
+                                            ),
+                                        ),
+                                    ),
+                            )
+                            .into_any_element(),
+                    ),
+                ]
+            }
             Story::Tabs => vec![(
                 "Line variant",
                 Tabs::new()
@@ -4811,52 +5208,87 @@ impl Storybook {
 
     // __STORY_PREVIEWS__
 
-    fn card_preview(&self, cx: &App) -> impl IntoElement + use<> {
-        let theme = Theme::of(cx);
+    fn card_preview(&self, _cx: &App) -> impl IntoElement + use<> {
         let size = self.card_size;
         // Card is RenderOnce+ParentElement (not Styled); width goes on a wrapper.
-        div().w(px(350.)).child(
+        div().w(px(384.)).child(
             Card::new()
                 .size(size)
                 .child(
                     CardHeader::new()
                         .size(size)
-                        .child(
-                            div()
-                                .flex()
-                                .flex_row()
-                                .items_start()
-                                .child(CardTitle::new().child("Login to your account"))
-                                .child(
-                                    CardAction::new().child(
-                                        Button::new("card-sign-up")
-                                            .variant(ButtonVariant::Outline)
-                                            .size(ButtonSize::Sm)
-                                            .child("Sign Up"),
-                                    ),
-                                ),
+                        .action(
+                            Button::new("card-sign-up")
+                                .variant(ButtonVariant::Link)
+                                .child("Sign Up"),
                         )
+                        .child(CardTitle::new().size(size).child("Login to your account"))
                         .child(
                             CardDescription::new()
-                                .child("Enter your details below to login to your account"),
+                                .child("Enter your email below to login to your account"),
                         ),
                 )
                 .child(
                     CardContent::new().size(size).child(
                         div()
-                            .h(px(64.))
-                            .w_full()
-                            .rounded(theme.radius_md())
-                            .bg(theme.muted),
+                            .flex()
+                            .flex_col()
+                            .gap(px(24.))
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .gap(px(8.))
+                                    .child(Label::new().child("Email"))
+                                    .child(self.card_email_input.clone()),
+                            )
+                            .child(
+                                div()
+                                    .flex()
+                                    .flex_col()
+                                    .gap(px(8.))
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .child(Label::new().child("Password"))
+                                            .child(
+                                                div()
+                                                    .id("card-forgot-password")
+                                                    .ml_auto()
+                                                    .text_size(px(14.))
+                                                    .line_height(px(20.))
+                                                    .cursor_pointer()
+                                                    .hover(|s| s.underline())
+                                                    .child("Forgot your password?"),
+                                            ),
+                                    )
+                                    .child(self.card_password_input.clone()),
+                            ),
                     ),
                 )
                 .child(
                     CardFooter::new().size(size).child(
-                        div().w_full().child(
-                            Button::new("card-login")
-                                .variant(ButtonVariant::Default)
-                                .child("Login"),
-                        ),
+                        div()
+                            .w_full()
+                            .flex()
+                            .flex_col()
+                            .gap(px(8.))
+                            .child(
+                                div().w_full().child(
+                                    Button::new("card-login")
+                                        .variant(ButtonVariant::Default)
+                                        .child("Login"),
+                                ),
+                            )
+                            .child(
+                                div().w_full().child(
+                                    Button::new("card-login-google")
+                                        .variant(ButtonVariant::Outline)
+                                        .child("Login with Google"),
+                                ),
+                            ),
                     ),
                 ),
         )
