@@ -12,6 +12,7 @@ use gpui::{
     prelude::FluentBuilder as _, px,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
@@ -221,11 +222,24 @@ impl RenderOnce for Button {
             Some(GroupPosition::Last) => styled.rounded_l(px(0.)).ml(px(-1.)),
         };
 
+        // focus-visible:border-ring focus-visible:ring-3 ring-ring/50
+        // (destructive: border-destructive/40 ring-destructive/20)
+        let (ring_border, ring_shadow) = if self.variant == ButtonVariant::Destructive {
+            (
+                alpha(theme.destructive, 0.4),
+                motion::focus_ring_destructive(&theme),
+            )
+        } else {
+            (theme.ring, motion::focus_ring(&theme))
+        };
+
         // active:translate-y-px; disabled:opacity-50 + no pointer events.
         styled
             .when(self.disabled, |s| s.opacity(0.5))
             .when(!self.disabled, |s| {
-                s.active(|s| s.top(px(1.)))
+                s.tab_index(0)
+                    .focus_visible(move |s| s.border_color(ring_border).shadow(ring_shadow.clone()))
+                    .active(|s| s.top(px(1.)))
                     .when_some(self.on_click, |s, on_click| s.on_click(on_click))
             })
             .children(self.children)

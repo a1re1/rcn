@@ -558,6 +558,7 @@ impl Render for DragPreview {
 }
 
 pub struct Storybook {
+    focus_handle: gpui::FocusHandle,
     story: Story,
     dark: bool,
     tokens: TokenSettings,
@@ -674,6 +675,8 @@ pub struct Storybook {
     attachment_visible: bool,
     // Questionnaire story state
     questionnaire_selected: Option<usize>,
+    // Accordion parity controls
+    accordion_disable_third: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -684,6 +687,7 @@ pub struct Storybook {
 
 impl Storybook {
     pub fn new(cx: &mut Context<Self>) -> Self {
+        let focus_handle = cx.focus_handle();
         let input_demo = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Email");
@@ -819,6 +823,8 @@ impl Storybook {
             bubble_variant: BubbleVariant::Muted,
             attachment_visible: true,
             questionnaire_selected: Some(0),
+            focus_handle,
+            accordion_disable_third: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -1216,25 +1222,39 @@ impl Storybook {
                     &theme,
                 ),
             ],
-            Story::Accordion => vec![Self::control_row(
-                "open item",
-                Self::choices(
-                    "accordion-open",
-                    &[
-                        ("none", None),
-                        ("first", Some(0)),
-                        ("second", Some(1)),
-                        ("third", Some(2)),
-                    ],
-                    self.accordion_open,
-                    cx,
-                    |this, v, cx| {
-                        this.accordion_open = v;
-                        cx.notify();
-                    },
+            Story::Accordion => vec![
+                Self::control_row(
+                    "disable third item",
+                    Switch::new("ctl-accordion-disabled")
+                        .checked(self.accordion_disable_third)
+                        .size(SwitchSize::Sm)
+                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                            this.accordion_disable_third = *on;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
                 ),
-                &theme,
-            )],
+                Self::control_row(
+                    "open item",
+                    Self::choices(
+                        "accordion-open",
+                        &[
+                            ("none", None),
+                            ("first", Some(0)),
+                            ("second", Some(1)),
+                            ("third", Some(2)),
+                        ],
+                        self.accordion_open,
+                        cx,
+                        |this, v, cx| {
+                            this.accordion_open = v;
+                            cx.notify();
+                        },
+                    ),
+                    &theme,
+                ),
+            ],
             Story::Separator => Vec::new(),
             Story::Progress => vec![Self::control_row(
                 format!("value \u{00b7} {:.0}%", self.progress_value),
@@ -4108,10 +4128,30 @@ impl Storybook {
     }
 }
 
+impl gpui::Focusable for Storybook {
+    fn focus_handle(&self, _cx: &App) -> gpui::FocusHandle {
+        self.focus_handle.clone()
+    }
+}
+
 impl Render for Storybook {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         div()
+            .track_focus(&self.focus_handle)
+            .on_key_down(cx.listener(|_, event: &gpui::KeyDownEvent, window, cx| {
+                // Keyboard traversal across the component tab stops
+                // (shadcn inherits this from the browser; gpui needs it
+                // wired once at the root).
+                if event.keystroke.key == "tab" {
+                    if event.keystroke.modifiers.shift {
+                        window.focus_prev(cx);
+                    } else {
+                        window.focus_next(cx);
+                    }
+                    cx.stop_propagation();
+                }
+            }))
             .size_full()
             .bg(theme.background)
             .text_color(theme.foreground)
