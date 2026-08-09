@@ -5,6 +5,7 @@
 
 pub mod accordion;
 pub mod alert;
+pub mod aspect_ratio;
 pub mod avatar;
 pub mod badge;
 pub mod button;
@@ -20,6 +21,7 @@ pub mod switch;
 
 pub use accordion::{Accordion, AccordionItem};
 pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
+pub use aspect_ratio::AspectRatio;
 pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
 pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};

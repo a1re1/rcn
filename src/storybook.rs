@@ -19,8 +19,8 @@ use gpui::{
 
 use crate::assets::IconLibrary;
 use crate::components::{
-    Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, Avatar,
-    AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
+    Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, AspectRatio,
+    Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
@@ -44,11 +44,12 @@ enum Story {
     Alert,
     Progress,
     Spinner,
+    AspectRatio,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 15] = [
+    const ALL: [Story; 16] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -64,6 +65,7 @@ impl Story {
         Story::Alert,
         Story::Progress,
         Story::Spinner,
+        Story::AspectRatio,
         // __STORY_ALL__
     ];
 
@@ -84,6 +86,7 @@ impl Story {
             Story::Alert => "Alert",
             Story::Progress => "Progress",
             Story::Spinner => "Spinner",
+            Story::AspectRatio => "Aspect Ratio",
             // __STORY_LABELS__
         }
     }
@@ -112,6 +115,7 @@ impl Story {
             Story::Alert => "Displays a callout for user attention.",
             Story::Progress => "Displays an indicator showing the completion progress of a task.",
             Story::Spinner => "An indicator that can be used to show a loading state.",
+            Story::AspectRatio => "Displays content within a desired ratio.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -536,6 +540,7 @@ impl Storybook {
             Story::Alert => self.alert_preview().into_any_element(),
             Story::Progress => self.progress_preview().into_any_element(),
             Story::Spinner => Self::spinner_preview(cx).into_any_element(),
+            Story::AspectRatio => Self::aspect_ratio_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -736,6 +741,7 @@ impl Storybook {
                 &theme,
             )],
             Story::Spinner => Vec::new(),
+            Story::AspectRatio => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1575,6 +1581,24 @@ impl Storybook {
                     .child(Spinner::new().size(px(16.)).color(theme.primary_foreground))
                     .child("Please wait"),
             )
+    }
+
+    fn aspect_ratio_preview(cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div().w(px(384.)).child(
+            AspectRatio::new(16. / 9.).child(
+                div()
+                    .size_full()
+                    .rounded(theme.radius_lg())
+                    .bg(theme.muted)
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .text_size(px(13.))
+                    .text_color(theme.muted_foreground)
+                    .child("16 : 9"),
+            ),
+        )
     }
 
     // __STORY_PREVIEWS__

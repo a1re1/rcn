@@ -21,7 +21,7 @@ lands with a storybook story exercising its variants.
 - [x] label
 - [x] kbd
 - [x] spinner
-- [ ] aspect-ratio
+- [x] aspect-ratio
 - [x] card
 - [x] alert
 - [x] progress
