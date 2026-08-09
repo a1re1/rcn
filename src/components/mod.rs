@@ -15,6 +15,7 @@ pub mod card;
 pub mod checkbox;
 pub mod collapsible;
 pub mod empty;
+pub mod hover_card;
 pub mod item;
 pub mod kbd;
 pub mod label;
@@ -53,6 +54,7 @@ pub use collapsible::Collapsible;
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
+pub use hover_card::HoverCard;
 pub use item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,

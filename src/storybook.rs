@@ -25,14 +25,14 @@ use crate::components::{
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Checkbox, Collapsible, Empty, EmptyContent, EmptyDescription, EmptyHeader,
-    EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription,
-    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
-    ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item, ItemActions, ItemContent,
+    ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator,
+    ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis,
+    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider,
+    Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle,
+    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -69,11 +69,12 @@ enum Story {
     PaginationStory,
     ScrollArea,
     TooltipStory,
+    HoverCardStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 31] = [
+    const ALL: [Story; 32] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -105,6 +106,7 @@ impl Story {
         Story::PaginationStory,
         Story::ScrollArea,
         Story::TooltipStory,
+        Story::HoverCardStory,
         // __STORY_ALL__
     ];
 
@@ -141,6 +143,7 @@ impl Story {
             Story::PaginationStory => "Pagination",
             Story::ScrollArea => "Scroll Area",
             Story::TooltipStory => "Tooltip",
+            Story::HoverCardStory => "Hover Card",
             // __STORY_LABELS__
         }
     }
@@ -198,6 +201,9 @@ impl Story {
             }
             Story::TooltipStory => {
                 "A popup that displays information related to an element on hover."
+            }
+            Story::HoverCardStory => {
+                "For sighted users to preview content available behind a link."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -676,6 +682,7 @@ impl Storybook {
             Story::PaginationStory => self.pagination_preview(cx).into_any_element(),
             Story::ScrollArea => Self::scroll_area_preview(cx).into_any_element(),
             Story::TooltipStory => Self::tooltip_preview().into_any_element(),
+            Story::HoverCardStory => Self::hover_card_preview().into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -967,6 +974,7 @@ impl Storybook {
             Story::PaginationStory => Vec::new(),
             Story::ScrollArea => Vec::new(),
             Story::TooltipStory => Vec::new(),
+            Story::HoverCardStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2451,6 +2459,46 @@ impl Storybook {
                     .variant(ButtonVariant::Outline)
                     .child("Hover me"),
             ),
+        )
+    }
+    fn hover_card_preview() -> impl IntoElement + use<> {
+        div().child(
+            HoverCard::new("hover-card-demo")
+                .content(|cx| {
+                    let theme = Theme::of(cx).clone();
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(12.))
+                        .child(Avatar::new("VC"))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(4.))
+                                .child(
+                                    div()
+                                        .text_size(px(14.))
+                                        .font_weight(FontWeight::SEMIBOLD)
+                                        .child("@nextjs"),
+                                )
+                                .child(div().text_size(px(14.)).child(
+                                    "The React Framework - created and maintained by @vercel.",
+                                ))
+                                .child(
+                                    div()
+                                        .text_size(px(12.))
+                                        .text_color(theme.muted_foreground)
+                                        .child("Joined December 2021"),
+                                ),
+                        )
+                        .into_any_element()
+                })
+                .child(
+                    Button::new("hover-card-trigger")
+                        .variant(ButtonVariant::Link)
+                        .child("@nextjs"),
+                ),
         )
     }
 
