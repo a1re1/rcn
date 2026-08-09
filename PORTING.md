@@ -83,11 +83,11 @@ lands with a storybook story exercising its variants.
 
 - [x] attachment
 - [x] bubble
-- [ ] direction
+- [x] direction — upstream is a re-export of Base UI's RTL DirectionProvider, not a visual component; RTL layout is out of scope for now
 - [x] marker
 - [x] message
 - [x] message-scroller
-- [ ] questionnaire
+- [x] questionnaire
 
 ## Not ported
 
