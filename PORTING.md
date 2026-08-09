@@ -51,7 +51,7 @@ lands with a storybook story exercising its variants.
 - [x] alert-dialog
 - [x] sheet
 - [x] drawer
-- [ ] dropdown-menu
+- [x] dropdown-menu
 - [ ] context-menu
 - [ ] menubar
 - [ ] select
