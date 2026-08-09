@@ -1,8 +1,7 @@
 //! Toggle — port of shadcn base-vega `ui/toggle.tsx`.
 //!
 //! A two-state button. Controlled: the caller owns `pressed` and receives
-//! the next value in `on_change`. Focus-visible ring and aria-invalid
-//! styles are omitted.
+//! the next value in `on_change`. Aria-invalid styles are omitted.
 
 use gpui::{
     AnyElement, App, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement,
@@ -10,6 +9,7 @@ use gpui::{
     px,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
@@ -129,7 +129,10 @@ impl RenderOnce for Toggle {
             .when(pressed, |el| el.bg(theme.muted))
             .when(self.disabled, |el| el.opacity(0.5))
             .when(!self.disabled, |el| {
-                el.hover(move |s| s.bg(alpha(hover_bg, if pressed { 1. } else { 0.8 })))
+                let ring = motion::focus_ring(&theme);
+                el.tab_index(0)
+                    .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                    .hover(move |s| s.bg(alpha(hover_bg, if pressed { 1. } else { 0.8 })))
                     .when_some(self.on_change, |el, on_change| {
                         el.on_click(move |_, window, cx| on_change(&!pressed, window, cx))
                     })

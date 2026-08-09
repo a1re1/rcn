@@ -11,6 +11,7 @@ use gpui::{
     prelude::FluentBuilder as _, px,
 };
 
+use crate::motion;
 use crate::theme::Theme;
 
 pub use crate::components::toggle::{ToggleSize, ToggleVariant};
@@ -148,12 +149,13 @@ impl RenderOnce for ToggleGroup {
                     .when(pressed, |el| el.bg(theme.muted))
                     .when(item.disabled, |el| el.opacity(0.5))
                     .when(!item.disabled, |el| {
-                        el.hover(move |s| s.bg(hover_bg)).when_some(
-                            item.on_change,
-                            |el, on_change| {
+                        let ring = motion::focus_ring(&theme);
+                        el.tab_index(0)
+                            .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                            .hover(move |s| s.bg(hover_bg))
+                            .when_some(item.on_change, |el, on_change| {
                                 el.on_click(move |_, window, cx| on_change(&!pressed, window, cx))
-                            },
-                        )
+                            })
                     })
                     .children(item.children)
             }))

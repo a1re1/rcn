@@ -11,6 +11,7 @@ use gpui::{
     prelude::FluentBuilder as _, px,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 type SelectHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
@@ -187,7 +188,10 @@ impl RenderOnce for TabsList {
                     })
                     .when(trigger.disabled, |el| el.opacity(0.5))
                     .when(!trigger.disabled, |el| {
-                        el.hover(move |s| s.text_color(hover_text))
+                        let ring = motion::focus_ring(&theme);
+                        el.tab_index(0)
+                            .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                            .hover(move |s| s.text_color(hover_text))
                             .when_some(trigger.on_select, |el, on_select| el.on_click(on_select))
                     })
                     .children(trigger.children)
