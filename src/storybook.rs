@@ -23,8 +23,10 @@ use crate::components::{
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription,
-    PopoverHeader, PopoverTitle, Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
+    EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
+    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
+    ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -47,11 +49,12 @@ enum Story {
     Spinner,
     AspectRatio,
     Empty,
+    Item,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 17] = [
+    const ALL: [Story; 18] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -69,6 +72,7 @@ impl Story {
         Story::Spinner,
         Story::AspectRatio,
         Story::Empty,
+        Story::Item,
         // __STORY_ALL__
     ];
 
@@ -91,6 +95,7 @@ impl Story {
             Story::Spinner => "Spinner",
             Story::AspectRatio => "Aspect Ratio",
             Story::Empty => "Empty",
+            Story::Item => "Item",
             // __STORY_LABELS__
         }
     }
@@ -121,6 +126,7 @@ impl Story {
             Story::Spinner => "An indicator that can be used to show a loading state.",
             Story::AspectRatio => "Displays content within a desired ratio.",
             Story::Empty => "Use to display an empty state, such as no results or missing data.",
+            Story::Item => "A flexible list row with media, content, and actions.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -279,6 +285,9 @@ pub struct Storybook {
     switch_disabled: bool,
     // Progress controls
     progress_value: f32,
+    // Item controls
+    item_variant: ItemVariant,
+    item_size: ItemSize,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -310,6 +319,8 @@ impl Storybook {
             switch_size: SwitchSize::Default,
             switch_disabled: false,
             progress_value: 60.,
+            item_variant: ItemVariant::Outline,
+            item_size: ItemSize::Default,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -547,6 +558,7 @@ impl Storybook {
             Story::Spinner => Self::spinner_preview(cx).into_any_element(),
             Story::AspectRatio => Self::aspect_ratio_preview(cx).into_any_element(),
             Story::Empty => Self::empty_preview(cx).into_any_element(),
+            Story::Item => self.item_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -749,6 +761,44 @@ impl Storybook {
             Story::Spinner => Vec::new(),
             Story::AspectRatio => Vec::new(),
             Story::Empty => Vec::new(),
+            Story::Item => vec![
+                Self::control_row(
+                    "variant",
+                    Self::choices(
+                        "item-variant",
+                        &[
+                            ("default", ItemVariant::Default),
+                            ("outline", ItemVariant::Outline),
+                            ("muted", ItemVariant::Muted),
+                        ],
+                        self.item_variant,
+                        cx,
+                        |this, v, cx| {
+                            this.item_variant = v;
+                            cx.notify();
+                        },
+                    ),
+                    &theme,
+                ),
+                Self::control_row(
+                    "size",
+                    Self::choices(
+                        "item-size",
+                        &[
+                            ("default", ItemSize::Default),
+                            ("sm", ItemSize::Sm),
+                            ("xs", ItemSize::Xs),
+                        ],
+                        self.item_size,
+                        cx,
+                        |this, v, cx| {
+                            this.item_size = v;
+                            cx.notify();
+                        },
+                    ),
+                    &theme,
+                ),
+            ],
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1640,6 +1690,94 @@ impl Storybook {
                                     .child("Import Project"),
                             ),
                     ),
+                ),
+        )
+    }
+
+    fn item_preview(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div().w(px(420.)).child(
+            ItemGroup::new()
+                .child(
+                    Item::new()
+                        .variant(self.item_variant)
+                        .size(self.item_size)
+                        .child(
+                            ItemMedia::new().variant(ItemMediaVariant::Icon).child(
+                                gpui::svg()
+                                    .path(theme.icons.chevron_right())
+                                    .size(px(16.))
+                                    .text_color(theme.foreground),
+                            ),
+                        )
+                        .child(
+                            ItemContent::new()
+                                .child(ItemTitle::new().child("Basic Item"))
+                                .child(
+                                    ItemDescription::new()
+                                        .child("A simple item with title and description."),
+                                ),
+                        )
+                        .child(
+                            ItemActions::new().child(
+                                Button::new("item-action")
+                                    .variant(ButtonVariant::Outline)
+                                    .size(ButtonSize::Sm)
+                                    .child("Action"),
+                            ),
+                        ),
+                )
+                .child(ItemSeparator::new())
+                .child(
+                    Item::new()
+                        .variant(self.item_variant)
+                        .child(ItemMedia::new().child(Avatar::new("CN")))
+                        .child(
+                            ItemContent::new()
+                                .child(ItemTitle::new().child("Evil Rabbit"))
+                                .child(ItemDescription::new().child("Last seen 5 months ago")),
+                        )
+                        .child(
+                            ItemActions::new().child(
+                                Button::new("item-add")
+                                    .variant(ButtonVariant::Outline)
+                                    .size(ButtonSize::IconSm)
+                                    .child(
+                                        gpui::svg()
+                                            .path(theme.icons.chevron_right())
+                                            .size(px(16.))
+                                            .text_color(theme.foreground),
+                                    ),
+                            ),
+                        ),
+                )
+                .child(
+                    Item::new()
+                        .variant(self.item_variant)
+                        .size(self.item_size)
+                        .child(
+                            ItemHeader::new()
+                                .child(ItemTitle::new().child("Deployment"))
+                                .child(Badge::new().variant(BadgeVariant::Secondary).child("Live")),
+                        )
+                        .child(ItemContent::new().child(
+                            ItemDescription::new().child("Deployed 2 hours ago by evil rabbit."),
+                        ))
+                        .child(
+                            ItemFooter::new()
+                                .child(
+                                    div()
+                                        .text_size(px(12.))
+                                        .text_color(theme.muted_foreground)
+                                        .child("main / a1b2c3d"),
+                                )
+                                .child(
+                                    Button::new("item-rollback")
+                                        .variant(ButtonVariant::Ghost)
+                                        .size(ButtonSize::Xs)
+                                        .child("Rollback"),
+                                ),
+                        ),
                 ),
         )
     }
