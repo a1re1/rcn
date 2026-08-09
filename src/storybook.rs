@@ -36,16 +36,16 @@ use crate::components::{
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
     MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
-    MessageHeader, NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink,
-    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
-    ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
-    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
-    SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger,
-    Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
-    TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger,
-    TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
-    ToggleVariant, Tooltip,
+    MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
+    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
+    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
+    RadioGroup, RadioGroupItem, ResizableDirection, ResizablePanelGroup, ScrollArea, Select,
+    Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar,
+    SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider,
+    SidebarTrigger, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
+    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
+    TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -112,11 +112,12 @@ enum Story {
     BubbleStory,
     AttachmentStory,
     MarkerStory,
+    MessageScrollerStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 61] = [
+    const ALL: [Story; 62] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -178,6 +179,7 @@ impl Story {
         Story::BubbleStory,
         Story::AttachmentStory,
         Story::MarkerStory,
+        Story::MessageScrollerStory,
         // __STORY_ALL__
     ];
 
@@ -244,6 +246,7 @@ impl Story {
             Story::BubbleStory => "Bubble",
             Story::AttachmentStory => "Attachment",
             Story::MarkerStory => "Marker",
+            Story::MessageScrollerStory => "Message Scroller",
             // __STORY_LABELS__
         }
     }
@@ -364,7 +367,9 @@ impl Story {
                 "A file chip with media, metadata, upload states, and removal."
             }
             Story::MarkerStory => "Inline conversation markers like date dividers and event notes.",
-            // __STORY_DESCRIPTIONS__
+            Story::MessageScrollerStory => {
+                "A scrollable conversation viewport for message threads."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -1043,6 +1048,7 @@ impl Storybook {
             Story::BubbleStory => self.bubble_preview().into_any_element(),
             Story::AttachmentStory => self.attachment_preview(cx).into_any_element(),
             Story::MarkerStory => self.marker_preview(cx).into_any_element(),
+            Story::MessageScrollerStory => self.message_scroller_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1413,6 +1419,7 @@ impl Storybook {
             )],
             Story::AttachmentStory => Vec::new(),
             Story::MarkerStory => Vec::new(),
+            Story::MessageScrollerStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3942,6 +3949,45 @@ impl Storybook {
                 Marker::new()
                     .variant(MarkerVariant::Border)
                     .child("Alex joined the conversation"),
+            )
+    }
+    fn message_scroller_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w(px(384.))
+            .rounded(theme.radius_lg())
+            .border_1()
+            .border_color(theme.border)
+            .p(px(12.))
+            .child(
+                MessageScroller::new("message-scroller-demo")
+                    .h(px(240.))
+                    .children((1..=8).map(|number| {
+                        let end = number % 2 == 0;
+                        Message::new()
+                            .align(if end {
+                                MessageAlign::End
+                            } else {
+                                MessageAlign::Start
+                            })
+                            .child(
+                                MessageContent::new()
+                                    .align(if end {
+                                        MessageAlign::End
+                                    } else {
+                                        MessageAlign::Start
+                                    })
+                                    .child(
+                                        Bubble::new()
+                                            .variant(if end {
+                                                BubbleVariant::Default
+                                            } else {
+                                                BubbleVariant::Muted
+                                            })
+                                            .content(format!("Message number {number}")),
+                                    ),
+                            )
+                    })),
             )
     }
 
