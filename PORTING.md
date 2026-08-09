@@ -49,7 +49,7 @@ lands with a storybook story exercising its variants.
 - [x] hover-card
 - [x] dialog
 - [x] alert-dialog
-- [ ] sheet
+- [x] sheet
 - [ ] drawer
 - [ ] dropdown-menu
 - [ ] context-menu

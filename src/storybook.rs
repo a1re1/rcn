@@ -31,10 +31,11 @@ use crate::components::{
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
     PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
-    ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -74,11 +75,12 @@ enum Story {
     HoverCardStory,
     DialogStory,
     AlertDialogStory,
+    SheetStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 34] = [
+    const ALL: [Story; 35] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -113,6 +115,7 @@ impl Story {
         Story::HoverCardStory,
         Story::DialogStory,
         Story::AlertDialogStory,
+        Story::SheetStory,
         // __STORY_ALL__
     ];
 
@@ -152,6 +155,7 @@ impl Story {
             Story::HoverCardStory => "Hover Card",
             Story::DialogStory => "Dialog",
             Story::AlertDialogStory => "Alert Dialog",
+            Story::SheetStory => "Sheet",
             // __STORY_LABELS__
         }
     }
@@ -218,6 +222,9 @@ impl Story {
             }
             Story::AlertDialogStory => {
                 "A modal dialog that interrupts the user with important content and expects a response."
+            }
+            Story::SheetStory => {
+                "Extends the Dialog component to display content that complements the main content of the screen."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -404,6 +411,9 @@ pub struct Storybook {
     dialog_open: bool,
     // Alert dialog story state
     alert_dialog_open: bool,
+    // Sheet story state
+    sheet_open: bool,
+    sheet_side: SheetSide,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -451,6 +461,8 @@ impl Storybook {
             pagination_page: 2,
             dialog_open: false,
             alert_dialog_open: false,
+            sheet_open: false,
+            sheet_side: SheetSide::Right,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -705,6 +717,7 @@ impl Storybook {
             Story::HoverCardStory => Self::hover_card_preview().into_any_element(),
             Story::DialogStory => self.dialog_preview(cx).into_any_element(),
             Story::AlertDialogStory => self.alert_dialog_preview(cx).into_any_element(),
+            Story::SheetStory => self.sheet_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1010,6 +1023,25 @@ impl Storybook {
                 &theme,
             )],
             Story::AlertDialogStory => Vec::new(),
+            Story::SheetStory => vec![Self::control_row(
+                "side",
+                Self::choices(
+                    "sheet-side",
+                    &[
+                        ("top", SheetSide::Top),
+                        ("right", SheetSide::Right),
+                        ("bottom", SheetSide::Bottom),
+                        ("left", SheetSide::Left),
+                    ],
+                    self.sheet_side,
+                    cx,
+                    |this, v, cx| {
+                        this.sheet_side = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2632,6 +2664,44 @@ impl Storybook {
                                     }))
                                     .child("Continue"),
                             ),
+                    ),
+            )
+    }
+    fn sheet_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .child(
+                Button::new("sheet-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.sheet_open = true;
+                        cx.notify();
+                    }))
+                    .child("Open Sheet"),
+            )
+            .child(
+                Sheet::new("sheet-demo")
+                    .open(self.sheet_open)
+                    .side(self.sheet_side)
+                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                        this.sheet_open = *open;
+                        cx.notify();
+                    }))
+                    .child(
+                        SheetHeader::new()
+                            .child(SheetTitle::new().child("Edit profile"))
+                            .child(SheetDescription::new().child(
+                                "Make changes to your profile here. Click save when you're done.",
+                            )),
+                    )
+                    .child(
+                        SheetFooter::new().child(
+                            Button::new("sheet-save")
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.sheet_open = false;
+                                    cx.notify();
+                                }))
+                                .child("Save changes"),
+                        ),
                     ),
             )
     }
