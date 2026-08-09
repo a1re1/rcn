@@ -23,6 +23,7 @@ pub mod empty;
 pub mod field;
 pub mod hover_card;
 pub mod input;
+pub mod input_group;
 pub mod item;
 pub mod kbd;
 pub mod label;
@@ -78,6 +79,7 @@ pub use empty::{
 pub use field::{Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet};
 pub use hover_card::HoverCard;
 pub use input::Input;
+pub use input_group::{InputGroup, InputGroupAddon};
 pub use item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,

@@ -29,13 +29,13 @@ use crate::components::{
     DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
     DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
-    FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, Item,
-    ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
-    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
-    Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry,
-    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
-    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
-    RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
+    FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup,
+    InputGroupAddon, Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup,
+    ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd,
+    KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu,
+    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
+    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
     SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
     TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle,
@@ -91,11 +91,12 @@ enum Story {
     InputStory,
     TextareaStory,
     FieldStory,
+    InputGroupStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 46] = [
+    const ALL: [Story; 47] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -142,6 +143,7 @@ impl Story {
         Story::InputStory,
         Story::TextareaStory,
         Story::FieldStory,
+        Story::InputGroupStory,
         // __STORY_ALL__
     ];
 
@@ -193,6 +195,7 @@ impl Story {
             Story::InputStory => "Input",
             Story::TextareaStory => "Textarea",
             Story::FieldStory => "Field",
+            Story::InputGroupStory => "Input Group",
             // __STORY_LABELS__
         }
     }
@@ -285,6 +288,9 @@ impl Story {
             }
             Story::FieldStory => {
                 "Combine labels, controls, and help text to compose accessible form fields."
+            }
+            Story::InputGroupStory => {
+                "Display additional information or actions to an input or textarea."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -550,6 +556,9 @@ pub struct Storybook {
     // Field story state
     field_input: gpui::Entity<Input>,
     field_error_input: gpui::Entity<Input>,
+    // Input group story state
+    input_group_search: gpui::Entity<Input>,
+    input_group_url: gpui::Entity<Input>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -579,6 +588,18 @@ impl Storybook {
         let field_error_input = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("evil_rabbit");
+            input
+        });
+        let input_group_search = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search...");
+            input.set_bare(true);
+            input
+        });
+        let input_group_url = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("example.com");
+            input.set_bare(true);
             input
         });
         let input_disabled = cx.new(|cx| {
@@ -642,6 +663,8 @@ impl Storybook {
             textarea_input,
             field_input,
             field_error_input,
+            input_group_search,
+            input_group_url,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -866,6 +889,7 @@ impl Storybook {
             Story::InputStory => self.input_preview(cx).into_any_element(),
             Story::TextareaStory => self.textarea_preview(cx).into_any_element(),
             Story::FieldStory => self.field_preview(cx).into_any_element(),
+            Story::InputGroupStory => self.input_group_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1201,6 +1225,7 @@ impl Storybook {
             Story::InputStory => Vec::new(),
             Story::TextareaStory => Vec::new(),
             Story::FieldStory => Vec::new(),
+            Story::InputGroupStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3248,6 +3273,38 @@ impl Storybook {
                         ),
                 ),
         )
+    }
+    fn input_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .w(px(288.))
+            .child(
+                InputGroup::new(self.input_group_search.clone())
+                    .leading(
+                        InputGroupAddon::new().child(
+                            gpui::svg()
+                                .path(theme.icons.chevron_right())
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    )
+                    .trailing(InputGroupAddon::new().child(Kbd::new().child("\u{2318}K"))),
+            )
+            .child(
+                InputGroup::new(self.input_group_url.clone())
+                    .leading(InputGroupAddon::new().child("https://"))
+                    .trailing(
+                        InputGroupAddon::new().child(
+                            Button::new("ig-copy")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Xs)
+                                .child("Copy"),
+                        ),
+                    ),
+            )
     }
 
     // __STORY_PREVIEWS__
