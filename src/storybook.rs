@@ -103,11 +103,12 @@ enum Story {
     CarouselStory,
     ResizableStory,
     SidebarStory,
+    DataTableStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 55] = [
+    const ALL: [Story; 56] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -163,6 +164,7 @@ impl Story {
         Story::CarouselStory,
         Story::ResizableStory,
         Story::SidebarStory,
+        Story::DataTableStory,
         // __STORY_ALL__
     ];
 
@@ -223,6 +225,7 @@ impl Story {
             Story::CarouselStory => "Carousel",
             Story::ResizableStory => "Resizable",
             Story::SidebarStory => "Sidebar",
+            Story::DataTableStory => "Data Table",
             // __STORY_LABELS__
         }
     }
@@ -335,6 +338,7 @@ impl Story {
                 "Accessible resizable panel groups and layouts with keyboard support."
             }
             Story::SidebarStory => "A composable, themeable and customizable sidebar component.",
+            Story::DataTableStory => "Powerful table and datagrids built on the table primitives.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -625,6 +629,8 @@ pub struct Storybook {
     // Sidebar story state
     sidebar_open: bool,
     sidebar_active: usize,
+    // Data table story state
+    data_table_desc: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -766,6 +772,7 @@ impl Storybook {
             resizable_fraction: 0.5,
             sidebar_open: true,
             sidebar_active: 0,
+            data_table_desc: true,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -999,6 +1006,7 @@ impl Storybook {
             Story::CarouselStory => self.carousel_preview(cx).into_any_element(),
             Story::ResizableStory => self.resizable_preview(cx).into_any_element(),
             Story::SidebarStory => self.sidebar_preview(cx).into_any_element(),
+            Story::DataTableStory => self.data_table_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1343,6 +1351,7 @@ impl Storybook {
             Story::CarouselStory => Vec::new(),
             Story::ResizableStory => Vec::new(),
             Story::SidebarStory => Vec::new(),
+            Story::DataTableStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3643,6 +3652,84 @@ impl Storybook {
                             ),
                     ),
             )
+    }
+    fn data_table_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let mut payments: Vec<(&str, &str, u32)> = vec![
+            ("ken99@example.com", "Success", 316),
+            ("abe45@example.com", "Success", 242),
+            ("monserrat44@example.com", "Processing", 837),
+            ("silas22@example.com", "Failed", 874),
+            ("carmella@example.com", "Pending", 721),
+        ];
+        payments.sort_by(|a, b| {
+            if self.data_table_desc {
+                b.2.cmp(&a.2)
+            } else {
+                a.2.cmp(&b.2)
+            }
+        });
+        let count = payments.len();
+        div().w(px(480.)).child(
+            Table::new()
+                .child(
+                    TableHeader::new().child(
+                        TableRow::new()
+                            .child(TableHead::new().child("Email"))
+                            .child(TableHead::new().w(px(110.)).child("Status"))
+                            .child(
+                                TableHead::new().w(px(110.)).child(
+                                    div()
+                                        .id("data-table-sort")
+                                        .flex()
+                                        .flex_row()
+                                        .items_center()
+                                        .gap(px(4.))
+                                        .hover(|s| s.text_color(theme.foreground))
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            this.data_table_desc = !this.data_table_desc;
+                                            cx.notify();
+                                        }))
+                                        .child("Amount")
+                                        .child(
+                                            gpui::svg()
+                                                .path(if self.data_table_desc {
+                                                    theme.icons.chevron_down()
+                                                } else {
+                                                    theme.icons.chevron_up()
+                                                })
+                                                .size(px(12.))
+                                                .text_color(theme.muted_foreground),
+                                        ),
+                                ),
+                            ),
+                    ),
+                )
+                .child(
+                    TableBody::new().children(payments.into_iter().enumerate().map(
+                        |(index, (email, status, amount))| {
+                            TableRow::new()
+                                .id(("data-table-row", index))
+                                .last(index + 1 == count)
+                                .child(TableCell::new().child(email))
+                                .child(
+                                    TableCell::new().w(px(110.)).child(
+                                        Badge::new()
+                                            .variant(match status {
+                                                "Success" => BadgeVariant::Secondary,
+                                                "Failed" => BadgeVariant::Destructive,
+                                                _ => BadgeVariant::Outline,
+                                            })
+                                            .child(status),
+                                    ),
+                                )
+                                .child(TableCell::new().w(px(110.)).child(format!("${amount}.00")))
+                                .into_any_element()
+                        },
+                    )),
+                )
+                .child(TableCaption::new().child("Click the Amount header to flip the sort.")),
+        )
     }
 
     // __STORY_PREVIEWS__
