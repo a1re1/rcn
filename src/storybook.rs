@@ -31,7 +31,7 @@ use crate::components::{
     DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer,
     DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem,
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
-    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
+    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Icon, Input,
     InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
@@ -1359,7 +1359,7 @@ impl Storybook {
                             Button::new("ex-btn-icon")
                                 .variant(ButtonVariant::Outline)
                                 .size(ButtonSize::Icon)
-                                .child(gpui::svg().path(theme.icons.chevron_right()).size(px(16.))),
+                                .child(Icon::new(theme.icons.chevron_right())),
                         )
                         .into_any_element(),
                 ),
@@ -1415,19 +1415,19 @@ impl Storybook {
                         .child(
                             Button::new("ex-btn-icon-default")
                                 .size(ButtonSize::Icon)
-                                .child(gpui::svg().path(theme.icons.chevron_right()).size(px(16.))),
+                                .child(Icon::new(theme.icons.chevron_right())),
                         )
                         .child(
                             Button::new("ex-btn-icon-sm")
                                 .variant(ButtonVariant::Outline)
                                 .size(ButtonSize::IconSm)
-                                .child(gpui::svg().path(theme.icons.chevron_right()).size(px(16.))),
+                                .child(Icon::new(theme.icons.chevron_right())),
                         )
                         .child(
                             Button::new("ex-btn-icon-lg")
                                 .variant(ButtonVariant::Outline)
                                 .size(ButtonSize::IconLg)
-                                .child(gpui::svg().path(theme.icons.chevron_right()).size(px(16.))),
+                                .child(Icon::new(theme.icons.chevron_right())),
                         )
                         .into_any_element(),
                 ),
@@ -1435,7 +1435,7 @@ impl Storybook {
                     "With Icon",
                     Button::new("ex-btn-with-icon")
                         .icon_inline_start()
-                        .child(gpui::svg().path(theme.icons.check()).size(px(16.)))
+                        .child(Icon::new(theme.icons.check()))
                         .child("Confirm")
                         .into_any_element(),
                 ),
@@ -1458,7 +1458,7 @@ impl Storybook {
                             Button::new("ex-btn-rounded-icon")
                                 .size(ButtonSize::Icon)
                                 .rounded_full()
-                                .child(gpui::svg().path(theme.icons.chevron_right()).size(px(16.))),
+                                .child(Icon::new(theme.icons.chevron_right())),
                         )
                         .into_any_element(),
                 ),
@@ -2677,7 +2677,7 @@ impl Storybook {
             .size(self.button_size)
             .disabled(self.button_disabled);
         if icon_only {
-            button.child(gpui::svg().path(theme.icons.chevron_right()).size(px(16.)))
+            button.child(Icon::new(theme.icons.chevron_right()))
         } else {
             button.child("Button")
         }

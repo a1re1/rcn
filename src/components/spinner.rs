@@ -1,17 +1,19 @@
 //! Spinner — port of shadcn base-vega `ui/spinner.tsx`.
 //!
-//! A spinning loader arc (`animate-spin size-4`). With no `.color(..)`, the
-//! svg inherits ambient text color (`text-current`); `.color(..)` overrides.
+//! A spinning loader arc (`animate-spin size-4`), drawn as an [`Icon`] so it
+//! picks up the ambient text color (`text-current`) — visible inside filled
+//! buttons, badges, etc.; `.color(..)` overrides.
 
 use std::time::Duration;
 
 use gpui::prelude::FluentBuilder;
 use gpui::{
-    Animation, AnimationExt as _, App, Hsla, IntoElement, Pixels, RenderOnce, Styled,
-    Transformation, Window, percentage, px, svg,
+    Animation, AnimationExt as _, App, Hsla, IntoElement, Pixels, RenderOnce, Styled, Window,
+    percentage, px,
 };
 
 use crate::assets::ICON_LOADER;
+use crate::components::Icon;
 
 #[derive(IntoElement)]
 pub struct Spinner {
@@ -46,16 +48,15 @@ impl Default for Spinner {
 
 impl RenderOnce for Spinner {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        // text-current: inherit ambient text color unless `.color(..)` overrides.
-        svg()
-            .path(ICON_LOADER)
+        let color = self.color;
+        Icon::new(ICON_LOADER)
             .size(self.size)
             .flex_shrink_0()
-            .when_some(self.color, |this, color| this.text_color(color))
+            .when_some(color, |icon, color| icon.text_color(color))
             .with_animation(
                 "spinner",
                 Animation::new(Duration::from_secs(1)).repeat(),
-                |el, delta| el.with_transformation(Transformation::rotate(percentage(delta))),
+                |icon, delta| icon.rotate(percentage(delta)),
             )
     }
 }
