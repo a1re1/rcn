@@ -11,6 +11,7 @@ pub mod badge;
 pub mod breadcrumb;
 pub mod button;
 pub mod card;
+pub mod checkbox;
 pub mod empty;
 pub mod item;
 pub mod kbd;
@@ -36,6 +37,7 @@ pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
+pub use checkbox::Checkbox;
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };

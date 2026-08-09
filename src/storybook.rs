@@ -23,7 +23,7 @@ use crate::components::{
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonSize, ButtonVariant, Card, CardAction, CardContent,
-    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Empty, EmptyContent,
+    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Checkbox, Empty, EmptyContent,
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover,
@@ -55,11 +55,12 @@ enum Story {
     Item,
     Table,
     Breadcrumb,
+    Checkbox,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 20] = [
+    const ALL: [Story; 21] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -80,6 +81,7 @@ impl Story {
         Story::Item,
         Story::Table,
         Story::Breadcrumb,
+        Story::Checkbox,
         // __STORY_ALL__
     ];
 
@@ -105,6 +107,7 @@ impl Story {
             Story::Item => "Item",
             Story::Table => "Table",
             Story::Breadcrumb => "Breadcrumb",
+            Story::Checkbox => "Checkbox",
             // __STORY_LABELS__
         }
     }
@@ -139,6 +142,9 @@ impl Story {
             Story::Table => "A responsive table component.",
             Story::Breadcrumb => {
                 "Displays the path to the current resource using a hierarchy of links."
+            }
+            Story::Checkbox => {
+                "A control that allows the user to toggle between checked and not checked."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -302,6 +308,8 @@ pub struct Storybook {
     item_size: ItemSize,
     // Table story state
     table_selected: Option<usize>,
+    // Checkbox controls
+    checkbox_checked: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -336,6 +344,7 @@ impl Storybook {
             item_variant: ItemVariant::Outline,
             item_size: ItemSize::Default,
             table_selected: Some(1),
+            checkbox_checked: true,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -576,6 +585,7 @@ impl Storybook {
             Story::Item => self.item_preview(cx).into_any_element(),
             Story::Table => self.table_preview(cx).into_any_element(),
             Story::Breadcrumb => Self::breadcrumb_preview().into_any_element(),
+            Story::Checkbox => self.checkbox_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -818,6 +828,18 @@ impl Storybook {
             ],
             Story::Table => Vec::new(),
             Story::Breadcrumb => Vec::new(),
+            Story::Checkbox => vec![Self::control_row(
+                "checked",
+                Switch::new("ctl-checkbox-checked")
+                    .checked(self.checkbox_checked)
+                    .size(SwitchSize::Sm)
+                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        this.checkbox_checked = *checked;
+                        cx.notify();
+                    }))
+                    .into_any_element(),
+                &theme,
+            )],
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1873,6 +1895,50 @@ impl Storybook {
         )
     }
 
+    fn checkbox_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        Checkbox::new("checkbox-terms")
+                            .checked(self.checkbox_checked)
+                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                                this.checkbox_checked = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .child(Label::new().child("Accept terms and conditions")),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(Checkbox::new("checkbox-disabled").disabled(true))
+                    .child(Label::new().disabled(true).child("Disabled")),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        Checkbox::new("checkbox-disabled-checked")
+                            .checked(true)
+                            .disabled(true),
+                    )
+                    .child(Label::new().disabled(true).child("Disabled checked")),
+            )
+    }
     // __STORY_PREVIEWS__
 
     fn card_preview(&self, cx: &App) -> impl IntoElement + use<> {
