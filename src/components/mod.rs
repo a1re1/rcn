@@ -22,6 +22,7 @@ pub mod pagination;
 pub mod popover;
 pub mod progress;
 pub mod radio_group;
+pub mod scroll_area;
 pub mod separator;
 pub mod skeleton;
 pub mod slider;
@@ -63,6 +64,7 @@ pub use pagination::{
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use progress::Progress;
 pub use radio_group::{RadioGroup, RadioGroupItem};
+pub use scroll_area::ScrollArea;
 pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use slider::Slider;
