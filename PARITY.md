@@ -55,7 +55,7 @@ solid before the molecules that compose them.
   root + item disabled, bordered variant, animated expand/collapse height
   (200ms ease-out); RTL out of scope
 - [x] alert — (static presentation — matches source; parent-context destructive tint TODO)
-- [x] card — (static presentation — matches source layout parts; CSS-var spacing cascade omitted)
+- [x] card — base-nova parity (footer border/bg + pb-0 via mb(-spacing); header `.action()` slot; `.spacing()` override; `.flush_top()`/`.flush_bottom()`; no shadow; RTL and `[.border-b]`/`[.border-t]` utilities omitted)
 - [x] empty — (static presentation — matches source; dashed border approximated solid)
 - [x] item — (static presentation — matches source layout variants)
 - [x] field — (static presentation — matches source labeled-control layout)
