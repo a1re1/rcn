@@ -13,6 +13,7 @@ use gpui::{
     prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 type CloseHandler = Rc<dyn Fn(&gpui::ClickEvent, &mut Window, &mut App) + 'static>;
@@ -154,12 +155,15 @@ impl RenderOnce for Toast {
             )
             .children(self.action)
             .when_some(self.on_close, |el, close| {
-                el.child(
+                el.child({
+                    let ring = motion::focus_ring(&theme);
                     div()
                         .id("toast-close")
                         .flex_shrink_0()
                         .rounded(theme.radius_sm())
                         .p(px(2.))
+                        .tab_index(0)
+                        .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
                         .hover(|s| s.bg(alpha(theme.muted, 0.8)))
                         .on_click(move |event, window, cx| close(event, window, cx))
                         .child(
@@ -167,8 +171,8 @@ impl RenderOnce for Toast {
                                 .path(theme.icons.x())
                                 .size(px(14.))
                                 .text_color(theme.muted_foreground),
-                        ),
-                )
+                        )
+                })
             });
         crate::motion::pop_in("toast-in", card)
     }

@@ -11,6 +11,7 @@ use gpui::{
 };
 use std::rc::Rc;
 
+use crate::motion;
 use crate::theme::Theme;
 
 /// A calendar date (proleptic Gregorian).
@@ -138,6 +139,7 @@ impl RenderOnce for Calendar {
 
         let nav_button = |id: &'static str, icon: String, target: (i32, u32)| {
             let handler = self.on_month_change.clone();
+            let ring = motion::focus_ring(&theme);
             div()
                 .id(id)
                 .flex()
@@ -147,6 +149,8 @@ impl RenderOnce for Calendar {
                 .rounded(theme.radius_md())
                 .border_1()
                 .border_color(theme.border)
+                .tab_index(0)
+                .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
                 .hover(|s| s.bg(theme.muted))
                 .when_some(handler, |el, handler| {
                     el.on_click(move |_, window, cx| handler(&target, window, cx))
@@ -228,8 +232,13 @@ impl RenderOnce for Calendar {
                                     let date = CalendarDate::new(year, month, day);
                                     let is_selected = selected == Some(date);
                                     let on_select = on_select.clone();
+                                    let ring = motion::focus_ring(&theme);
                                     base.id(("calendar-day", cell as usize))
                                         .rounded(theme.radius_md())
+                                        .tab_index(0)
+                                        .focus_visible(move |s| {
+                                            s.border_color(theme.ring).shadow(ring.clone())
+                                        })
                                         .map(|el| {
                                             if is_selected {
                                                 el.bg(theme.primary)

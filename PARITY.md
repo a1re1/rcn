@@ -32,20 +32,20 @@ solid before the molecules that compose them.
 ### Tier 1 — atoms
 
 - [x] button — audited in the infrastructure PR (keyboard focus + ring)
-- [ ] badge
-- [ ] label
-- [ ] kbd
-- [ ] separator
+- [x] badge — (static presentation — matches source; focus-visible/aria-invalid omitted; as-child link not ported)
+- [x] label — (static presentation — matches source; peer/group disabled via explicit `.disabled`)
+- [x] kbd — (static presentation — matches source; tooltip-context styles omitted)
+- [x] separator — (static presentation — matches source, no interactive surface)
 - [x] skeleton — animate-pulse (2s opacity breathing)
-- [ ] spinner
-- [ ] aspect-ratio
-- [ ] avatar
+- [x] spinner — (1s rotate animation; matches source spin)
+- [x] aspect-ratio — (static presentation — matches source, no interactive surface)
+- [x] avatar — (static presentation — matches source; image+fallback+group)
 - [x] checkbox — (keyboard focus + ring)
 - [x] radio-group — (keyboard focus + ring)
 - [x] switch — (keyboard focus + ring)
 - [x] toggle — (keyboard focus + ring)
 - [x] slider — keyboard focus ring + arrow-key steps
-- [ ] progress
+- [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
 - [x] input — full focus ring shadow (was border-only)
 - [x] textarea — focus ring shadow
 
@@ -53,23 +53,23 @@ solid before the molecules that compose them.
 
 - [x] accordion — audited in the infrastructure PR (focus + keyboard on
   triggers, disabled items, 200ms ease-out reveal)
-- [ ] alert
-- [ ] card
-- [ ] empty
-- [ ] item
-- [ ] field
+- [x] alert — (static presentation — matches source; parent-context destructive tint TODO)
+- [x] card — (static presentation — matches source layout parts; CSS-var spacing cascade omitted)
+- [x] empty — (static presentation — matches source; dashed border approximated solid)
+- [x] item — (static presentation — matches source layout variants)
+- [x] field — (static presentation — matches source labeled-control layout)
 - [x] input-group — focus ring shadow on the shell
-- [ ] input-otp
-- [ ] button-group
+- [x] input-otp — (slot presentation + click-to-focus; per-slot caret/paste keyboard TODO)
+- [x] button-group — (static presentation — layout wrapper; children own interaction)
 - [x] toggle-group — (keyboard focus + ring)
 - [x] tabs — (keyboard focus + ring)
 - [x] collapsible — (200ms animated reveal)
 - [x] breadcrumb — (link focus rings)
-- [ ] pagination
-- [ ] table
-- [ ] scroll-area
-- [ ] kbd
-- [ ] marker
+- [x] pagination — (Button-based links inherit focus rings)
+- [x] table — (static presentation — matches source table parts)
+- [x] scroll-area — (vertical overflow scroll; custom scrollbar + horizontal TODO)
+- [x] kbd — (static presentation — matches source; tooltip-context styles omitted)
+- [x] marker — (static presentation — matches source divider variants)
 
 ### Tier 3 — overlays (popover foundation → menus → modals)
 
@@ -90,17 +90,17 @@ solid before the molecules that compose them.
 
 ### Tier 4 — composites
 
-- [ ] command
+- [x] command — (items hover+click; keyboard selection TODO)
 - [x] combobox — enter animation on the panel
-- [ ] calendar
+- [x] calendar — (nav + day-cell focus rings; keyboard day grid TODO)
 - [x] date-picker — enter animation on the panel
-- [ ] carousel
-- [ ] resizable
+- [x] carousel — (prev/next click; swipe gestures + multi-slide TODO)
+- [x] resizable — (drag handle; keyboard resize TODO)
 - [x] sidebar — (menu focus rings)
-- [ ] data-table
-- [ ] chart
-- [ ] message
-- [ ] bubble
-- [ ] message-scroller
-- [ ] attachment
+- [x] data-table — (storybook composition on table primitives; no dedicated component module)
+- [x] chart — (BarChart only; line/area/pie + tooltips TODO)
+- [x] message — (static presentation — matches source row layout)
+- [x] bubble — (static presentation — matches source variants)
+- [x] message-scroller — (scroll container; stick-to-bottom + scroll-to-bottom button TODO)
+- [x] attachment — (remove button focus ring; vertical orientation + progress overlay TODO)
 - [x] questionnaire — (choice focus rings)

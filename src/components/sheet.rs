@@ -15,6 +15,7 @@ use crate::components::dialog::OpenChangeHandler;
 pub use crate::components::dialog::{
     DialogDescription as SheetDescription, DialogTitle as SheetTitle,
 };
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
@@ -111,7 +112,8 @@ impl RenderOnce for Sheet {
             })
             .children(self.children)
             .when_some(close_button, |el, close| {
-                el.child(
+                el.child({
+                    let ring = motion::focus_ring(&theme);
                     div()
                         .id("sheet-close")
                         .absolute()
@@ -119,6 +121,8 @@ impl RenderOnce for Sheet {
                         .right(px(16.))
                         .rounded(theme.radius_sm())
                         .p(px(2.))
+                        .tab_index(0)
+                        .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
                         .hover(|s| s.bg(alpha(theme.muted, 0.8)))
                         .on_click(move |_, window, cx| close(&false, window, cx))
                         .child(
@@ -126,8 +130,8 @@ impl RenderOnce for Sheet {
                                 .path(theme.icons.x())
                                 .size(px(16.))
                                 .text_color(theme.muted_foreground),
-                        ),
-                )
+                        )
+                })
             });
 
         deferred(
