@@ -17,8 +17,48 @@ pub struct ComponentDocs {
 pub static ACCORDION_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Accordion",
-        signature: "pub fn new() -> Self",
+        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn multiple(mut self, multiple: bool) -> Self",
+        doc: "When true, more than one item may be open (Base UI `multiple`). Default **false** — single-open, matching the shadcn docs.",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
+        doc: "Disables every item (half opacity, no pointer events, unfocusable).",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn bordered(mut self, bordered: bool) -> Self",
+        doc: "Outer border + rounded shell with horizontal item padding (`border`, `rounded-lg`, item `px-4`).",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn default_value(mut self, ids: impl IntoIterator<Item = impl Into<ElementId>>) -> Self",
+        doc: "Uncontrolled initial open set (`defaultValue`).",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn value(mut self, ids: impl IntoIterator<Item = impl Into<ElementId>>) -> Self",
+        doc: "Controlled open set (`value`). When set, the root does not store state.",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn on_value_change( mut self, handler: impl Fn(&[ElementId], &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Controlled-mode toggle reporter (`onValueChange`).",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn child(mut self, item: AccordionItem) -> Self",
+        doc: "Append a typed item (inherent — not [`ParentElement`]).",
+    },
+    ApiEntry {
+        type_name: "Accordion",
+        signature: "pub fn children(mut self, items: impl IntoIterator<Item = AccordionItem>) -> Self",
+        doc: "Append typed items (inherent — not [`ParentElement`]).",
     },
     ApiEntry {
         type_name: "AccordionItem",
@@ -27,23 +67,18 @@ pub static ACCORDION_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "AccordionItem",
-        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
-        doc: "The always-visible header row (usually a label string).",
+        signature: "pub fn child(mut self, part: impl Into<AccordionPart>) -> Self",
+        doc: "Append a typed trigger or content part.",
     },
     ApiEntry {
         type_name: "AccordionItem",
-        signature: "pub fn content(mut self, content: impl IntoElement) -> Self",
-        doc: "The collapsible body.",
+        signature: "pub fn trigger(self, trigger: impl IntoElement) -> Self",
+        doc: "Sugar: wrap `trigger` into an [`AccordionTrigger`].",
     },
     ApiEntry {
         type_name: "AccordionItem",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn last(mut self, last: bool) -> Self",
-        doc: "Marks the last item, which drops its bottom border (the source's `not-last:border-b`).",
+        signature: "pub fn content(self, content: impl IntoElement) -> Self",
+        doc: "Sugar: wrap `content` into an [`AccordionContent`].",
     },
     ApiEntry {
         type_name: "AccordionItem",
@@ -51,13 +86,18 @@ pub static ACCORDION_API: &[ApiEntry] = &[
         doc: "aria-disabled: half opacity, no pointer events, unfocusable.",
     },
     ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn on_toggle( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        type_name: "AccordionTrigger",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "AccordionContent",
+        signature: "pub fn new() -> Self",
         doc: "",
     },
 ];
 
-pub static ACCORDION_USAGE: &str = "let items = [\n    (\n        \"Product Information\",\n        \"Our flagship product combines cutting-edge technology with sleek design. \\\n         Built with premium materials, it offers unparalleled performance and \\\n         reliability.\",\n    ),\n    (\n        \"Shipping Details\",\n        \"We offer worldwide shipping through trusted courier partners. Standard \\\n         delivery takes 3-5 business days, while express shipping ensures delivery \\\n         within 1-2 business days.\",\n    ),\n    (\n        \"Return Policy\",\n        \"We stand behind our products with a comprehensive 30-day return policy. If \\\n         you're not completely satisfied, simply return the item in its original \\\n         condition.\",\n    ),\n];\nlet count = items.len();\ndiv()\n    .w(px(384.))\n    .child(Accordion::new().children(items.into_iter().enumerate().map(\n        |(index, (title, body))| {\n            AccordionItem::new((\"accordion-item\", index))\n                .trigger(title)\n                .content(body)\n                .open(self.accordion_open == Some(index))\n                .last(index + 1 == count)\n                .on_toggle(cx.listener(move |this, _: &ClickEvent, _, cx| {\n                    this.accordion_open = if this.accordion_open == Some(index) {\n                        None\n                    } else {\n                        Some(index)\n                    };\n                    cx.notify();\n                }))\n        },\n    )))\n    ";
+pub static ACCORDION_USAGE: &str = "div().w(px(384.)).child(\n    Accordion::new(\"accordion-demo\")\n        .default_value([\"item-1\"])\n        .multiple(self.accordion_multiple)\n        .disabled(self.accordion_root_disabled)\n        .child(\n            AccordionItem::new(\"item-1\")\n                .child(AccordionTrigger::new().child(\"Product Information\"))\n                .child(AccordionContent::new().child(\n                    \"Our flagship product combines cutting-edge technology with sleek \\\n                     design. Built with premium materials, it offers unparalleled \\\n                     performance and reliability.\",\n                )),\n        )\n        .child(\n            AccordionItem::new(\"item-2\")\n                .child(AccordionTrigger::new().child(\"Shipping Details\"))\n                .child(AccordionContent::new().child(\n                    \"We offer worldwide shipping through trusted courier partners. \\\n                     Standard delivery takes 3-5 business days, while express shipping \\\n                     ensures delivery within 1-2 business days.\",\n                )),\n        )\n        .child(\n            AccordionItem::new(\"item-3\")\n                .child(AccordionTrigger::new().child(\"Return Policy\"))\n                .child(AccordionContent::new().child(\n                    \"We stand behind our products with a comprehensive 30-day return \\\n                     policy. If you're not completely satisfied, simply return the item \\\n                     in its original condition.\",\n                ))\n                .disabled(self.accordion_disable_third),\n        ),\n)\n    ";
 
 pub static ALERT_API: &[ApiEntry] = &[
     ApiEntry {
