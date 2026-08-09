@@ -49,6 +49,10 @@ impl IconLibrary {
     pub fn chevron_right(self) -> String {
         format!("icons/{}/chevron-right.svg", self.dir())
     }
+
+    pub fn check(self) -> String {
+        format!("icons/{}/check.svg", self.dir())
+    }
 }
 
 /// A stroked 24px icon in the Lucide/Tabler style.
@@ -124,6 +128,22 @@ const ICONS: &[(&str, &[u8])] = &[
         filled!(
             "24 24",
             "M13.1717 12L8.22192 7.05025L9.63614 5.63604L16.0001 12L9.63614 18.364L8.22192 16.9497L13.1717 12Z"
+        ),
+    ),
+    ("icons/lucide/check.svg", stroked!("M20 6 9 17l-5-5")),
+    ("icons/tabler/check.svg", stroked!("M5 12l5 5l10 -10")),
+    (
+        "icons/phosphor/check.svg",
+        filled!(
+            "256 256",
+            "M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"
+        ),
+    ),
+    (
+        "icons/remix/check.svg",
+        filled!(
+            "24 24",
+            "M10 15.1716L19.1924 5.97919L20.6066 7.3934L10 18L3.63604 11.636L5.05025 10.2218L10 15.1716Z"
         ),
     ),
     // Status icons (lucide drawings shared across libraries for now —
