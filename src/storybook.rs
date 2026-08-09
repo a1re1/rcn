@@ -19,10 +19,11 @@ use gpui::{
 
 use crate::assets::IconLibrary;
 use crate::components::{
-    Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
-    BadgeVariant, Button, ButtonSize, ButtonVariant, Card, CardAction, CardContent,
-    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Kbd, KbdGroup, Label, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
+    Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, Avatar,
+    AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
+    ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
+    CardSize, CardTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -40,10 +41,11 @@ enum Story {
     Label,
     Kbd,
     Card,
+    Alert,
 }
 
 impl Story {
-    const ALL: [Story; 12] = [
+    const ALL: [Story; 13] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -56,6 +58,7 @@ impl Story {
         Story::Label,
         Story::Kbd,
         Story::Card,
+        Story::Alert,
     ];
 
     fn label(self) -> &'static str {
@@ -72,6 +75,7 @@ impl Story {
             Story::Label => "Label",
             Story::Kbd => "Kbd",
             Story::Card => "Card",
+            Story::Alert => "Alert",
         }
     }
 
@@ -96,6 +100,7 @@ impl Story {
             Story::Label => "Renders an accessible label associated with controls.",
             Story::Kbd => "Used to display textual user input from keyboard.",
             Story::Card => "Displays a card with header, content, and footer.",
+            Story::Alert => "Displays a callout for user attention.",
         }
     }
 }
@@ -243,6 +248,8 @@ pub struct Storybook {
     button_disabled: bool,
     // Badge controls
     badge_variant: BadgeVariant,
+    // Alert controls
+    alert_variant: AlertVariant,
     // Avatar controls
     avatar_size: AvatarSize,
     // Switch controls
@@ -273,6 +280,7 @@ impl Storybook {
             button_size: ButtonSize::Default,
             button_disabled: false,
             badge_variant: BadgeVariant::Default,
+            alert_variant: AlertVariant::Default,
             avatar_size: AvatarSize::Default,
             switch_checked: true,
             switch_size: SwitchSize::Default,
@@ -508,6 +516,7 @@ impl Storybook {
             Story::Label => Self::label_preview().into_any_element(),
             Story::Kbd => Self::kbd_preview().into_any_element(),
             Story::Card => self.card_preview(cx).into_any_element(),
+            Story::Alert => self.alert_preview().into_any_element(),
         };
         div()
             .id("canvas")
@@ -694,6 +703,23 @@ impl Storybook {
                 &theme,
             )],
             Story::Separator => Vec::new(),
+            Story::Alert => vec![Self::control_row(
+                "variant",
+                Self::choices(
+                    "alert-variant",
+                    &[
+                        ("default", AlertVariant::Default),
+                        ("destructive", AlertVariant::Destructive),
+                    ],
+                    self.alert_variant,
+                    cx,
+                    |this, v, cx| {
+                        this.alert_variant = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             Story::Skeleton => Vec::new(),
             Story::Label => Vec::new(),
             Story::Kbd => Vec::new(),
@@ -1464,6 +1490,30 @@ impl Storybook {
                     .child(Kbd::new().child("Ctrl"))
                     .child("+")
                     .child(Kbd::new().child("B")),
+            )
+    }
+
+    fn alert_preview(&self) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .w(px(384.))
+            .child(
+                Alert::new()
+                    .variant(self.alert_variant)
+                    .icon(crate::assets::ICON_CIRCLE_CHECK)
+                    .child(AlertTitle::new().child("Success! Your changes have been saved"))
+                    .child(
+                        AlertDescription::new()
+                            .child("This is an alert with icon, title and description."),
+                    ),
+            )
+            .child(
+                Alert::new()
+                    .variant(self.alert_variant)
+                    .icon(crate::assets::ICON_CIRCLE_ALERT)
+                    .child(AlertTitle::new().child("This one has an icon and a title only.")),
             )
     }
 

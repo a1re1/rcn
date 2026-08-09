@@ -126,7 +126,20 @@ const ICONS: &[(&str, &[u8])] = &[
             "M13.1717 12L8.22192 7.05025L9.63614 5.63604L16.0001 12L9.63614 18.364L8.22192 16.9497L13.1717 12Z"
         ),
     ),
+    // Status icons (lucide drawings shared across libraries for now —
+    // TODO(rcn): per-library variants).
+    (
+        "icons/circle-alert.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>"##,
+    ),
+    (
+        "icons/circle-check.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>"##,
+    ),
 ];
+
+pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
+pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 
 pub struct Assets;
 

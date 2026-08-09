@@ -4,6 +4,7 @@
 //! [`crate::theme`] tokens (and [`crate::assets`] icons where noted).
 
 pub mod accordion;
+pub mod alert;
 pub mod avatar;
 pub mod badge;
 pub mod button;
@@ -18,6 +19,7 @@ pub mod switch;
 #[allow(unused_imports)] // public API; storybook uses Separator::vertical()
 use self::SeparatorOrientation as _;
 pub use accordion::{Accordion, AccordionItem};
+pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
 pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
 pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
