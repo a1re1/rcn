@@ -14,6 +14,7 @@ pub mod button_group;
 pub mod card;
 pub mod checkbox;
 pub mod collapsible;
+pub mod dialog;
 pub mod empty;
 pub mod hover_card;
 pub mod item;
@@ -51,6 +52,7 @@ pub use card::{
 };
 pub use checkbox::Checkbox;
 pub use collapsible::Collapsible;
+pub use dialog::{Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle};
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
