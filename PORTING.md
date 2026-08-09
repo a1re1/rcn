@@ -47,7 +47,7 @@ lands with a storybook story exercising its variants.
 
 - [x] tooltip
 - [x] hover-card
-- [ ] dialog
+- [x] dialog
 - [x] alert-dialog
 - [ ] sheet
 - [ ] drawer

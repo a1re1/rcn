@@ -54,6 +54,10 @@ impl IconLibrary {
         format!("icons/{}/chevron-left.svg", self.dir())
     }
 
+    pub fn x(self) -> String {
+        format!("icons/{}/x.svg", self.dir())
+    }
+
     pub fn check(self) -> String {
         format!("icons/{}/check.svg", self.dir())
     }
@@ -148,6 +152,22 @@ const ICONS: &[(&str, &[u8])] = &[
         filled!(
             "24 24",
             "M10.8284 12L15.7782 16.9497L14.364 18.364L8 12L14.364 5.63604L15.7782 7.05025L10.8284 12Z"
+        ),
+    ),
+    ("icons/lucide/x.svg", stroked!("M18 6 6 18M6 6l12 12")),
+    ("icons/tabler/x.svg", stroked!("M18 6l-12 12M6 6l12 12")),
+    (
+        "icons/phosphor/x.svg",
+        filled!(
+            "256 256",
+            "M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"
+        ),
+    ),
+    (
+        "icons/remix/x.svg",
+        filled!(
+            "24 24",
+            "M12 10.5858L16.2426 6.34315L17.6569 7.75736L13.4142 12L17.6569 16.2426L16.2426 17.6569L12 13.4142L7.75736 17.6569L6.34315 16.2426L10.5858 12L6.34315 7.75736L7.75736 6.34315L12 10.5858Z"
         ),
     ),
     ("icons/lucide/check.svg", stroked!("M20 6 9 17l-5-5")),

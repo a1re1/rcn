@@ -24,15 +24,16 @@ use crate::components::{
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Checkbox, Collapsible, Empty, EmptyContent, EmptyDescription, EmptyHeader,
-    EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item, ItemActions, ItemContent,
-    ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator,
-    ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis,
-    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider,
-    Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle,
-    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    CardSize, CardTitle, Checkbox, Collapsible, Dialog, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, HoverCard, Item, ItemActions, ItemContent, ItemDescription,
+    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
+    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider, Spinner, Switch,
+    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
+    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
+    ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -70,11 +71,12 @@ enum Story {
     ScrollArea,
     TooltipStory,
     HoverCardStory,
+    DialogStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 32] = [
+    const ALL: [Story; 33] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -107,6 +109,7 @@ impl Story {
         Story::ScrollArea,
         Story::TooltipStory,
         Story::HoverCardStory,
+        Story::DialogStory,
         // __STORY_ALL__
     ];
 
@@ -144,6 +147,7 @@ impl Story {
             Story::ScrollArea => "Scroll Area",
             Story::TooltipStory => "Tooltip",
             Story::HoverCardStory => "Hover Card",
+            Story::DialogStory => "Dialog",
             // __STORY_LABELS__
         }
     }
@@ -204,6 +208,9 @@ impl Story {
             }
             Story::HoverCardStory => {
                 "For sighted users to preview content available behind a link."
+            }
+            Story::DialogStory => {
+                "A window overlaid on the primary window, rendering the content underneath inert."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -386,6 +393,8 @@ pub struct Storybook {
     slider_fine: f32,
     // Pagination story state
     pagination_page: usize,
+    // Dialog story state
+    dialog_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -431,6 +440,7 @@ impl Storybook {
             slider_value: 50.,
             slider_fine: 0.4,
             pagination_page: 2,
+            dialog_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -683,6 +693,7 @@ impl Storybook {
             Story::ScrollArea => Self::scroll_area_preview(cx).into_any_element(),
             Story::TooltipStory => Self::tooltip_preview().into_any_element(),
             Story::HoverCardStory => Self::hover_card_preview().into_any_element(),
+            Story::DialogStory => self.dialog_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -975,6 +986,18 @@ impl Storybook {
             Story::ScrollArea => Vec::new(),
             Story::TooltipStory => Vec::new(),
             Story::HoverCardStory => Vec::new(),
+            Story::DialogStory => vec![Self::control_row(
+                "open",
+                Switch::new("ctl-dialog-open")
+                    .checked(self.dialog_open)
+                    .size(SwitchSize::Sm)
+                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                        this.dialog_open = *open;
+                        cx.notify();
+                    }))
+                    .into_any_element(),
+                &theme,
+            )],
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2500,6 +2523,61 @@ impl Storybook {
                         .child("@nextjs"),
                 ),
         )
+    }
+    fn dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .child(
+                Button::new("dialog-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.dialog_open = true;
+                        cx.notify();
+                    }))
+                    .child("Edit Profile"),
+            )
+            .child(
+                Dialog::new("dialog-demo")
+                    .open(self.dialog_open)
+                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                        this.dialog_open = *open;
+                        cx.notify();
+                    }))
+                    .child(
+                        DialogHeader::new()
+                            .child(DialogTitle::new().child("Edit profile"))
+                            .child(DialogDescription::new().child(
+                                "Make changes to your profile here. Click save when you're done.",
+                            )),
+                    )
+                    .child(
+                        div()
+                            .h(px(80.))
+                            .w_full()
+                            .rounded(theme.radius_md())
+                            .bg(theme.muted),
+                    )
+                    .child(
+                        DialogFooter::new()
+                            .child(
+                                Button::new("dialog-cancel")
+                                    .variant(ButtonVariant::Outline)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.dialog_open = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Cancel"),
+                            )
+                            .child(
+                                Button::new("dialog-save")
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.dialog_open = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Save changes"),
+                            ),
+                    ),
+            )
     }
 
     // __STORY_PREVIEWS__
