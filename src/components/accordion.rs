@@ -6,11 +6,12 @@
 //! equivalent wired up yet); content simply shows or hides.
 
 use gpui::{
-    AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
+    AnimationExt as _, AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _,
+    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
     prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::motion;
 use crate::theme::Theme;
 
 type ToggleHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
@@ -54,6 +55,7 @@ pub struct AccordionItem {
     content: Option<AnyElement>,
     open: bool,
     last: bool,
+    disabled: bool,
     on_toggle: Option<ToggleHandler>,
 }
 
@@ -65,6 +67,7 @@ impl AccordionItem {
             content: None,
             open: false,
             last: false,
+            disabled: false,
             on_toggle: None,
         }
     }
@@ -90,6 +93,12 @@ impl AccordionItem {
     /// (the source's `not-last:border-b`).
     pub fn last(mut self, last: bool) -> Self {
         self.last = last;
+        self
+    }
+
+    /// aria-disabled: half opacity, no pointer events, unfocusable.
+    pub fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
@@ -119,7 +128,7 @@ impl RenderOnce for AccordionItem {
             // text-sm font-medium hover:underline
             .child(
                 div()
-                    .id(self.id)
+                    .id(self.id.clone())
                     .flex()
                     .flex_row()
                     .w_full()
@@ -131,8 +140,17 @@ impl RenderOnce for AccordionItem {
                     .line_height(px(20.))
                     .font_weight(FontWeight::MEDIUM)
                     .text_color(theme.foreground)
-                    .hover(|s| s.underline())
-                    .when_some(self.on_toggle, |el, on_toggle| el.on_click(on_toggle))
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(gpui::transparent_black())
+                    .when(self.disabled, |el| el.opacity(0.5))
+                    .when(!self.disabled, |el| {
+                        let ring = motion::focus_ring(&theme);
+                        el.hover(|s| s.underline())
+                            .tab_index(0)
+                            .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                            .when_some(self.on_toggle, |el, on_toggle| el.on_click(on_toggle))
+                    })
                     .children(self.trigger)
                     // **:data-[slot=accordion-trigger-icon]:size-4
                     // text-muted-foreground
@@ -146,13 +164,23 @@ impl RenderOnce for AccordionItem {
             )
             // Content: text-sm, pb-4 when open.
             .when(self.open, |el| {
+                // accordion-down: 200ms ease-out. True height animation
+                // needs pre-measured content (TODO(rcn)); the reveal fades
+                // and slides in on the same clock instead.
                 el.child(
                     div()
-                        .pb(px(16.))
-                        .text_size(px(14.))
-                        .line_height(px(20.))
-                        .text_color(theme.foreground)
-                        .children(self.content),
+                        .overflow_hidden()
+                        .child(
+                            div()
+                                .pb(px(16.))
+                                .text_size(px(14.))
+                                .line_height(px(20.))
+                                .text_color(theme.foreground)
+                                .children(self.content),
+                        )
+                        .with_animation(self.id.clone(), motion::expand(), |el, delta| {
+                            el.opacity(delta).mt(px(-8. * (1. - delta)))
+                        }),
                 )
             })
     }

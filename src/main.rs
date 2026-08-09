@@ -4,10 +4,14 @@
 
 mod assets;
 mod components;
+mod motion;
 mod storybook;
 mod theme;
 
-use gpui::{App, AppContext, Application, Bounds, QuitMode, WindowBounds, WindowOptions, px, size};
+use gpui::{
+    App, AppContext, Application, Bounds, Focusable as _, QuitMode, WindowBounds, WindowOptions,
+    px, size,
+};
 
 use assets::Assets;
 use components::Input;
@@ -36,7 +40,11 @@ fn main() {
                 }),
                 ..Default::default()
             },
-            |_window, cx| cx.new(Storybook::new),
+            |window, cx| {
+                let storybook = cx.new(Storybook::new);
+                window.focus(&storybook.focus_handle(cx), cx);
+                storybook
+            },
         )
         .expect("failed to open window");
         cx.activate(true);
