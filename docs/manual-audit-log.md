@@ -3,4 +3,6 @@ and feel like shadcn and the date verified
 
 - [x] Accordion - @twhitehurst 08/09/2026
 - [x] Button - @twhitehurst 08/09/2026
+- [x] Card - @twhitehurst 08/09/2026
+- [x] Kbd - @twhitehurst 08/09/2026
 
