@@ -51,6 +51,10 @@ use crate::components::{
 };
 use crate::theme::{BaseColor, Theme, alpha, oklch};
 
+// Child module so showcase can call Storybook's private helpers (token_controls, etc.).
+#[path = "storybook_showcase.rs"]
+mod showcase;
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Story {
     Tokens,
@@ -3062,6 +3066,7 @@ impl Storybook {
 
     // ---- stories -----------------------------------------------------------
 
+    #[allow(dead_code)]
     fn tokens_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let swatches = [
@@ -5364,17 +5369,20 @@ impl Render for Storybook {
             .bg(theme.background)
             .text_color(theme.foreground)
             .when_some(theme.font_sans.clone(), |el, font| el.font_family(font))
-            .child(
-                SidebarProvider::new().sidebar(self.sidebar(cx)).inset(
+            .child(SidebarProvider::new().sidebar(self.sidebar(cx)).inset(
+                if self.story == Story::Tokens {
+                    self.showcase(cx)
+                } else {
                     div()
                         .flex()
                         .flex_row()
                         .size_full()
                         .min_w(px(0.))
                         .child(self.canvas(cx))
-                        .child(self.controls_panel(cx)),
-                ),
-            )
+                        .child(self.controls_panel(cx))
+                        .into_any_element()
+                },
+            ))
     }
 }
 
