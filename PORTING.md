@@ -24,7 +24,7 @@ lands with a storybook story exercising its variants.
 - [ ] aspect-ratio
 - [x] card
 - [x] alert
-- [ ] progress
+- [x] progress
 - [ ] empty
 - [ ] item
 - [ ] table
