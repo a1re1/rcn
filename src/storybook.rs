@@ -13,8 +13,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, Empty, FontWeight, Hsla, Window, div,
-    hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, FontWeight, Hsla, Window, div, hsla,
+    prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -249,7 +249,7 @@ struct DragPreview;
 
 impl Render for DragPreview {
     fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        Empty
+        gpui::Empty
     }
 }
 
