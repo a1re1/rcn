@@ -27,11 +27,12 @@ use crate::components::{
     CardSize, CardTitle, Checkbox, Collapsible, Empty, EmptyContent, EmptyDescription, EmptyHeader,
     EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription,
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Slider, Spinner,
-    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle,
-    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
+    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Slider, Spinner, Switch, SwitchSize,
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -65,11 +66,12 @@ enum Story {
     Collapsible,
     Tabs,
     SliderStory,
+    PaginationStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 28] = [
+    const ALL: [Story; 29] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -98,6 +100,7 @@ impl Story {
         Story::Collapsible,
         Story::Tabs,
         Story::SliderStory,
+        Story::PaginationStory,
         // __STORY_ALL__
     ];
 
@@ -131,6 +134,7 @@ impl Story {
             Story::Collapsible => "Collapsible",
             Story::Tabs => "Tabs",
             Story::SliderStory => "Slider",
+            Story::PaginationStory => "Pagination",
             // __STORY_LABELS__
         }
     }
@@ -181,7 +185,9 @@ impl Story {
             Story::Tabs => "A set of layered sections of content displayed one at a time.",
             Story::SliderStory => {
                 "An input where the user selects a value from within a given range."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::PaginationStory => "Pagination with page navigation, next and previous links.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -360,6 +366,8 @@ pub struct Storybook {
     tabs_variant: TabsVariant,
     // Slider story state
     slider_value: f32,
+    // Pagination story state
+    pagination_page: usize,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -403,6 +411,7 @@ impl Storybook {
             tabs_active: 0,
             tabs_variant: TabsVariant::Default,
             slider_value: 50.,
+            pagination_page: 2,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -651,6 +660,7 @@ impl Storybook {
             Story::Collapsible => self.collapsible_preview(cx).into_any_element(),
             Story::Tabs => self.tabs_preview(cx).into_any_element(),
             Story::SliderStory => self.slider_preview(cx).into_any_element(),
+            Story::PaginationStory => self.pagination_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -939,6 +949,7 @@ impl Storybook {
                 &theme,
             )],
             Story::SliderStory => Vec::new(),
+            Story::PaginationStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2321,6 +2332,30 @@ impl Storybook {
                     .child(format!("value: {:.0}", self.slider_value)),
             )
             .child(Slider::new("slider-disabled").value(30.).disabled(true))
+    }
+    fn pagination_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        Pagination::new()
+            .child(
+                PaginationPrevious::new("page-prev").on_click(cx.listener(|this, _, _, cx| {
+                    this.pagination_page = this.pagination_page.saturating_sub(1).max(1);
+                    cx.notify();
+                })),
+            )
+            .children((1..=3).map(|page| {
+                PaginationLink::new(("page-link", page), page.to_string())
+                    .active(self.pagination_page == page)
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.pagination_page = page;
+                        cx.notify();
+                    }))
+            }))
+            .child(PaginationEllipsis::new())
+            .child(
+                PaginationNext::new("page-next").on_click(cx.listener(|this, _, _, cx| {
+                    this.pagination_page = (this.pagination_page + 1).min(3);
+                    cx.notify();
+                })),
+            )
     }
 
     // __STORY_PREVIEWS__

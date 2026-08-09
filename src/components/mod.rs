@@ -18,6 +18,7 @@ pub mod empty;
 pub mod item;
 pub mod kbd;
 pub mod label;
+pub mod pagination;
 pub mod popover;
 pub mod progress;
 pub mod radio_group;
@@ -56,6 +57,9 @@ pub use item::{
 };
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
+pub use pagination::{
+    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious,
+};
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use progress::Progress;
 pub use radio_group::{RadioGroup, RadioGroupItem};
