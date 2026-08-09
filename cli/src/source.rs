@@ -1,9 +1,9 @@
 //! Fetch registry.json and component files from a local path or GitHub raw.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use std::path::{Path, PathBuf};
 
-use crate::registry::{Registry, REGISTRY_FILE};
+use crate::registry::{REGISTRY_FILE, Registry};
 
 /// Where component/registry files are loaded from.
 #[derive(Debug, Clone)]
@@ -71,11 +71,7 @@ impl Source {
 ///
 /// Prefer `--path` (offline local checkout). Otherwise use GitHub raw with the
 /// given repo/ref, defaulting to `a1re1/rcn` @ `main`.
-pub fn resolve(
-    path: Option<PathBuf>,
-    repo: Option<&str>,
-    r#ref: Option<&str>,
-) -> Result<Source> {
+pub fn resolve(path: Option<PathBuf>, repo: Option<&str>, r#ref: Option<&str>) -> Result<Source> {
     if let Some(p) = path {
         if !p.exists() {
             bail!("local path does not exist: {}", p.display());

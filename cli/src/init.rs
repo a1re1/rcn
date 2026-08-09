@@ -1,12 +1,12 @@
 //! `rcn init` subcommand.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use std::path::{Path, PathBuf};
 
 use crate::cargo_edit::{
     inject_gpui_deps, is_hello_world_main, scaffold_main_rs, suggested_mod_lines,
 };
-use crate::config::{self, Config, CONFIG_FILE};
+use crate::config::{self, CONFIG_FILE, Config};
 use crate::modfile::COMPONENTS_MOD_HEADER;
 use crate::registry::Registry;
 use crate::source::{self, Source};
@@ -90,11 +90,13 @@ fn vendor_core(project: &Path, cfg: &Config, src: &Source, registry: &Registry) 
         if core.name == "components_mod" {
             // Intentionally do NOT copy the storybook's full mod.rs — start empty.
             if dest.exists() {
-                println!("· {} already exists — left unchanged", rel_display(project, &dest));
+                println!(
+                    "· {} already exists — left unchanged",
+                    rel_display(project, &dest)
+                );
             } else {
-                std::fs::write(&dest, COMPONENTS_MOD_HEADER).with_context(|| {
-                    format!("failed to write {}", dest.display())
-                })?;
+                std::fs::write(&dest, COMPONENTS_MOD_HEADER)
+                    .with_context(|| format!("failed to write {}", dest.display()))?;
                 println!("✓ wrote {}", rel_display(project, &dest));
             }
             continue;

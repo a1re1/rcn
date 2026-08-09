@@ -175,10 +175,7 @@ pub fn ensure_git_deps(
 
 /// Ensure `[dependencies]` contains each crates.io dep (skip if present).
 /// Returns the names that were newly inserted.
-pub fn ensure_crate_deps(
-    cargo_toml: &str,
-    deps: &[CrateDep],
-) -> Result<(String, Vec<String>)> {
+pub fn ensure_crate_deps(cargo_toml: &str, deps: &[CrateDep]) -> Result<(String, Vec<String>)> {
     let mut doc = cargo_toml
         .parse::<DocumentMut>()
         .context("failed to parse Cargo.toml")?;
@@ -235,7 +232,9 @@ mod tests {
 
     #[test]
     fn detects_hello_world_variants() {
-        assert!(is_hello_world_main(r#"fn main() { println!("Hello, world!"); }"#));
+        assert!(is_hello_world_main(
+            r#"fn main() { println!("Hello, world!"); }"#
+        ));
         assert!(is_hello_world_main(
             r#"
             // comment
@@ -320,7 +319,9 @@ unicode-segmentation = "1"
 
     #[test]
     fn errors_on_bad_toml() {
-        let err = ensure_crate_deps("[[[not toml", &[]).unwrap_err().to_string();
+        let err = ensure_crate_deps("[[[not toml", &[])
+            .unwrap_err()
+            .to_string();
         assert!(err.contains("parse"), "{err}");
     }
 }

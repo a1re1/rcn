@@ -9,7 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use rcn_cli::{run, Cli, Commands};
+use rcn_cli::{Cli, Commands, run};
 use tempfile::tempdir;
 
 /// Serialize tests that mutate process-global cwd.
@@ -103,20 +103,13 @@ fn init_and_add_button_combobox_offline() {
         .collect();
     assert_eq!(
         mods,
-        vec![
-            "pub mod button;",
-            "pub mod combobox;",
-            "pub mod input;",
-        ],
+        vec!["pub mod button;", "pub mod combobox;", "pub mod input;",],
         "mod.rs should list sorted, deduped modules:\n{mod_rs}"
     );
 
     // Cargo.toml gained gpui + unicode-segmentation
     let cargo = fs::read_to_string(project.join("Cargo.toml")).unwrap();
-    assert!(
-        cargo.contains("gpui"),
-        "Cargo.toml missing gpui:\n{cargo}"
-    );
+    assert!(cargo.contains("gpui"), "Cargo.toml missing gpui:\n{cargo}");
     assert!(
         cargo.contains("gpui_platform") || cargo.contains("gpui-platform"),
         "Cargo.toml missing gpui_platform:\n{cargo}"

@@ -1,6 +1,6 @@
 //! Consumer `rcn.toml` load/save.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -72,8 +72,7 @@ pub fn load(dir: &Path) -> Result<Config> {
 pub fn save(dir: &Path, cfg: &Config) -> Result<PathBuf> {
     let path = dir.join(CONFIG_FILE);
     let text = format_config(cfg);
-    std::fs::write(&path, text)
-        .with_context(|| format!("failed to write {}", path.display()))?;
+    std::fs::write(&path, text).with_context(|| format!("failed to write {}", path.display()))?;
     Ok(path)
 }
 
