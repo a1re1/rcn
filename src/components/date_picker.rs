@@ -175,7 +175,9 @@ impl RenderOnce for DatePicker {
                         .top(relative(1.))
                         .pt(px(4.))
                         .child(deferred(
-                            anchored().snap_to_window_with_margin(px(8.)).child(panel),
+                            anchored()
+                                .snap_to_window_with_margin(px(8.))
+                                .child(crate::motion::pop_in("datepicker-in", panel)),
                         )),
                 )
             })

@@ -17,7 +17,10 @@
 
 use std::time::Duration;
 
-use gpui::{Animation, BoxShadow, Hsla, point, px};
+use gpui::{
+    Animation, AnimationElement, AnimationExt as _, BoxShadow, ElementId, Hsla, IntoElement,
+    Styled, point, px,
+};
 
 use crate::theme::{Theme, alpha};
 
@@ -49,6 +52,19 @@ pub fn enter_fast() -> Animation {
 /// `accordion-down` / `collapsible-down`: 200ms `ease-out`.
 pub fn expand() -> Animation {
     Animation::new(Duration::from_millis(200)).with_easing(ease_out())
+}
+
+/// Wrap an overlay panel with the popover family's enter animation —
+/// `animate-in fade-in-0 slide-in-from-top-2 duration-100`: opacity 0→1
+/// and an 8px downward settle over 100ms `ease`. (zoom-in-95 has no div
+/// transform in gpui; the fade+slide pair carries the effect.)
+pub fn pop_in<E: IntoElement + Styled + 'static>(
+    id: impl Into<ElementId>,
+    panel: E,
+) -> AnimationElement<E> {
+    panel.with_animation(id, enter_fast(), |el, delta| {
+        el.opacity(delta).mt(px(-8. * (1. - delta)))
+    })
 }
 
 /// Evaluate a CSS cubic-bezier timing function at progress `t`.

@@ -98,30 +98,33 @@ impl RenderOnce for Popover {
                         .pt(px(4.))
                         .child(deferred(
                             anchored().snap_to_window_with_margin(px(8.)).child(
-                                // w-72 rounded-md bg-popover p-4 text-sm
-                                // text-popover-foreground shadow-md ring-1
-                                // ring-foreground/10, flex-col gap-4
-                                div()
-                                    .occlude()
-                                    .flex()
-                                    .flex_col()
-                                    .gap(px(16.))
-                                    .w(px(288.))
-                                    .rounded(theme.radius_md())
-                                    .bg(theme.popover)
-                                    .text_color(theme.popover_foreground)
-                                    .text_size(px(14.))
-                                    .line_height(px(20.))
-                                    .p(px(16.))
-                                    .shadow_md()
-                                    .border_1()
-                                    .border_color(alpha(theme.foreground, 0.1))
-                                    .when_some(close, |el, close| {
-                                        el.on_mouse_down_out(move |_, window, cx| {
-                                            close(&false, window, cx)
+                                crate::motion::pop_in(
+                                    "popover-in",
+                                    // w-72 rounded-md bg-popover p-4 text-sm
+                                    // text-popover-foreground shadow-md ring-1
+                                    // ring-foreground/10, flex-col gap-4
+                                    div()
+                                        .occlude()
+                                        .flex()
+                                        .flex_col()
+                                        .gap(px(16.))
+                                        .w(px(288.))
+                                        .rounded(theme.radius_md())
+                                        .bg(theme.popover)
+                                        .text_color(theme.popover_foreground)
+                                        .text_size(px(14.))
+                                        .line_height(px(20.))
+                                        .p(px(16.))
+                                        .shadow_md()
+                                        .border_1()
+                                        .border_color(alpha(theme.foreground, 0.1))
+                                        .when_some(close, |el, close| {
+                                            el.on_mouse_down_out(move |_, window, cx| {
+                                                close(&false, window, cx)
+                                            })
                                         })
-                                    })
-                                    .children(self.content),
+                                        .children(self.content),
+                                ),
                             ),
                         )),
                 )

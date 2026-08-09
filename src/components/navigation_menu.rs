@@ -162,7 +162,12 @@ impl RenderOnce for NavigationMenu {
                                 .top(relative(1.))
                                 .pt(px(6.))
                                 .child(deferred(
-                                    anchored().snap_to_window_with_margin(px(8.)).child(panel),
+                                    anchored().snap_to_window_with_margin(px(8.)).child(
+                                        crate::motion::pop_in(
+                                            "navmenu-in",
+                                            gpui::div().child(panel),
+                                        ),
+                                    ),
                                 )),
                         )
                     })

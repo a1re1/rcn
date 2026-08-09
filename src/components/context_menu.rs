@@ -90,7 +90,10 @@ impl RenderOnce for ContextMenu {
                 anchored()
                     .position(position)
                     .snap_to_window_with_margin(gpui::px(8.))
-                    .child(menu_panel(self.entries, self.on_open_change, cx).into_any_element()),
+                    .child(crate::motion::pop_in(
+                        "contextmenu-in",
+                        gpui::div().child(menu_panel(self.entries, self.on_open_change, cx)),
+                    )),
             )
         });
 
