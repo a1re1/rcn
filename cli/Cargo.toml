@@ -1,0 +1,25 @@
+[package]
+name = "rcn-cli"
+version = "0.1.0"
+edition = "2024"
+description = "CLI installer for the rcn gpui component library"
+license = "MIT"
+
+[[bin]]
+name = "rcn"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+similar = "2"
+toml_edit = { version = "0.22", features = ["serde"] }
+ureq = "2"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+tempfile = "3"

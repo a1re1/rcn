@@ -1,0 +1,687 @@
+{
+  "version": 1,
+  "gpui_deps": {
+    "gpui": {
+      "git": "https://github.com/zed-industries/zed",
+      "rev": "027cf0def75e5c027504f402a6a6c0dcac11f178",
+      "package": "gpui"
+    },
+    "gpui_platform": {
+      "git": "https://github.com/zed-industries/zed",
+      "rev": "027cf0def75e5c027504f402a6a6c0dcac11f178",
+      "package": "gpui_platform",
+      "features": [
+        "font-kit"
+      ]
+    }
+  },
+  "core": [
+    {
+      "name": "theme",
+      "path": "src/theme.rs"
+    },
+    {
+      "name": "motion",
+      "path": "src/motion.rs"
+    },
+    {
+      "name": "assets",
+      "path": "src/assets.rs"
+    },
+    {
+      "name": "components_mod",
+      "path": "src/components/mod.rs"
+    }
+  ],
+  "components": [
+    {
+      "name": "accordion",
+      "module": "accordion",
+      "description": "Accordion — port of shadcn base-vega `ui/accordion.tsx`.",
+      "files": [
+        "src/components/accordion.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "alert",
+      "module": "alert",
+      "description": "Alert — port of shadcn base-vega `ui/alert.tsx`.",
+      "files": [
+        "src/components/alert.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "alert-dialog",
+      "module": "alert_dialog",
+      "description": "AlertDialog — port of shadcn base-vega `ui/alert-dialog.tsx`.",
+      "files": [
+        "src/components/alert_dialog.rs"
+      ],
+      "registry_deps": [
+        "dialog"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "aspect-ratio",
+      "module": "aspect_ratio",
+      "description": "AspectRatio — port of shadcn base-vega `ui/aspect-ratio.tsx`.",
+      "files": [
+        "src/components/aspect_ratio.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "attachment",
+      "module": "attachment",
+      "description": "Attachment — port of shadcn base-vega `ui/attachment.tsx`.",
+      "files": [
+        "src/components/attachment.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "avatar",
+      "module": "avatar",
+      "description": "Avatar — port of shadcn base-vega `ui/avatar.tsx`.",
+      "files": [
+        "src/components/avatar.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "badge",
+      "module": "badge",
+      "description": "Badge — port of shadcn base-vega `ui/badge.tsx`.",
+      "files": [
+        "src/components/badge.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "breadcrumb",
+      "module": "breadcrumb",
+      "description": "Breadcrumb — port of shadcn base-vega `ui/breadcrumb.tsx`.",
+      "files": [
+        "src/components/breadcrumb.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "bubble",
+      "module": "bubble",
+      "description": "Bubble — port of shadcn base-vega `ui/bubble.tsx`.",
+      "files": [
+        "src/components/bubble.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "button",
+      "module": "button",
+      "description": "Button — port of shadcn base-vega `ui/button.tsx`.",
+      "files": [
+        "src/components/button.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "button-group",
+      "module": "button_group",
+      "description": "ButtonGroup — port of shadcn base-vega `ui/button-group.tsx`.",
+      "files": [
+        "src/components/button_group.rs"
+      ],
+      "registry_deps": [
+        "button",
+        "separator"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "calendar",
+      "module": "calendar",
+      "description": "Calendar — port of shadcn base-vega `ui/calendar.tsx` (react-day-picker",
+      "files": [
+        "src/components/calendar.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "card",
+      "module": "card",
+      "description": "Card — port of shadcn base-vega `ui/card.tsx`.",
+      "files": [
+        "src/components/card.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "carousel",
+      "module": "carousel",
+      "description": "Carousel — port of shadcn base-vega `ui/carousel.tsx` (embla upstream).",
+      "files": [
+        "src/components/carousel.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "chart",
+      "module": "chart",
+      "description": "Chart — gpui-native adaptation of shadcn's chart components (recharts",
+      "files": [
+        "src/components/chart.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "checkbox",
+      "module": "checkbox",
+      "description": "Checkbox — port of shadcn base-vega `ui/checkbox.tsx`.",
+      "files": [
+        "src/components/checkbox.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "collapsible",
+      "module": "collapsible",
+      "description": "Collapsible — port of shadcn base-vega `ui/collapsible.tsx`.",
+      "files": [
+        "src/components/collapsible.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "combobox",
+      "module": "combobox",
+      "description": "Combobox — port of the shadcn base-vega combobox (Popover + Command",
+      "files": [
+        "src/components/combobox.rs"
+      ],
+      "registry_deps": [
+        "input"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "command",
+      "module": "command",
+      "description": "Command — port of shadcn base-vega `ui/command.tsx` (cmdk upstream).",
+      "files": [
+        "src/components/command.rs"
+      ],
+      "registry_deps": [
+        "input"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "context-menu",
+      "module": "context_menu",
+      "description": "ContextMenu — port of shadcn base-vega `ui/context-menu.tsx`.",
+      "files": [
+        "src/components/context_menu.rs"
+      ],
+      "registry_deps": [
+        "dropdown-menu"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "date-picker",
+      "module": "date_picker",
+      "description": "DatePicker — port of the shadcn date-picker (Popover + Calendar",
+      "files": [
+        "src/components/date_picker.rs"
+      ],
+      "registry_deps": [
+        "calendar"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "dialog",
+      "module": "dialog",
+      "description": "Dialog — port of shadcn base-vega `ui/dialog.tsx`.",
+      "files": [
+        "src/components/dialog.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "drawer",
+      "module": "drawer",
+      "description": "Drawer — port of shadcn base-vega `ui/drawer.tsx` (vaul upstream).",
+      "files": [
+        "src/components/drawer.rs"
+      ],
+      "registry_deps": [
+        "dialog"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "dropdown-menu",
+      "module": "dropdown_menu",
+      "description": "DropdownMenu — port of shadcn base-vega `ui/dropdown-menu.tsx`.",
+      "files": [
+        "src/components/dropdown_menu.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "empty",
+      "module": "empty",
+      "description": "Empty — port of shadcn base-vega `ui/empty.tsx`.",
+      "files": [
+        "src/components/empty.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "field",
+      "module": "field",
+      "description": "Field — port of shadcn base-vega `ui/field.tsx`.",
+      "files": [
+        "src/components/field.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "hover-card",
+      "module": "hover_card",
+      "description": "HoverCard — port of shadcn base-vega `ui/hover-card.tsx`.",
+      "files": [
+        "src/components/hover_card.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "input",
+      "module": "input",
+      "description": "Input — port of shadcn base-vega `ui/input.tsx`.",
+      "files": [
+        "src/components/input.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": [
+        {
+          "name": "unicode-segmentation",
+          "version": "1"
+        }
+      ]
+    },
+    {
+      "name": "input-group",
+      "module": "input_group",
+      "description": "InputGroup — port of shadcn base-vega `ui/input-group.tsx`.",
+      "files": [
+        "src/components/input_group.rs"
+      ],
+      "registry_deps": [
+        "input"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "input-otp",
+      "module": "input_otp",
+      "description": "InputOtp — port of shadcn base-vega `ui/input-otp.tsx`.",
+      "files": [
+        "src/components/input_otp.rs"
+      ],
+      "registry_deps": [
+        "input",
+        "separator"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "item",
+      "module": "item",
+      "description": "Item — port of shadcn base-vega `ui/item.tsx`.",
+      "files": [
+        "src/components/item.rs"
+      ],
+      "registry_deps": [
+        "separator"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "kbd",
+      "module": "kbd",
+      "description": "Kbd — port of shadcn base-vega `ui/kbd.tsx`.",
+      "files": [
+        "src/components/kbd.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "label",
+      "module": "label",
+      "description": "Label — port of shadcn base-vega `ui/label.tsx`.",
+      "files": [
+        "src/components/label.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "marker",
+      "module": "marker",
+      "description": "Marker — port of shadcn base-vega `ui/marker.tsx`.",
+      "files": [
+        "src/components/marker.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "menubar",
+      "module": "menubar",
+      "description": "Menubar — port of shadcn base-vega `ui/menubar.tsx`.",
+      "files": [
+        "src/components/menubar.rs"
+      ],
+      "registry_deps": [
+        "dropdown-menu"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "message",
+      "module": "message",
+      "description": "Message — port of shadcn base-vega `ui/message.tsx`.",
+      "files": [
+        "src/components/message.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "message-scroller",
+      "module": "message_scroller",
+      "description": "MessageScroller — port of shadcn base-vega `ui/message-scroller.tsx`.",
+      "files": [
+        "src/components/message_scroller.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "native-select",
+      "module": "native_select",
+      "description": "NativeSelect — port of shadcn base-vega `ui/native-select.tsx`.",
+      "files": [
+        "src/components/native_select.rs"
+      ],
+      "registry_deps": [
+        "select"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "navigation-menu",
+      "module": "navigation_menu",
+      "description": "NavigationMenu — port of shadcn base-vega `ui/navigation-menu.tsx`.",
+      "files": [
+        "src/components/navigation_menu.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "pagination",
+      "module": "pagination",
+      "description": "Pagination — port of shadcn base-vega `ui/pagination.tsx`.",
+      "files": [
+        "src/components/pagination.rs"
+      ],
+      "registry_deps": [
+        "button"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "popover",
+      "module": "popover",
+      "description": "Popover — port of shadcn base-vega `ui/popover.tsx`.",
+      "files": [
+        "src/components/popover.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "progress",
+      "module": "progress",
+      "description": "Progress — port of shadcn base-vega `ui/progress.tsx`.",
+      "files": [
+        "src/components/progress.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "questionnaire",
+      "module": "questionnaire",
+      "description": "Questionnaire — port of shadcn base-vega `ui/questionnaire.tsx` (core",
+      "files": [
+        "src/components/questionnaire.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "radio-group",
+      "module": "radio_group",
+      "description": "RadioGroup — port of shadcn base-vega `ui/radio-group.tsx`.",
+      "files": [
+        "src/components/radio_group.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "resizable",
+      "module": "resizable",
+      "description": "Resizable — port of shadcn base-vega `ui/resizable.tsx`",
+      "files": [
+        "src/components/resizable.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "scroll-area",
+      "module": "scroll_area",
+      "description": "ScrollArea — port of shadcn base-vega `ui/scroll-area.tsx`.",
+      "files": [
+        "src/components/scroll_area.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "select",
+      "module": "select",
+      "description": "Select — port of shadcn base-vega `ui/select.tsx`.",
+      "files": [
+        "src/components/select.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "separator",
+      "module": "separator",
+      "description": "Separator — port of shadcn base-vega `ui/separator.tsx`.",
+      "files": [
+        "src/components/separator.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "sheet",
+      "module": "sheet",
+      "description": "Sheet — port of shadcn base-vega `ui/sheet.tsx`.",
+      "files": [
+        "src/components/sheet.rs"
+      ],
+      "registry_deps": [
+        "dialog"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "sidebar",
+      "module": "sidebar",
+      "description": "Sidebar — port of shadcn base-vega `ui/sidebar.tsx` (core subset).",
+      "files": [
+        "src/components/sidebar.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "skeleton",
+      "module": "skeleton",
+      "description": "Skeleton — port of shadcn base-vega `ui/skeleton.tsx`.",
+      "files": [
+        "src/components/skeleton.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "slider",
+      "module": "slider",
+      "description": "Slider — port of shadcn base-vega `ui/slider.tsx`.",
+      "files": [
+        "src/components/slider.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "spinner",
+      "module": "spinner",
+      "description": "Spinner — port of shadcn base-vega `ui/spinner.tsx`.",
+      "files": [
+        "src/components/spinner.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "switch",
+      "module": "switch",
+      "description": "Switch — port of shadcn base-vega `ui/switch.tsx`.",
+      "files": [
+        "src/components/switch.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "table",
+      "module": "table",
+      "description": "Table — port of shadcn base-vega `ui/table.tsx`.",
+      "files": [
+        "src/components/table.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "tabs",
+      "module": "tabs",
+      "description": "Tabs — port of shadcn base-vega `ui/tabs.tsx`.",
+      "files": [
+        "src/components/tabs.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "textarea",
+      "module": "textarea",
+      "description": "Textarea — port of shadcn base-vega `ui/textarea.tsx`.",
+      "files": [
+        "src/components/textarea.rs"
+      ],
+      "registry_deps": [
+        "input"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "toast",
+      "module": "toast",
+      "description": "Toast — port of shadcn base-vega `ui/toast.tsx`.",
+      "files": [
+        "src/components/toast.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "toggle",
+      "module": "toggle",
+      "description": "Toggle — port of shadcn base-vega `ui/toggle.tsx`.",
+      "files": [
+        "src/components/toggle.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    },
+    {
+      "name": "toggle-group",
+      "module": "toggle_group",
+      "description": "ToggleGroup — port of shadcn base-vega `ui/toggle-group.tsx`.",
+      "files": [
+        "src/components/toggle_group.rs"
+      ],
+      "registry_deps": [
+        "toggle"
+      ],
+      "crate_deps": []
+    },
+    {
+      "name": "tooltip",
+      "module": "tooltip",
+      "description": "Tooltip — port of shadcn base-vega `ui/tooltip.tsx`.",
+      "files": [
+        "src/components/tooltip.rs"
+      ],
+      "registry_deps": [],
+      "crate_deps": []
+    }
+  ]
+}
