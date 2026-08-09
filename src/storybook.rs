@@ -29,7 +29,8 @@ use crate::components::{
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover,
     PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
     Separator, Skeleton, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
-    TableFooter, TableHead, TableHeader, TableRow, Toggle, ToggleSize, ToggleVariant,
+    TableFooter, TableHead, TableHeader, TableRow, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -58,11 +59,12 @@ enum Story {
     Checkbox,
     RadioGroup,
     Toggle,
+    ToggleGroup,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 23] = [
+    const ALL: [Story; 24] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -86,6 +88,7 @@ impl Story {
         Story::Checkbox,
         Story::RadioGroup,
         Story::Toggle,
+        Story::ToggleGroup,
         // __STORY_ALL__
     ];
 
@@ -114,6 +117,7 @@ impl Story {
             Story::Checkbox => "Checkbox",
             Story::RadioGroup => "Radio Group",
             Story::Toggle => "Toggle",
+            Story::ToggleGroup => "Toggle Group",
             // __STORY_LABELS__
         }
     }
@@ -156,6 +160,7 @@ impl Story {
                 "A set of checkable buttons where only one can be checked at a time."
             }
             Story::Toggle => "A two-state button that can be either on or off.",
+            Story::ToggleGroup => "A set of two-state buttons that can be toggled on or off.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -326,6 +331,8 @@ pub struct Storybook {
     // Toggle story state
     toggle_pressed: bool,
     toggle_outline_pressed: bool,
+    // Toggle group story state
+    toggle_group_on: [bool; 3],
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -364,6 +371,7 @@ impl Storybook {
             radio_selected: 1,
             toggle_pressed: true,
             toggle_outline_pressed: false,
+            toggle_group_on: [true, false, false],
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -607,6 +615,7 @@ impl Storybook {
             Story::Checkbox => self.checkbox_preview(cx).into_any_element(),
             Story::RadioGroup => self.radio_group_preview(cx).into_any_element(),
             Story::Toggle => self.toggle_preview(cx).into_any_element(),
+            Story::ToggleGroup => self.toggle_group_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -863,6 +872,7 @@ impl Storybook {
             )],
             Story::RadioGroup => Vec::new(),
             Story::Toggle => Vec::new(),
+            Story::ToggleGroup => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2028,6 +2038,34 @@ impl Storybook {
                     .disabled(true)
                     .child("Disabled"),
             )
+    }
+    fn toggle_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let labels = ["Bold", "Italic", "Underline"];
+        div().flex().flex_col().gap(px(16.)).children(
+            [ToggleVariant::Default, ToggleVariant::Outline].map(|variant| {
+                let mut group = ToggleGroup::new().variant(variant);
+                for (index, label) in labels.into_iter().enumerate() {
+                    let on = self.toggle_group_on[index];
+                    group = group.item(
+                        ToggleGroupItem::new((
+                            if variant == ToggleVariant::Outline {
+                                "tg-outline"
+                            } else {
+                                "tg-default"
+                            },
+                            index,
+                        ))
+                        .pressed(on)
+                        .on_change(cx.listener(move |this, pressed: &bool, _, cx| {
+                            this.toggle_group_on[index] = *pressed;
+                            cx.notify();
+                        }))
+                        .child(label),
+                    );
+                }
+                group
+            }),
+        )
     }
 
     // __STORY_PREVIEWS__
