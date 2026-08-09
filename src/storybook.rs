@@ -20,14 +20,16 @@ use gpui::{
 use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, AspectRatio,
-    Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
-    ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
-    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
-    ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, Separator, Skeleton, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
-    TableCell, TableFooter, TableHead, TableHeader, TableRow,
+    Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Breadcrumb,
+    BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator, Button, ButtonSize, ButtonVariant, Card, CardAction, CardContent,
+    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Empty, EmptyContent,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions,
+    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
+    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, Separator, Skeleton, Spinner,
+    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -52,11 +54,12 @@ enum Story {
     Empty,
     Item,
     Table,
+    Breadcrumb,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 19] = [
+    const ALL: [Story; 20] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -76,6 +79,7 @@ impl Story {
         Story::Empty,
         Story::Item,
         Story::Table,
+        Story::Breadcrumb,
         // __STORY_ALL__
     ];
 
@@ -100,6 +104,7 @@ impl Story {
             Story::Empty => "Empty",
             Story::Item => "Item",
             Story::Table => "Table",
+            Story::Breadcrumb => "Breadcrumb",
             // __STORY_LABELS__
         }
     }
@@ -132,7 +137,9 @@ impl Story {
             Story::Empty => "Use to display an empty state, such as no results or missing data.",
             Story::Item => "A flexible list row with media, content, and actions.",
             Story::Table => "A responsive table component.",
-            // __STORY_DESCRIPTIONS__
+            Story::Breadcrumb => {
+                "Displays the path to the current resource using a hierarchy of links."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -568,6 +575,7 @@ impl Storybook {
             Story::Empty => Self::empty_preview(cx).into_any_element(),
             Story::Item => self.item_preview(cx).into_any_element(),
             Story::Table => self.table_preview(cx).into_any_element(),
+            Story::Breadcrumb => Self::breadcrumb_preview().into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -809,6 +817,7 @@ impl Storybook {
                 ),
             ],
             Story::Table => Vec::new(),
+            Story::Breadcrumb => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1846,6 +1855,22 @@ impl Storybook {
                 };
                 cx.notify();
             }))
+    }
+
+    fn breadcrumb_preview() -> impl IntoElement + use<> {
+        Breadcrumb::new().child(
+            BreadcrumbList::new()
+                .child(BreadcrumbItem::new().child(BreadcrumbLink::new("bc-home").child("Home")))
+                .child(BreadcrumbSeparator::new())
+                .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))
+                .child(BreadcrumbSeparator::new())
+                .child(
+                    BreadcrumbItem::new()
+                        .child(BreadcrumbLink::new("bc-components").child("Components")),
+                )
+                .child(BreadcrumbSeparator::new())
+                .child(BreadcrumbItem::new().child(BreadcrumbPage::new().child("Breadcrumb"))),
+        )
     }
 
     // __STORY_PREVIEWS__
