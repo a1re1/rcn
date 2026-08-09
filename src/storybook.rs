@@ -20,8 +20,8 @@ use gpui::{
 use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
-    BadgeVariant, Button, ButtonSize, ButtonVariant, Label, Popover, PopoverDescription,
-    PopoverHeader, PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
+    BadgeVariant, Button, ButtonSize, ButtonVariant, Kbd, KbdGroup, Label, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -37,10 +37,11 @@ enum Story {
     Separator,
     Skeleton,
     Label,
+    Kbd,
 }
 
 impl Story {
-    const ALL: [Story; 10] = [
+    const ALL: [Story; 11] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -51,6 +52,7 @@ impl Story {
         Story::Separator,
         Story::Skeleton,
         Story::Label,
+        Story::Kbd,
     ];
 
     fn label(self) -> &'static str {
@@ -65,6 +67,7 @@ impl Story {
             Story::Separator => "Separator",
             Story::Skeleton => "Skeleton",
             Story::Label => "Label",
+            Story::Kbd => "Kbd",
         }
     }
 
@@ -87,6 +90,7 @@ impl Story {
             Story::Separator => "Visually or semantically separates content.",
             Story::Skeleton => "Use to show a placeholder while content is loading.",
             Story::Label => "Renders an accessible label associated with controls.",
+            Story::Kbd => "Used to display textual user input from keyboard.",
         }
     }
 }
@@ -492,6 +496,7 @@ impl Storybook {
             Story::Separator => Self::separator_preview(cx).into_any_element(),
             Story::Skeleton => Self::skeleton_preview().into_any_element(),
             Story::Label => Self::label_preview().into_any_element(),
+            Story::Kbd => Self::kbd_preview().into_any_element(),
         };
         div()
             .id("canvas")
@@ -680,6 +685,7 @@ impl Storybook {
             Story::Separator => Vec::new(),
             Story::Skeleton => Vec::new(),
             Story::Label => Vec::new(),
+            Story::Kbd => Vec::new(),
             Story::Popover => vec![Self::control_row(
                 "open",
                 Switch::new("ctl-popover-open")
@@ -1406,6 +1412,34 @@ impl Storybook {
                     .child(Label::new().child("Airplane Mode")),
             )
             .child(Label::new().disabled(true).child("Disabled label"))
+    }
+
+    fn kbd_preview() -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .child(
+                KbdGroup::new()
+                    .child(Kbd::new().child("⌘"))
+                    .child(Kbd::new().child("K")),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(4.))
+                    .child(Kbd::new().child("Ctrl"))
+                    .child(Kbd::new().child("⇧"))
+                    .child(Kbd::new().child("Alt")),
+            )
+            .child(
+                KbdGroup::new()
+                    .child(Kbd::new().child("Ctrl"))
+                    .child("+")
+                    .child(Kbd::new().child("B")),
+            )
     }
 
     fn popover_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {

@@ -19,7 +19,7 @@ lands with a storybook story exercising its variants.
 - [x] separator
 - [x] skeleton
 - [x] label
-- [ ] kbd
+- [x] kbd
 - [ ] spinner
 - [ ] aspect-ratio
 - [ ] card
