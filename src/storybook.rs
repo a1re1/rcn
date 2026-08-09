@@ -21,7 +21,7 @@ use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
     BadgeVariant, Button, ButtonSize, ButtonVariant, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Separator, Switch, SwitchSize,
+    PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -35,10 +35,11 @@ enum Story {
     Accordion,
     Popover,
     Separator,
+    Skeleton,
 }
 
 impl Story {
-    const ALL: [Story; 8] = [
+    const ALL: [Story; 9] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -47,6 +48,7 @@ impl Story {
         Story::Accordion,
         Story::Popover,
         Story::Separator,
+        Story::Skeleton,
     ];
 
     fn label(self) -> &'static str {
@@ -59,6 +61,7 @@ impl Story {
             Story::Accordion => "Accordion",
             Story::Popover => "Popover",
             Story::Separator => "Separator",
+            Story::Skeleton => "Skeleton",
         }
     }
 
@@ -79,6 +82,7 @@ impl Story {
             }
             Story::Popover => "Displays rich content in a portal, triggered by a button.",
             Story::Separator => "Visually or semantically separates content.",
+            Story::Skeleton => "Use to show a placeholder while content is loading.",
         }
     }
 }
@@ -482,6 +486,7 @@ impl Storybook {
             Story::Accordion => self.accordion_preview(cx).into_any_element(),
             Story::Popover => self.popover_preview(cx).into_any_element(),
             Story::Separator => Self::separator_preview(cx).into_any_element(),
+            Story::Skeleton => Self::skeleton_preview().into_any_element(),
         };
         div()
             .id("canvas")
@@ -668,6 +673,7 @@ impl Storybook {
                 &theme,
             )],
             Story::Separator => Vec::new(),
+            Story::Skeleton => Vec::new(),
             Story::Popover => vec![Self::control_row(
                 "open",
                 Switch::new("ctl-popover-open")
@@ -1343,6 +1349,39 @@ impl Storybook {
                     .child("Docs")
                     .child(Separator::vertical())
                     .child("Source"),
+            )
+    }
+
+    fn skeleton_preview() -> impl IntoElement + use<> {
+        // Mirrors the shadcn docs example: avatar row + card-shaped block.
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(16.))
+                    .child(Skeleton::new().w(px(48.)).h(px(48.)).rounded_full())
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(8.))
+                            .child(Skeleton::new().w(px(200.)).h(px(16.)))
+                            .child(Skeleton::new().w(px(160.)).h(px(16.))),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(Skeleton::new().w(px(200.)).h(px(100.)))
+                    .child(Skeleton::new().w(px(200.)).h(px(16.)))
+                    .child(Skeleton::new().w(px(160.)).h(px(16.))),
             )
     }
 
