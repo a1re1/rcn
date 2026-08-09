@@ -13,6 +13,7 @@ use gpui::{
     prelude::FluentBuilder as _, px,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 /// The step container: grid gap-6.
@@ -271,6 +272,11 @@ impl RenderOnce for QuestionnaireChoice {
                 } else {
                     el.border_color(theme.input)
                 }
+            })
+            .map(|el| {
+                let ring = motion::focus_ring(&theme);
+                el.tab_index(0)
+                    .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
             })
             .hover(move |s| s.bg(alpha(theme.muted, 0.5)))
             .when_some(self.on_select, |el, on_select| el.on_click(on_select))

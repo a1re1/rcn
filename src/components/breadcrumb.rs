@@ -11,6 +11,7 @@ use gpui::{
 };
 
 use crate::assets::ICON_ELLIPSIS;
+use crate::motion;
 use crate::theme::Theme;
 
 type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
@@ -161,8 +162,11 @@ impl ParentElement for BreadcrumbLink {
 impl RenderOnce for BreadcrumbLink {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
+        let ring = motion::focus_ring(&theme);
         div()
             .id(self.id)
+            .tab_index(0)
+            .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
             .hover(move |s| s.text_color(theme.foreground))
             .when_some(self.on_click, |el, on_click| el.on_click(on_click))
             .children(self.children)
