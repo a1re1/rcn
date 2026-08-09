@@ -29,10 +29,10 @@ use crate::components::{
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
     PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Slider, Spinner, Switch, SwitchSize,
-    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider, Spinner, Switch,
+    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
+    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
+    ToggleGroupItem, ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -67,11 +67,12 @@ enum Story {
     Tabs,
     SliderStory,
     PaginationStory,
+    ScrollArea,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 29] = [
+    const ALL: [Story; 30] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -101,6 +102,7 @@ impl Story {
         Story::Tabs,
         Story::SliderStory,
         Story::PaginationStory,
+        Story::ScrollArea,
         // __STORY_ALL__
     ];
 
@@ -135,6 +137,7 @@ impl Story {
             Story::Tabs => "Tabs",
             Story::SliderStory => "Slider",
             Story::PaginationStory => "Pagination",
+            Story::ScrollArea => "Scroll Area",
             // __STORY_LABELS__
         }
     }
@@ -187,7 +190,9 @@ impl Story {
                 "An input where the user selects a value from within a given range."
             }
             Story::PaginationStory => "Pagination with page navigation, next and previous links.",
-            // __STORY_DESCRIPTIONS__
+            Story::ScrollArea => {
+                "Augments native scroll functionality for custom, cross-browser styling."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -661,6 +666,7 @@ impl Storybook {
             Story::Tabs => self.tabs_preview(cx).into_any_element(),
             Story::SliderStory => self.slider_preview(cx).into_any_element(),
             Story::PaginationStory => self.pagination_preview(cx).into_any_element(),
+            Story::ScrollArea => Self::scroll_area_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -950,6 +956,7 @@ impl Storybook {
             )],
             Story::SliderStory => Vec::new(),
             Story::PaginationStory => Vec::new(),
+            Story::ScrollArea => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2355,6 +2362,41 @@ impl Storybook {
                     this.pagination_page = (this.pagination_page + 1).min(3);
                     cx.notify();
                 })),
+            )
+    }
+    fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .rounded(theme.radius_md())
+            .border_1()
+            .border_color(theme.border)
+            .child(
+                ScrollArea::new("scroll-area-tags")
+                    .h(px(200.))
+                    .w(px(192.))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .p(px(16.))
+                            .child(
+                                div()
+                                    .text_size(px(14.))
+                                    .font_weight(FontWeight::MEDIUM)
+                                    .pb(px(8.))
+                                    .child("Tags"),
+                            )
+                            .children((1..=20).flat_map(|version| {
+                                [
+                                    div()
+                                        .py(px(6.))
+                                        .text_size(px(13.))
+                                        .child(format!("v1.2.0-beta.{version}"))
+                                        .into_any_element(),
+                                    Separator::new().into_any_element(),
+                                ]
+                            })),
+                    ),
             )
     }
 
