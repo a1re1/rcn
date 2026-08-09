@@ -1,6 +1,6 @@
 //! `rcn add` subcommand.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
@@ -11,12 +11,7 @@ use crate::registry::CrateDep;
 use crate::source;
 
 /// `rcn add <names...> [--all] [--overwrite] [--path <local-rcn-repo>]`
-pub fn run(
-    names: Vec<String>,
-    all: bool,
-    overwrite: bool,
-    path: Option<PathBuf>,
-) -> Result<()> {
+pub fn run(names: Vec<String>, all: bool, overwrite: bool, path: Option<PathBuf>) -> Result<()> {
     if !all && names.is_empty() {
         bail!("specify at least one component name, or pass --all");
     }
@@ -25,11 +20,7 @@ pub fn run(
     source::require_cargo_toml(&project)?;
     let cfg = config::load(&project)?;
 
-    let src = source::resolve(
-        path,
-        Some(&cfg.source.repo),
-        Some(&cfg.source.r#ref),
-    )?;
+    let src = source::resolve(path, Some(&cfg.source.repo), Some(&cfg.source.r#ref))?;
     println!("→ fetching registry from {}", src.label());
     let registry = src.fetch_registry()?;
 
@@ -47,9 +38,8 @@ pub fn run(
     );
 
     let components_dir = project.join(&cfg.paths.components);
-    std::fs::create_dir_all(&components_dir).with_context(|| {
-        format!("failed to create {}", components_dir.display())
-    })?;
+    std::fs::create_dir_all(&components_dir)
+        .with_context(|| format!("failed to create {}", components_dir.display()))?;
 
     let mut modules: Vec<String> = Vec::new();
     let mut crate_deps: Vec<CrateDep> = Vec::new();
@@ -78,14 +68,17 @@ pub fn run(
             let dest = components_dir.join(file_name);
 
             if dest.exists() && !overwrite {
-                println!("· {} already exists — skipped (pass --overwrite)", rel_display(&project, &dest));
+                println!(
+                    "· {} already exists — skipped (pass --overwrite)",
+                    rel_display(&project, &dest)
+                );
                 skipped_files += 1;
                 continue;
             }
 
-            let contents = src.fetch_text(rel).with_context(|| {
-                format!("failed to fetch `{rel}` for component `{name}`")
-            })?;
+            let contents = src
+                .fetch_text(rel)
+                .with_context(|| format!("failed to fetch `{rel}` for component `{name}`"))?;
             if let Some(parent) = dest.parent() {
                 std::fs::create_dir_all(parent)
                     .with_context(|| format!("failed to create {}", parent.display()))?;

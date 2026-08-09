@@ -78,11 +78,7 @@ fn resolve_list_context(
     let cfg_path = project.join(config::CONFIG_FILE);
     if cfg_path.exists() {
         let cfg = config::load(project)?;
-        let src = source::resolve(
-            path,
-            Some(&cfg.source.repo),
-            Some(&cfg.source.r#ref),
-        )?;
+        let src = source::resolve(path, Some(&cfg.source.repo), Some(&cfg.source.r#ref))?;
         let components_dir = Some(project.join(&cfg.paths.components));
         return Ok((src, components_dir));
     }
@@ -95,14 +91,17 @@ fn resolve_list_context(
     // No config and no --path: still allow default GitHub, but no installed marks.
     // Spec: "Must work both inside an initialized consumer project and (with
     // --path) without rcn.toml". Without either, give the init hint.
-    anyhow::bail!("no {} found — run `rcn init` first (or pass --path to a local rcn checkout)", config::CONFIG_FILE);
+    anyhow::bail!(
+        "no {} found — run `rcn init` first (or pass --path to a local rcn checkout)",
+        config::CONFIG_FILE
+    );
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::config::Config;
-    use crate::registry::{ComponentEntry, Registry, REGISTRY_FILE};
+    use crate::registry::{ComponentEntry, REGISTRY_FILE, Registry};
     use std::collections::BTreeMap;
     use tempfile::tempdir;
 

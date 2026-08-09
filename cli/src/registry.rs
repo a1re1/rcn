@@ -1,6 +1,6 @@
 //! Registry scan/build and types.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
@@ -100,7 +100,10 @@ impl Registry {
                 let key = normalize_name(raw);
                 if !by_name.contains_key(key.as_str()) {
                     // Also accept snake_case module name.
-                    if let Some(c) = self.components.iter().find(|c| c.module == raw.replace('-', "_"))
+                    if let Some(c) = self
+                        .components
+                        .iter()
+                        .find(|c| c.module == raw.replace('-', "_"))
                     {
                         out.push(c.name.clone());
                     } else {
@@ -144,7 +147,10 @@ impl Registry {
             for dep in &entry.registry_deps {
                 if needed.contains(dep) {
                     *indegree.entry(name.as_str()).or_insert(0) += 1;
-                    dependents.entry(dep.as_str()).or_default().push(name.as_str());
+                    dependents
+                        .entry(dep.as_str())
+                        .or_default()
+                        .push(name.as_str());
                 }
             }
         }
@@ -190,11 +196,8 @@ pub fn build(repo: Option<PathBuf>) -> Result<()> {
     let repo = repo.unwrap_or_else(|| PathBuf::from("."));
     let registry = scan_repo(&repo)?;
     let out = repo.join(REGISTRY_FILE);
-    let json = serde_json::to_string_pretty(&registry)
-        .context("serialize registry.json")?
-        + "\n";
-    fs::write(&out, json)
-        .with_context(|| format!("write {}", out.display()))?;
+    let json = serde_json::to_string_pretty(&registry).context("serialize registry.json")? + "\n";
+    fs::write(&out, json).with_context(|| format!("write {}", out.display()))?;
     eprintln!(
         "wrote {} ({} components)",
         out.display(),
@@ -248,8 +251,8 @@ pub fn scan_repo(repo: &Path) -> Result<Registry> {
             .and_then(|s| s.to_str())
             .ok_or_else(|| anyhow::anyhow!("bad component path {}", path.display()))?
             .to_string();
-        let source = fs::read_to_string(&path)
-            .with_context(|| format!("read {}", path.display()))?;
+        let source =
+            fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
         let rel = format!("src/components/{stem}.rs");
         let description = first_doc_line(&source);
         let registry_deps = parse_registry_deps(&source);
@@ -329,12 +332,16 @@ pub fn parse_registry_deps(source: &str) -> Vec<String> {
 
 /// External crates from top-level `use <crate>::…` lines (excluding
 /// std/core/alloc/gpui/crate/super/self), mapped to versions via `versions`.
-pub fn parse_crate_deps(
-    source: &str,
-    versions: &HashMap<String, String>,
-) -> Vec<CrateDep> {
+pub fn parse_crate_deps(source: &str, versions: &HashMap<String, String>) -> Vec<CrateDep> {
     const SKIP: &[&str] = &[
-        "std", "core", "alloc", "gpui", "gpui_platform", "crate", "super", "self",
+        "std",
+        "core",
+        "alloc",
+        "gpui",
+        "gpui_platform",
+        "crate",
+        "super",
+        "self",
     ];
     let mut found: BTreeMap<String, String> = BTreeMap::new();
     for line in source.lines() {
@@ -355,7 +362,9 @@ pub fn parse_crate_deps(
         }
         // crates.io names use hyphens; Rust imports use underscores.
         let crate_name = crate_root.replace('_', "-");
-        if let Some(version) = versions.get(&crate_name).or_else(|| versions.get(crate_root))
+        if let Some(version) = versions
+            .get(&crate_name)
+            .or_else(|| versions.get(crate_root))
         {
             found.entry(crate_name).or_insert_with(|| version.clone());
         } else {
@@ -400,10 +409,7 @@ pub fn parse_gpui_deps(cargo_toml: &str) -> Result<BTreeMap<String, GitDep>> {
             .get_str("rev")
             .ok_or_else(|| anyhow::anyhow!("dependencies.{name} missing rev"))?
             .to_string();
-        let package = table
-            .get_str("package")
-            .unwrap_or(name)
-            .to_string();
+        let package = table.get_str("package").unwrap_or(name).to_string();
         let features = table.get_str_array("features").unwrap_or_default();
 
         out.insert(

@@ -1,6 +1,6 @@
 //! `rcn diff` subcommand.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use similar::{ChangeTag, TextDiff};
 use std::path::{Path, PathBuf};
 
@@ -12,11 +12,7 @@ pub fn run(name: String, path: Option<PathBuf>) -> Result<()> {
     let project = std::env::current_dir().context("failed to resolve current directory")?;
     let cfg = config::load(&project)?;
 
-    let src = source::resolve(
-        path,
-        Some(&cfg.source.repo),
-        Some(&cfg.source.r#ref),
-    )?;
+    let src = source::resolve(path, Some(&cfg.source.repo), Some(&cfg.source.r#ref))?;
     let registry = src.fetch_registry()?;
 
     let entry = registry.find(&name).ok_or_else(|| {
@@ -50,12 +46,7 @@ pub fn run(name: String, path: Option<PathBuf>) -> Result<()> {
         }
 
         any_diff = true;
-        print_unified_diff(
-            &rel_display(&project, &local_path),
-            rel,
-            &local,
-            &remote,
-        );
+        print_unified_diff(&rel_display(&project, &local_path), rel, &local, &remote);
     }
 
     if !missing.is_empty() {
@@ -100,7 +91,7 @@ fn rel_display(project: &Path, path: &Path) -> String {
 mod tests {
     use super::*;
     use crate::config::{self, Config};
-    use crate::registry::{ComponentEntry, Registry, REGISTRY_FILE};
+    use crate::registry::{ComponentEntry, REGISTRY_FILE, Registry};
     use std::collections::BTreeMap;
     use tempfile::tempdir;
 

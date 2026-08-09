@@ -15,7 +15,11 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "rcn", version, about = "Install rcn gpui components into your project")]
+#[command(
+    name = "rcn",
+    version,
+    about = "Install rcn gpui components into your project"
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,

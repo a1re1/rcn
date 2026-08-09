@@ -47,10 +47,7 @@ pub fn ensure_pub_mods(contents: &str, modules: &[String]) -> (String, bool) {
 
     let mut out = String::new();
     // Trim trailing blank lines from header, then ensure one blank line before mods.
-    while header_lines
-        .last()
-        .is_some_and(|l| l.trim().is_empty())
-    {
+    while header_lines.last().is_some_and(|l| l.trim().is_empty()) {
         header_lines.pop();
     }
     if header_lines.is_empty() {
@@ -69,11 +66,7 @@ pub fn ensure_pub_mods(contents: &str, modules: &[String]) -> (String, bool) {
             out.push('\n');
         }
         // blank line between header and mods when header has content
-        if out
-            .lines()
-            .last()
-            .is_some_and(|l| !l.trim().is_empty())
-        {
+        if out.lines().last().is_some_and(|l| !l.trim().is_empty()) {
             out.push('\n');
         }
         for m in &existing {
