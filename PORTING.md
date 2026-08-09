@@ -23,7 +23,7 @@ lands with a storybook story exercising its variants.
 - [ ] spinner
 - [ ] aspect-ratio
 - [x] card
-- [ ] alert
+- [x] alert
 - [ ] progress
 - [ ] empty
 - [ ] item
@@ -48,7 +48,7 @@ lands with a storybook story exercising its variants.
 - [ ] tooltip
 - [ ] hover-card
 - [ ] dialog
-- [ ] alert-dialog
+- [x] alert-dialog
 - [ ] sheet
 - [ ] drawer
 - [ ] dropdown-menu
