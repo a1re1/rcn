@@ -211,7 +211,9 @@ impl RenderOnce for Select {
                         .pt(px(4.))
                         .w_full()
                         .child(deferred(
-                            anchored().snap_to_window_with_margin(px(8.)).child(panel),
+                            anchored()
+                                .snap_to_window_with_margin(px(8.))
+                                .child(crate::motion::pop_in("select-in", panel)),
                         )),
                 )
             })
