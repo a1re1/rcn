@@ -7,6 +7,7 @@ pub mod accordion;
 pub mod alert;
 pub mod alert_dialog;
 pub mod aspect_ratio;
+pub mod attachment;
 pub mod avatar;
 pub mod badge;
 pub mod breadcrumb;
@@ -67,6 +68,7 @@ pub use alert_dialog::{
     AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 };
 pub use aspect_ratio::AspectRatio;
+pub use attachment::{Attachment, AttachmentState};
 pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
 pub use badge::{Badge, BadgeVariant};
 pub use breadcrumb::{

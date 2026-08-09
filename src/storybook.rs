@@ -21,22 +21,23 @@ use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Alert, AlertDescription, AlertDialog, AlertDialogDescription,
     AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertTitle, AlertVariant, AspectRatio,
-    Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb,
-    BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
-    BreadcrumbSeparator, Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button,
-    ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar,
-    CalendarDate, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize,
-    CardTitle, Carousel, ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup,
-    CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
-    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
-    FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
-    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
-    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem,
-    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
-    MessageHeader, NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink,
-    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    Attachment, AttachmentState, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
+    BadgeVariant, BarChart, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink,
+    BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Bubble, BubbleAlign, BubbleReactions,
+    BubbleSide, BubbleVariant, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText,
+    ButtonSize, ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent,
+    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Carousel, ChartSeries, Checkbox,
+    Collapsible, Combobox, Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem,
+    DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer,
+    DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem,
+    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
+    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
+    InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
+    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, Message,
+    MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
+    NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination,
+    PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
     PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
     ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
     SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
@@ -109,11 +110,12 @@ enum Story {
     ChartStory,
     MessageStory,
     BubbleStory,
+    AttachmentStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 59] = [
+    const ALL: [Story; 60] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -173,6 +175,7 @@ impl Story {
         Story::ChartStory,
         Story::MessageStory,
         Story::BubbleStory,
+        Story::AttachmentStory,
         // __STORY_ALL__
     ];
 
@@ -237,6 +240,7 @@ impl Story {
             Story::ChartStory => "Chart",
             Story::MessageStory => "Message",
             Story::BubbleStory => "Bubble",
+            Story::AttachmentStory => "Attachment",
             // __STORY_LABELS__
         }
     }
@@ -353,7 +357,9 @@ impl Story {
             Story::ChartStory => "Beautiful charts built with the theme's chart tokens.",
             Story::MessageStory => "A chat message row with avatar, content, and meta rows.",
             Story::BubbleStory => "Chat bubbles with variants and floating reactions.",
-            // __STORY_DESCRIPTIONS__
+            Story::AttachmentStory => {
+                "A file chip with media, metadata, upload states, and removal."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -647,6 +653,8 @@ pub struct Storybook {
     data_table_desc: bool,
     // Bubble story state
     bubble_variant: BubbleVariant,
+    // Attachment story state
+    attachment_visible: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -790,6 +798,7 @@ impl Storybook {
             sidebar_active: 0,
             data_table_desc: true,
             bubble_variant: BubbleVariant::Muted,
+            attachment_visible: true,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -1027,6 +1036,7 @@ impl Storybook {
             Story::ChartStory => self.chart_preview(cx).into_any_element(),
             Story::MessageStory => self.message_preview(cx).into_any_element(),
             Story::BubbleStory => self.bubble_preview().into_any_element(),
+            Story::AttachmentStory => self.attachment_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1395,6 +1405,7 @@ impl Storybook {
                 ),
                 &theme,
             )],
+            Story::AttachmentStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3867,6 +3878,46 @@ impl Storybook {
                     ),
                 ),
         )
+    }
+    fn attachment_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .items_start()
+            .gap(px(12.))
+            .when(self.attachment_visible, |el| {
+                el.child(
+                    Attachment::new("attachment-report", "quarterly-report.pdf")
+                        .description("1.2 MB \u{00b7} PDF")
+                        .on_remove(cx.listener(|this, _, _, cx| {
+                            this.attachment_visible = false;
+                            cx.notify();
+                        })),
+                )
+            })
+            .child(
+                Attachment::new("attachment-uploading", "screenshot.png")
+                    .description("Uploading\u{2026}")
+                    .state(AttachmentState::Uploading)
+                    .media(Spinner::new().size(px(16.))),
+            )
+            .child(
+                Attachment::new("attachment-error", "huge-video.mov")
+                    .description("File exceeds the 25 MB limit")
+                    .state(AttachmentState::Error),
+            )
+            .when(!self.attachment_visible, |el| {
+                el.child(
+                    Button::new("attachment-restore")
+                        .variant(ButtonVariant::Outline)
+                        .size(ButtonSize::Sm)
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.attachment_visible = true;
+                            cx.notify();
+                        }))
+                        .child("Restore attachment"),
+                )
+            })
     }
 
     // __STORY_PREVIEWS__
