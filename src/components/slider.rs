@@ -11,6 +11,7 @@ use gpui::{
     prelude::FluentBuilder as _, px, relative,
 };
 
+use crate::motion;
 use crate::theme::Theme;
 
 type ChangeHandler = Box<dyn Fn(&f32, &mut Window, &mut App) + 'static>;
@@ -99,21 +100,41 @@ impl RenderOnce for Slider {
             .items_center()
             .when(self.disabled, |el| el.opacity(0.5))
             .when(!self.disabled, |el| {
-                el.on_drag(SliderDrag(id.clone()), |_, _, _, cx| {
-                    cx.new(|_| SliderDragPreview)
-                })
-                .when_some(self.on_change, |el, on_change| {
-                    el.on_drag_move(move |event: &DragMoveEvent<SliderDrag>, window, cx| {
-                        if event.drag(cx).0 == id {
-                            let f = ((event.event.position.x - event.bounds.origin.x)
-                                / event.bounds.size.width)
-                                .clamp(0., 1.);
-                            let raw = min + f * span;
-                            let snapped = (raw / step).round() * step;
-                            on_change(&snapped, window, cx);
-                        }
+                let ring = motion::focus_ring(&theme);
+                let value = self.value;
+                let (kmin, kmax) = (self.min, self.max);
+                el.tab_index(0)
+                    .rounded_full()
+                    .focus_visible(move |s| s.shadow(ring.clone()))
+                    .on_drag(SliderDrag(id.clone()), |_, _, _, cx| {
+                        cx.new(|_| SliderDragPreview)
                     })
-                })
+                    .when_some(self.on_change, move |el, on_change| {
+                        let on_change = std::rc::Rc::new(on_change);
+                        let arrows = on_change.clone();
+                        el.on_drag_move(move |event: &DragMoveEvent<SliderDrag>, window, cx| {
+                            if event.drag(cx).0 == id {
+                                let f = ((event.event.position.x - event.bounds.origin.x)
+                                    / event.bounds.size.width)
+                                    .clamp(0., 1.);
+                                let raw = min + f * span;
+                                let snapped = (raw / step).round() * step;
+                                on_change(&snapped, window, cx);
+                            }
+                        })
+                        // Arrow keys nudge by one step while focused
+                        // (Base UI slider keyboard support).
+                        .on_key_down(move |event, window, cx| {
+                            let delta = match event.keystroke.key.as_str() {
+                                "left" | "down" => -step,
+                                "right" | "up" => step,
+                                _ => return,
+                            };
+                            let next = (value + delta).clamp(kmin, kmax);
+                            arrows(&next, window, cx);
+                            cx.stop_propagation();
+                        })
+                    })
             })
             .child(
                 // Track: h-1.5 w-full rounded-full bg-muted

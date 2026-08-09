@@ -67,6 +67,18 @@ pub fn pop_in<E: IntoElement + Styled + 'static>(
     })
 }
 
+/// Tailwind `animate-pulse`: opacity breathing 1 → 0.5 → 1 over 2s,
+/// repeating.
+pub fn pulse<E: IntoElement + Styled + 'static>(
+    id: impl Into<ElementId>,
+    element: E,
+) -> AnimationElement<E> {
+    let animation = Animation::new(std::time::Duration::from_secs(2))
+        .repeat()
+        .with_easing(gpui::pulsating_between(0.5, 1.));
+    element.with_animation(id, animation, |el, delta| el.opacity(delta))
+}
+
 /// The dialog family's `duration-200` enter (fade + small settle).
 pub fn dialog_in<E: IntoElement + Styled + 'static>(
     id: impl Into<ElementId>,
