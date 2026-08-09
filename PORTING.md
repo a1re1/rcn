@@ -20,7 +20,7 @@ lands with a storybook story exercising its variants.
 - [x] skeleton
 - [x] label
 - [x] kbd
-- [ ] spinner
+- [x] spinner
 - [ ] aspect-ratio
 - [x] card
 - [x] alert
