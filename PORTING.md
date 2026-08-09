@@ -81,7 +81,7 @@ lands with a storybook story exercising its variants.
 
 ## Wave 6 — chat / AI components
 
-- [ ] attachment
+- [x] attachment
 - [x] bubble
 - [ ] direction
 - [ ] marker
