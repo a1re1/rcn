@@ -148,7 +148,15 @@ impl RenderOnce for Sheet {
                     .when_some(close, |el, close| {
                         el.on_click(move |_, window, cx| close(&false, window, cx))
                     })
-                    .child(panel),
+                    .child(match self.side {
+                        // 500ms ease-in-out slide from the sheet's edge.
+                        SheetSide::Right => crate::motion::slide_in("sheet-in", true, 384., panel),
+                        SheetSide::Left => crate::motion::slide_in("sheet-in", true, -384., panel),
+                        SheetSide::Top => crate::motion::slide_in("sheet-in", false, -240., panel),
+                        SheetSide::Bottom => {
+                            crate::motion::slide_in("sheet-in", false, 240., panel)
+                        }
+                    }),
             ),
         )
         .into_any_element()

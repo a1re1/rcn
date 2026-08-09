@@ -112,8 +112,9 @@ impl Toast {
 impl RenderOnce for Toast {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
-        // Card: w-full max-w-sm rounded-md bg-popover p-4 shadow-lg ring-1
-        div()
+        // Card: w-full max-w-sm rounded-md bg-popover p-4 shadow-lg ring-1,
+        // sliding in from the bottom like the source's enter animation.
+        let card = div()
             .id(self.id)
             .occlude()
             .flex()
@@ -168,6 +169,7 @@ impl RenderOnce for Toast {
                                 .text_color(theme.muted_foreground),
                         ),
                 )
-            })
+            });
+        crate::motion::pop_in("toast-in", card)
     }
 }

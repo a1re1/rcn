@@ -67,6 +67,37 @@ pub fn pop_in<E: IntoElement + Styled + 'static>(
     })
 }
 
+/// The dialog family's `duration-200` enter (fade + small settle).
+pub fn dialog_in<E: IntoElement + Styled + 'static>(
+    id: impl Into<ElementId>,
+    panel: E,
+) -> AnimationElement<E> {
+    let animation = Animation::new(std::time::Duration::from_millis(200)).with_easing(ease());
+    panel.with_animation(id, animation, |el, delta| {
+        el.opacity(delta).mt(px(8. * (1. - delta)))
+    })
+}
+
+/// Sheet/drawer slide: 500ms `ease-in-out`, sliding `distance` px along the
+/// axis toward rest (positive = from the right/bottom).
+pub fn slide_in<E: IntoElement + Styled + 'static>(
+    id: impl Into<ElementId>,
+    horizontal: bool,
+    distance: f32,
+    panel: E,
+) -> AnimationElement<E> {
+    let animation = Animation::new(std::time::Duration::from_millis(500))
+        .with_easing(cubic_bezier(0.42, 0., 0.58, 1.));
+    panel.with_animation(id, animation, move |el, delta| {
+        let offset = px(distance * (1. - delta));
+        if horizontal {
+            el.ml(offset)
+        } else {
+            el.mt(offset)
+        }
+    })
+}
+
 /// Evaluate a CSS cubic-bezier timing function at progress `t`.
 ///
 /// Solves the parametric curve x(s) = t for s (Newton–Raphson with a
