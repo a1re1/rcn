@@ -15,6 +15,7 @@ pub mod button_group;
 pub mod card;
 pub mod checkbox;
 pub mod collapsible;
+pub mod combobox;
 pub mod command;
 pub mod context_menu;
 pub mod dialog;
@@ -71,6 +72,7 @@ pub use card::{
 };
 pub use checkbox::Checkbox;
 pub use collapsible::Collapsible;
+pub use combobox::Combobox;
 pub use command::{Command, CommandGroup, CommandItem};
 pub use context_menu::{ContextMenu, ContextMenuItem};
 pub use dialog::{Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle};

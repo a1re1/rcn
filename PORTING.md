@@ -67,7 +67,7 @@ lands with a storybook story exercising its variants.
 - [x] input-group
 - [x] input-otp
 - [x] command
-- [ ] combobox
+- [x] combobox
 
 ## Wave 5 — composite & complex
 

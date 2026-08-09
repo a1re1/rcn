@@ -25,21 +25,22 @@ use crate::components::{
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Checkbox, Collapsible, Command, CommandGroup, CommandItem, ContextMenu,
-    ContextMenuItem, Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer,
-    DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem,
-    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
-    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
-    InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
-    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
-    NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
-    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
-    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner,
-    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
-    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    CardSize, CardTitle, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem,
+    ContextMenu, ContextMenuItem, Dialog, DialogDescription, DialogFooter, DialogHeader,
+    DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu,
+    DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
+    FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
+    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem,
+    MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination,
+    PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
+    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
+    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
+    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
+    TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -94,11 +95,12 @@ enum Story {
     InputGroupStory,
     InputOtpStory,
     CommandStory,
+    ComboboxStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 49] = [
+    const ALL: [Story; 50] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -148,6 +150,7 @@ impl Story {
         Story::InputGroupStory,
         Story::InputOtpStory,
         Story::CommandStory,
+        Story::ComboboxStory,
         // __STORY_ALL__
     ];
 
@@ -202,6 +205,7 @@ impl Story {
             Story::InputGroupStory => "Input Group",
             Story::InputOtpStory => "Input OTP",
             Story::CommandStory => "Command",
+            Story::ComboboxStory => "Combobox",
             // __STORY_LABELS__
         }
     }
@@ -302,7 +306,9 @@ impl Story {
                 "Accessible one-time password component with copy paste functionality."
             }
             Story::CommandStory => "Fast, composable, unstyled command menu.",
-            // __STORY_DESCRIPTIONS__
+            Story::ComboboxStory => {
+                "Autocomplete input and command palette with a list of suggestions."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -574,6 +580,10 @@ pub struct Storybook {
     input_otp: gpui::Entity<Input>,
     // Command story state
     command_input: gpui::Entity<Input>,
+    // Combobox story state
+    combobox_search: gpui::Entity<Input>,
+    combobox_value: Option<usize>,
+    combobox_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -628,8 +638,14 @@ impl Storybook {
             input.set_bare(true);
             input
         });
+        let combobox_search = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search framework...");
+            input.set_bare(true);
+            input
+        });
         // Live-refresh stories that derive UI from input text.
-        for input in [&command_input, &input_otp, &input_demo] {
+        for input in [&command_input, &input_otp, &input_demo, &combobox_search] {
             cx.observe(input, |_, _, cx| cx.notify()).detach();
         }
         let input_disabled = cx.new(|cx| {
@@ -697,6 +713,9 @@ impl Storybook {
             input_group_url,
             input_otp,
             command_input,
+            combobox_search,
+            combobox_value: None,
+            combobox_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -924,6 +943,7 @@ impl Storybook {
             Story::InputGroupStory => self.input_group_preview(cx).into_any_element(),
             Story::InputOtpStory => self.input_otp_preview(cx).into_any_element(),
             Story::CommandStory => self.command_preview(cx).into_any_element(),
+            Story::ComboboxStory => self.combobox_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1262,6 +1282,7 @@ impl Storybook {
             Story::InputGroupStory => Vec::new(),
             Story::InputOtpStory => Vec::new(),
             Story::CommandStory => Vec::new(),
+            Story::ComboboxStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3382,6 +3403,22 @@ impl Storybook {
                         .item(CommandItem::new("cmd-settings", "Settings").shortcut("\u{2318}S")),
                 ),
         )
+    }
+    fn combobox_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        Combobox::new("combobox-framework", self.combobox_search.clone())
+            .placeholder("Select framework...")
+            .empty_message("No framework found.")
+            .options(["Next.js", "SvelteKit", "Nuxt.js", "Remix", "Astro"])
+            .value(self.combobox_value)
+            .open(self.combobox_open)
+            .on_change(cx.listener(|this, value: &usize, _, cx| {
+                this.combobox_value = Some(*value);
+                cx.notify();
+            }))
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.combobox_open = *open;
+                cx.notify();
+            }))
     }
 
     // __STORY_PREVIEWS__
