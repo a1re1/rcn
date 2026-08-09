@@ -32,6 +32,7 @@ pub mod table;
 pub mod tabs;
 pub mod toggle;
 pub mod toggle_group;
+pub mod tooltip;
 
 pub use accordion::{Accordion, AccordionItem};
 pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
@@ -76,3 +77,4 @@ pub use table::{
 pub use tabs::{Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant};
 pub use toggle::{Toggle, ToggleSize, ToggleVariant};
 pub use toggle_group::{ToggleGroup, ToggleGroupItem};
+pub use tooltip::Tooltip;
