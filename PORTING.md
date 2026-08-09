@@ -27,7 +27,7 @@ lands with a storybook story exercising its variants.
 - [x] progress
 - [x] empty
 - [x] item
-- [ ] table
+- [x] table
 - [ ] breadcrumb
 
 ## Wave 2 — interactive controls
