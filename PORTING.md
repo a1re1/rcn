@@ -16,7 +16,7 @@ lands with a storybook story exercising its variants.
 
 ## Wave 1 — static & simple
 
-- [ ] separator
+- [x] separator
 - [ ] skeleton
 - [ ] label
 - [ ] kbd

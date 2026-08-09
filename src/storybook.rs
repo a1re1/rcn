@@ -21,7 +21,7 @@ use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
     BadgeVariant, Button, ButtonSize, ButtonVariant, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Switch, SwitchSize,
+    PopoverTitle, Separator, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -34,10 +34,11 @@ enum Story {
     Switch,
     Accordion,
     Popover,
+    Separator,
 }
 
 impl Story {
-    const ALL: [Story; 7] = [
+    const ALL: [Story; 8] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -45,6 +46,7 @@ impl Story {
         Story::Switch,
         Story::Accordion,
         Story::Popover,
+        Story::Separator,
     ];
 
     fn label(self) -> &'static str {
@@ -56,6 +58,7 @@ impl Story {
             Story::Switch => "Switch",
             Story::Accordion => "Accordion",
             Story::Popover => "Popover",
+            Story::Separator => "Separator",
         }
     }
 
@@ -75,6 +78,7 @@ impl Story {
                 "A vertically stacked set of interactive headings that each reveal a section of content."
             }
             Story::Popover => "Displays rich content in a portal, triggered by a button.",
+            Story::Separator => "Visually or semantically separates content.",
         }
     }
 }
@@ -477,6 +481,7 @@ impl Storybook {
             Story::Switch => self.switch_preview(cx).into_any_element(),
             Story::Accordion => self.accordion_preview(cx).into_any_element(),
             Story::Popover => self.popover_preview(cx).into_any_element(),
+            Story::Separator => Self::separator_preview(cx).into_any_element(),
         };
         div()
             .id("canvas")
@@ -662,6 +667,7 @@ impl Storybook {
                 ),
                 &theme,
             )],
+            Story::Separator => Vec::new(),
             Story::Popover => vec![Self::control_row(
                 "open",
                 Switch::new("ctl-popover-open")
@@ -1294,6 +1300,50 @@ impl Storybook {
                         }))
                 },
             )))
+    }
+
+    fn separator_preview(cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .w(px(288.))
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.))
+                    .child(
+                        div()
+                            .text_size(px(14.))
+                            .line_height(px(20.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child("rcn"),
+                    )
+                    .child(
+                        div()
+                            .text_size(px(14.))
+                            .line_height(px(20.))
+                            .text_color(theme.muted_foreground)
+                            .child("A copy-paste component library for gpui."),
+                    ),
+            )
+            .child(Separator::new())
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(16.))
+                    .h(px(20.))
+                    .text_size(px(14.))
+                    .child("Blog")
+                    .child(Separator::vertical())
+                    .child("Docs")
+                    .child(Separator::vertical())
+                    .child("Source"),
+            )
     }
 
     fn popover_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
