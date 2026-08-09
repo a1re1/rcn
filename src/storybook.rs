@@ -4152,6 +4152,28 @@ impl Render for Storybook {
                     cx.stop_propagation();
                 }
             }))
+            .on_key_down(cx.listener(|this, event: &gpui::KeyDownEvent, _, cx| {
+                // Escape dismisses whichever overlay is open (shadcn overlays
+                // close on Escape; component-level focus traps are a TODO,
+                // so the demo handles it at the root).
+                if event.keystroke.key == "escape" {
+                    this.dialog_open = false;
+                    this.alert_dialog_open = false;
+                    this.sheet_open = false;
+                    this.drawer_open = false;
+                    this.popover_open = false;
+                    this.dropdown_open = false;
+                    this.select_open = false;
+                    this.native_select_open = false;
+                    this.combobox_open = false;
+                    this.date_picker_open = false;
+                    this.menubar_open = None;
+                    this.nav_menu_open = None;
+                    this.context_menu_at = None;
+                    this.toast_visible = false;
+                    cx.notify();
+                }
+            }))
             .size_full()
             .bg(theme.background)
             .text_color(theme.foreground)

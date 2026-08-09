@@ -78,7 +78,10 @@ impl RenderOnce for Drawer {
                     .when_some(close, |el, close| {
                         el.on_click(move |_, window, cx| close(&false, window, cx))
                     })
-                    .child(
+                    .child(crate::motion::slide_in(
+                        "drawer-in",
+                        false,
+                        320.,
                         // Content: rounded-t-lg border-t bg-background, with the
                         // vaul grab handle centered on top.
                         div()
@@ -106,7 +109,7 @@ impl RenderOnce for Drawer {
                                     .bg(theme.muted),
                             )
                             .children(self.children),
-                    ),
+                    )),
             ),
         )
         .into_any_element()

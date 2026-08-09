@@ -63,7 +63,8 @@ impl RenderOnce for AlertDialog {
                     .items_center()
                     .justify_center()
                     .bg(gpui::hsla(0., 0., 0., 0.5))
-                    .child(
+                    .child(crate::motion::dialog_in(
+                        "alert-dialog-in",
                         div()
                             .occlude()
                             .flex()
@@ -80,7 +81,7 @@ impl RenderOnce for AlertDialog {
                             .line_height(px(20.))
                             .text_color(theme.foreground)
                             .children(self.children),
-                    ),
+                    )),
             ),
         )
         .into_any_element()

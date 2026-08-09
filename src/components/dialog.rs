@@ -82,7 +82,8 @@ impl RenderOnce for Dialog {
                     .when_some(close, |el, close| {
                         el.on_click(move |_, window, cx| close(&false, window, cx))
                     })
-                    .child(
+                    .child(crate::motion::dialog_in(
+                        "dialog-in",
                         // Content: bg-background rounded-lg border p-6 shadow-lg,
                         // w-full max-w-[calc(100%-2rem)] sm:max-w-lg
                         div()
@@ -123,7 +124,7 @@ impl RenderOnce for Dialog {
                                         ),
                                 )
                             }),
-                    ),
+                    )),
             ),
         )
         .into_any_element()
