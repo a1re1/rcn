@@ -12,6 +12,8 @@ gpui = { git = "https://github.com/zed-industries/zed", rev = "027cf0def75e5c027
 # `font-kit` is REQUIRED: without it gpui_macos installs gpui::NoopTextSystem and
 # NO glyphs render (quads still do). With it we get the real CoreText MacTextSystem.
 gpui_platform = { git = "https://github.com/zed-industries/zed", rev = "027cf0def75e5c027504f402a6a6c0dcac11f178", package = "gpui_platform", features = ["font-kit"] }
+# Grapheme-boundary navigation for the Input component (already in gpui's tree).
+unicode-segmentation = "1"
 
 # Keep dev builds usable: optimize dependencies even in debug so rendering is
 # snappy during development.

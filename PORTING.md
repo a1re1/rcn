@@ -61,11 +61,11 @@ lands with a storybook story exercising its variants.
 
 ## Wave 4 — text input
 
-- [ ] input
+- [x] input
 - [ ] textarea
 - [ ] field
-- [ ] input-group
-- [ ] input-otp
+- [x] input-group
+- [x] input-otp
 - [ ] command
 - [ ] combobox
 
