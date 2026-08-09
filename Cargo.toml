@@ -1,0 +1,24 @@
+[package]
+name = "rcn"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# gpui — Zed's UI framework — is the sole renderer + windowing layer. Not on
+# crates.io; pull it from the zed repo pinned to a rev for reproducibility.
+gpui = { git = "https://github.com/zed-industries/zed", rev = "027cf0def75e5c027504f402a6a6c0dcac11f178", package = "gpui" }
+# The platform layer was split into gpui_platform; current_platform() builds the
+# real macOS platform to hand to Application::with_platform (as in zed's own main).
+# `font-kit` is REQUIRED: without it gpui_macos installs gpui::NoopTextSystem and
+# NO glyphs render (quads still do). With it we get the real CoreText MacTextSystem.
+gpui_platform = { git = "https://github.com/zed-industries/zed", rev = "027cf0def75e5c027504f402a6a6c0dcac11f178", package = "gpui_platform", features = ["font-kit"] }
+
+# Keep dev builds usable: optimize dependencies even in debug so rendering is
+# snappy during development.
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3
