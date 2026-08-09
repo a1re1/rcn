@@ -36,6 +36,7 @@ pub mod input_otp;
 pub mod item;
 pub mod kbd;
 pub mod label;
+pub mod marker;
 pub mod menubar;
 pub mod message;
 pub mod native_select;
@@ -107,6 +108,7 @@ pub use item::{
 };
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
+pub use marker::{Marker, MarkerVariant};
 pub use menubar::{Menubar, MenubarItem, MenubarMenu};
 pub use message::{
     Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
