@@ -15,6 +15,7 @@ pub mod button_group;
 pub mod card;
 pub mod checkbox;
 pub mod collapsible;
+pub mod context_menu;
 pub mod dialog;
 pub mod drawer;
 pub mod dropdown_menu;
@@ -59,6 +60,7 @@ pub use card::{
 };
 pub use checkbox::Checkbox;
 pub use collapsible::Collapsible;
+pub use context_menu::{ContextMenu, ContextMenuItem};
 pub use dialog::{Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle};
 pub use drawer::{Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle};
 pub use dropdown_menu::{DropdownMenu, DropdownMenuItem};

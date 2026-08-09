@@ -25,18 +25,19 @@ use crate::components::{
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Checkbox, Collapsible, Dialog, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
-    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, HoverCard, Item, ItemActions, ItemContent, ItemDescription,
-    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Sheet, SheetDescription,
-    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
-    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    CardSize, CardTitle, Checkbox, Collapsible, ContextMenu, ContextMenuItem, Dialog,
+    DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
+    DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item,
+    ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
+    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
+    ScrollArea, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
+    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
+    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
+    TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
+    Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -79,11 +80,12 @@ enum Story {
     SheetStory,
     DrawerStory,
     DropdownMenuStory,
+    ContextMenuStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 37] = [
+    const ALL: [Story; 38] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -121,6 +123,7 @@ impl Story {
         Story::SheetStory,
         Story::DrawerStory,
         Story::DropdownMenuStory,
+        Story::ContextMenuStory,
         // __STORY_ALL__
     ];
 
@@ -163,6 +166,7 @@ impl Story {
             Story::SheetStory => "Sheet",
             Story::DrawerStory => "Drawer",
             Story::DropdownMenuStory => "Dropdown Menu",
+            Story::ContextMenuStory => "Context Menu",
             // __STORY_LABELS__
         }
     }
@@ -237,7 +241,9 @@ impl Story {
                 "A drawer component for rendering content from the bottom of the screen."
             }
             Story::DropdownMenuStory => "Displays a menu to the user, triggered by a button.",
-            // __STORY_DESCRIPTIONS__
+            Story::ContextMenuStory => {
+                "Displays a menu located at the pointer, triggered by a right click."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -431,6 +437,8 @@ pub struct Storybook {
     // Dropdown menu story state
     dropdown_open: bool,
     dropdown_status_checked: bool,
+    // Context menu story state
+    context_menu_at: Option<gpui::Point<gpui::Pixels>>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -483,6 +491,7 @@ impl Storybook {
             drawer_open: false,
             dropdown_open: false,
             dropdown_status_checked: true,
+            context_menu_at: None,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -740,6 +749,7 @@ impl Storybook {
             Story::SheetStory => self.sheet_preview(cx).into_any_element(),
             Story::DrawerStory => self.drawer_preview(cx).into_any_element(),
             Story::DropdownMenuStory => self.dropdown_menu_preview(cx).into_any_element(),
+            Story::ContextMenuStory => self.context_menu_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1066,6 +1076,7 @@ impl Storybook {
             )],
             Story::DrawerStory => Vec::new(),
             Story::DropdownMenuStory => Vec::new(),
+            Story::ContextMenuStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2833,6 +2844,62 @@ impl Storybook {
                     .destructive(true)
                     .shortcut("\u{21e7}\u{2318}Q")
                     .child("Log out"),
+            )
+    }
+    fn context_menu_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        ContextMenu::new("context-menu-demo")
+            .open_at(self.context_menu_at)
+            .on_request_open(
+                cx.listener(|this, position: &gpui::Point<gpui::Pixels>, _, cx| {
+                    this.context_menu_at = Some(*position);
+                    cx.notify();
+                }),
+            )
+            .on_open_change(cx.listener(|this, _open: &bool, _, cx| {
+                this.context_menu_at = None;
+                cx.notify();
+            }))
+            .trigger(
+                div()
+                    .flex()
+                    .h(px(150.))
+                    .w(px(300.))
+                    .items_center()
+                    .justify_center()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
+                    .text_size(px(14.))
+                    .child("Right click here"),
+            )
+            .label("Navigation")
+            .item(
+                ContextMenuItem::new("cm-back")
+                    .shortcut("\u{2318}[")
+                    .child("Back"),
+            )
+            .item(
+                ContextMenuItem::new("cm-forward")
+                    .disabled(true)
+                    .shortcut("\u{2318}]")
+                    .child("Forward"),
+            )
+            .item(
+                ContextMenuItem::new("cm-reload")
+                    .shortcut("\u{2318}R")
+                    .child("Reload"),
+            )
+            .separator()
+            .item(
+                ContextMenuItem::new("cm-bookmarks")
+                    .checked(true)
+                    .child("Show Bookmarks"),
+            )
+            .item(
+                ContextMenuItem::new("cm-fullurls")
+                    .checked(false)
+                    .child("Show Full URLs"),
             )
     }
 
