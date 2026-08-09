@@ -45,6 +45,7 @@ pub mod navigation_menu;
 pub mod pagination;
 pub mod popover;
 pub mod progress;
+pub mod questionnaire;
 pub mod radio_group;
 pub mod resizable;
 pub mod scroll_area;
@@ -123,6 +124,10 @@ pub use pagination::{
 };
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use progress::Progress;
+pub use questionnaire::{
+    Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
+    QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle,
+};
 pub use radio_group::{RadioGroup, RadioGroupItem};
 pub use resizable::{ResizableDirection, ResizablePanelGroup};
 pub use scroll_area::ScrollArea;

@@ -39,13 +39,15 @@ use crate::components::{
     MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
     NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
     PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
-    RadioGroup, RadioGroupItem, ResizableDirection, ResizablePanelGroup, ScrollArea, Select,
-    Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar,
-    SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider,
-    SidebarTrigger, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
-    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
-    TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
+    QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
+    RadioGroupItem, ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
+    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
+    SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger,
+    Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
+    TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger,
+    TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
+    ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -113,11 +115,12 @@ enum Story {
     AttachmentStory,
     MarkerStory,
     MessageScrollerStory,
+    QuestionnaireStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 62] = [
+    const ALL: [Story; 63] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -180,6 +183,7 @@ impl Story {
         Story::AttachmentStory,
         Story::MarkerStory,
         Story::MessageScrollerStory,
+        Story::QuestionnaireStory,
         // __STORY_ALL__
     ];
 
@@ -247,6 +251,7 @@ impl Story {
             Story::AttachmentStory => "Attachment",
             Story::MarkerStory => "Marker",
             Story::MessageScrollerStory => "Message Scroller",
+            Story::QuestionnaireStory => "Questionnaire",
             // __STORY_LABELS__
         }
     }
@@ -369,7 +374,9 @@ impl Story {
             Story::MarkerStory => "Inline conversation markers like date dividers and event notes.",
             Story::MessageScrollerStory => {
                 "A scrollable conversation viewport for message threads."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::QuestionnaireStory => "A form-flow step with progress, choices, and actions.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -665,6 +672,8 @@ pub struct Storybook {
     bubble_variant: BubbleVariant,
     // Attachment story state
     attachment_visible: bool,
+    // Questionnaire story state
+    questionnaire_selected: Option<usize>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -809,6 +818,7 @@ impl Storybook {
             data_table_desc: true,
             bubble_variant: BubbleVariant::Muted,
             attachment_visible: true,
+            questionnaire_selected: Some(0),
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -1049,6 +1059,7 @@ impl Storybook {
             Story::AttachmentStory => self.attachment_preview(cx).into_any_element(),
             Story::MarkerStory => self.marker_preview(cx).into_any_element(),
             Story::MessageScrollerStory => self.message_scroller_preview(cx).into_any_element(),
+            Story::QuestionnaireStory => self.questionnaire_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1420,6 +1431,7 @@ impl Storybook {
             Story::AttachmentStory => Vec::new(),
             Story::MarkerStory => Vec::new(),
             Story::MessageScrollerStory => Vec::new(),
+            Story::QuestionnaireStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3989,6 +4001,49 @@ impl Storybook {
                             )
                     })),
             )
+    }
+    fn questionnaire_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let options = [
+            ("Daily", "I use it every day"),
+            ("Weekly", "A few times a week"),
+            ("Rarely", "Once in a while"),
+        ];
+        div().w(px(384.)).child(
+            Questionnaire::new()
+                .child(QuestionnaireProgress::new(2, 5))
+                .child(QuestionnaireTitle::new().child("How often do you use rcn?"))
+                .child(
+                    QuestionnaireDescription::new()
+                        .child("This helps us prioritize what to build next."),
+                )
+                .child(
+                    QuestionnaireChoices::new().children(options.into_iter().enumerate().map(
+                        |(index, (label, description))| {
+                            QuestionnaireChoice::new(("questionnaire-choice", index), label)
+                                .description(description)
+                                .checked(self.questionnaire_selected == Some(index))
+                                .on_select(cx.listener(move |this, _, _, cx| {
+                                    this.questionnaire_selected = Some(index);
+                                    cx.notify();
+                                }))
+                        },
+                    )),
+                )
+                .child(
+                    QuestionnaireActions::new()
+                        .previous(
+                            Button::new("questionnaire-previous")
+                                .variant(ButtonVariant::Outline)
+                                .child("Previous"),
+                        )
+                        .action(
+                            Button::new("questionnaire-skip")
+                                .variant(ButtonVariant::Ghost)
+                                .child("Skip"),
+                        )
+                        .action(Button::new("questionnaire-next").child("Next")),
+                ),
+        )
     }
 
     // __STORY_PREVIEWS__
