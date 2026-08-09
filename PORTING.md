@@ -53,7 +53,7 @@ lands with a storybook story exercising its variants.
 - [x] drawer
 - [x] dropdown-menu
 - [x] context-menu
-- [ ] menubar
+- [x] menubar
 - [ ] select
 - [ ] native-select
 - [ ] navigation-menu
