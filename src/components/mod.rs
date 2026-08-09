@@ -10,6 +10,7 @@ pub mod avatar;
 pub mod badge;
 pub mod breadcrumb;
 pub mod button;
+pub mod button_group;
 pub mod card;
 pub mod checkbox;
 pub mod empty;
@@ -37,6 +38,7 @@ pub use breadcrumb::{
     BreadcrumbSeparator,
 };
 pub use button::{Button, ButtonSize, ButtonVariant};
+pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };

@@ -22,15 +22,15 @@ use crate::components::{
     Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, AspectRatio,
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
-    BreadcrumbSeparator, Button, ButtonSize, ButtonVariant, Card, CardAction, CardContent,
-    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Checkbox, Empty, EmptyContent,
-    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions,
-    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
-    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
-    Separator, Skeleton, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
-    TableFooter, TableHead, TableHeader, TableRow, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant,
+    BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
+    ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
+    CardSize, CardTitle, Checkbox, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
+    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
+    ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Spinner, Switch, SwitchSize, Table,
+    TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Toggle,
+    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -60,11 +60,12 @@ enum Story {
     RadioGroup,
     Toggle,
     ToggleGroup,
+    ButtonGroup,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 24] = [
+    const ALL: [Story; 25] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -89,6 +90,7 @@ impl Story {
         Story::RadioGroup,
         Story::Toggle,
         Story::ToggleGroup,
+        Story::ButtonGroup,
         // __STORY_ALL__
     ];
 
@@ -118,6 +120,7 @@ impl Story {
             Story::RadioGroup => "Radio Group",
             Story::Toggle => "Toggle",
             Story::ToggleGroup => "Toggle Group",
+            Story::ButtonGroup => "Button Group",
             // __STORY_LABELS__
         }
     }
@@ -161,7 +164,9 @@ impl Story {
             }
             Story::Toggle => "A two-state button that can be either on or off.",
             Story::ToggleGroup => "A set of two-state buttons that can be toggled on or off.",
-            // __STORY_DESCRIPTIONS__
+            Story::ButtonGroup => {
+                "A container that groups related buttons together with a consistent style."
+            } // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -616,6 +621,7 @@ impl Storybook {
             Story::RadioGroup => self.radio_group_preview(cx).into_any_element(),
             Story::Toggle => self.toggle_preview(cx).into_any_element(),
             Story::ToggleGroup => self.toggle_group_preview(cx).into_any_element(),
+            Story::ButtonGroup => Self::button_group_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -873,6 +879,7 @@ impl Storybook {
             Story::RadioGroup => Vec::new(),
             Story::Toggle => Vec::new(),
             Story::ToggleGroup => Vec::new(),
+            Story::ButtonGroup => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2066,6 +2073,60 @@ impl Storybook {
                 group
             }),
         )
+    }
+    fn button_group_preview(cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .flex()
+            .flex_col()
+            .items_start()
+            .gap(px(16.))
+            .child(
+                ButtonGroup::new()
+                    .item(
+                        Button::new("bg-archive")
+                            .variant(ButtonVariant::Outline)
+                            .child("Archive"),
+                    )
+                    .item(
+                        Button::new("bg-report")
+                            .variant(ButtonVariant::Outline)
+                            .child("Report"),
+                    )
+                    .item(
+                        Button::new("bg-snooze")
+                            .variant(ButtonVariant::Outline)
+                            .child("Snooze"),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        ButtonGroup::new()
+                            .item(
+                                Button::new("bg-follow")
+                                    .variant(ButtonVariant::Outline)
+                                    .child("Follow"),
+                            )
+                            .item(
+                                Button::new("bg-follow-more")
+                                    .variant(ButtonVariant::Outline)
+                                    .size(ButtonSize::Icon)
+                                    .child(
+                                        gpui::svg()
+                                            .path(theme.icons.chevron_down())
+                                            .size(px(16.))
+                                            .text_color(theme.foreground),
+                                    ),
+                            ),
+                    )
+                    .child(ButtonGroupSeparator::new())
+                    .child(ButtonGroupText::new().child("12 followers")),
+            )
     }
 
     // __STORY_PREVIEWS__
