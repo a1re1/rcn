@@ -121,6 +121,8 @@ impl Button {
 
     /// Child `data-icon="inline-end"` — trim end padding
     /// (`has-data-[icon=inline-end]:pr-2` / `pr-1.5` for Xs/Sm).
+    // Mirrors icon_inline_start; not yet exercised by the storybook.
+    #[allow(dead_code)]
     pub fn icon_inline_end(mut self) -> Self {
         self.icon_inline_end = true;
         self
