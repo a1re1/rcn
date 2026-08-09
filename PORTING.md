@@ -1,0 +1,95 @@
+# shadcn catalog porting checklist
+
+Tracking the port of the full [shadcn component catalog](https://ui.shadcn.com/docs/components)
+to gpui. Reference for every component is the `base-vega` registry source
+(`ui.shadcn.com/r/styles/base-vega/<name>.json`). One PR per component; each
+lands with a storybook story exercising its variants.
+
+## Wave 0 — foundation (done in #3)
+
+- [x] accordion
+- [x] avatar
+- [x] badge
+- [x] button
+- [x] popover
+- [x] switch
+
+## Wave 1 — static & simple
+
+- [ ] separator
+- [ ] skeleton
+- [ ] label
+- [ ] kbd
+- [ ] spinner
+- [ ] aspect-ratio
+- [ ] card
+- [ ] alert
+- [ ] progress
+- [ ] empty
+- [ ] item
+- [ ] table
+- [ ] breadcrumb
+
+## Wave 2 — interactive controls
+
+- [ ] checkbox
+- [ ] radio-group
+- [ ] toggle
+- [ ] toggle-group
+- [ ] button-group
+- [ ] collapsible
+- [ ] tabs
+- [ ] slider
+- [ ] pagination
+- [ ] scroll-area
+
+## Wave 3 — overlays & menus
+
+- [ ] tooltip
+- [ ] hover-card
+- [ ] dialog
+- [ ] alert-dialog
+- [ ] sheet
+- [ ] drawer
+- [ ] dropdown-menu
+- [ ] context-menu
+- [ ] menubar
+- [ ] select
+- [ ] native-select
+- [ ] navigation-menu
+- [ ] toast
+
+## Wave 4 — text input
+
+- [ ] input
+- [ ] textarea
+- [ ] field
+- [ ] input-group
+- [ ] input-otp
+- [ ] command
+- [ ] combobox
+
+## Wave 5 — composite & complex
+
+- [ ] calendar
+- [ ] carousel
+- [ ] resizable
+- [ ] sidebar
+- [ ] date-picker — no base-vega registry item; composition of calendar + popover, ported as a story once both land
+- [ ] data-table — no base-vega registry item; docs-only composition over table, ported as a story
+- [ ] chart — recharts-based upstream; will need a gpui-native adaptation
+
+## Wave 6 — chat / AI components
+
+- [ ] attachment
+- [ ] bubble
+- [ ] direction
+- [ ] marker
+- [ ] message
+- [ ] message-scroller
+- [ ] questionnaire
+
+## Not ported
+
+- typography — docs page of styled HTML examples, not a registry component;
+  covered incidentally by the storybook's own text styles
