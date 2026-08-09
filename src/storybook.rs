@@ -21,12 +21,12 @@ use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Alert, AlertDescription, AlertDialog, AlertDialogDescription,
     AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertTitle, AlertVariant, AspectRatio,
-    Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Breadcrumb,
+    Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent, CardDescription,
-    CardFooter, CardHeader, CardSize, CardTitle, Carousel, Checkbox, Collapsible, Combobox,
-    Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog,
+    CardFooter, CardHeader, CardSize, CardTitle, Carousel, ChartSeries, Checkbox, Collapsible,
+    Combobox, Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog,
     DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
     DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
@@ -104,11 +104,12 @@ enum Story {
     ResizableStory,
     SidebarStory,
     DataTableStory,
+    ChartStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 56] = [
+    const ALL: [Story; 57] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -165,6 +166,7 @@ impl Story {
         Story::ResizableStory,
         Story::SidebarStory,
         Story::DataTableStory,
+        Story::ChartStory,
         // __STORY_ALL__
     ];
 
@@ -226,6 +228,7 @@ impl Story {
             Story::ResizableStory => "Resizable",
             Story::SidebarStory => "Sidebar",
             Story::DataTableStory => "Data Table",
+            Story::ChartStory => "Chart",
             // __STORY_LABELS__
         }
     }
@@ -339,6 +342,7 @@ impl Story {
             }
             Story::SidebarStory => "A composable, themeable and customizable sidebar component.",
             Story::DataTableStory => "Powerful table and datagrids built on the table primitives.",
+            Story::ChartStory => "Beautiful charts built with the theme's chart tokens.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -1007,6 +1011,7 @@ impl Storybook {
             Story::ResizableStory => self.resizable_preview(cx).into_any_element(),
             Story::SidebarStory => self.sidebar_preview(cx).into_any_element(),
             Story::DataTableStory => self.data_table_preview(cx).into_any_element(),
+            Story::ChartStory => self.chart_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1352,6 +1357,7 @@ impl Storybook {
             Story::ResizableStory => Vec::new(),
             Story::SidebarStory => Vec::new(),
             Story::DataTableStory => Vec::new(),
+            Story::ChartStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3729,6 +3735,20 @@ impl Storybook {
                     )),
                 )
                 .child(TableCaption::new().child("Click the Amount header to flip the sort.")),
+        )
+    }
+    fn chart_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(420.)).child(
+            BarChart::new(["Jan", "Feb", "Mar", "Apr", "May", "Jun"])
+                .height(180.)
+                .series(ChartSeries::new(
+                    "Desktop",
+                    [186., 305., 237., 73., 209., 214.],
+                ))
+                .series(ChartSeries::new(
+                    "Mobile",
+                    [80., 200., 120., 190., 130., 140.],
+                )),
         )
     }
 

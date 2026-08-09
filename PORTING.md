@@ -77,7 +77,7 @@ lands with a storybook story exercising its variants.
 - [x] sidebar
 - [x] date-picker — no base-vega registry item; composition of calendar + popover, ported as a story once both land
 - [x] data-table — no base-vega registry item; docs-only composition over table, ported as a story
-- [ ] chart — recharts-based upstream; will need a gpui-native adaptation
+- [x] chart — recharts-based upstream; will need a gpui-native adaptation
 
 ## Wave 6 — chat / AI components
 
