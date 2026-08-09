@@ -2,13 +2,14 @@
 //!
 //! Controlled: the caller owns `checked` and receives the next value in
 //! `on_change`. Sizes: Sm (24×14, 12px thumb) and Default (32×18, 16px
-//! thumb). Focus-visible ring and aria-invalid styles are omitted.
+//! thumb). Aria-invalid styles are omitted.
 
 use gpui::{
     App, ElementId, InteractiveElement as _, IntoElement, ParentElement, RenderOnce,
     StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
@@ -127,9 +128,12 @@ impl RenderOnce for Switch {
             .shadow_xs()
             .when(self.disabled, |s| s.opacity(0.5))
             .when(!self.disabled, |s| {
-                s.when_some(self.on_change, |s, on_change| {
-                    s.on_click(move |_, window, cx| on_change(&!checked, window, cx))
-                })
+                let ring = motion::focus_ring(&theme);
+                s.tab_index(0)
+                    .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                    .when_some(self.on_change, |s, on_change| {
+                        s.on_click(move |_, window, cx| on_change(&!checked, window, cx))
+                    })
             })
             .child(
                 div()

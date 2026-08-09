@@ -2,8 +2,7 @@
 //!
 //! Controlled: the group is layout (grid gap-3); each item owns `checked`
 //! and reports selection via `on_select`. The indicator is a filled dot,
-//! like the source's `RadioGroupIndicator`. Focus-visible ring and
-//! aria-invalid styles are omitted.
+//! like the source's `RadioGroupIndicator`. Aria-invalid styles are omitted.
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, InteractiveElement as _, IntoElement, ParentElement,
@@ -11,6 +10,7 @@ use gpui::{
     px,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 type SelectHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
@@ -109,7 +109,10 @@ impl RenderOnce for RadioGroupItem {
             })
             .when(self.disabled, |el| el.opacity(0.5))
             .when(!self.disabled, |el| {
-                el.when_some(self.on_select, |el, on_select| el.on_click(on_select))
+                let ring = motion::focus_ring(&theme);
+                el.tab_index(0)
+                    .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                    .when_some(self.on_select, |el, on_select| el.on_click(on_select))
             })
             .when(self.checked, |el| {
                 el.child(div().size(px(8.)).rounded_full().bg(theme.primary))

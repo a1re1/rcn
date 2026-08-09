@@ -2,13 +2,14 @@
 //!
 //! Controlled: the caller owns `checked` and receives the next value in
 //! `on_change`. The check indicator follows the active icon library.
-//! Focus-visible ring and aria-invalid styles are omitted.
+//! Aria-invalid styles are omitted.
 
 use gpui::{
     App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
     StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 type ChangeHandler = Box<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
@@ -76,9 +77,12 @@ impl RenderOnce for Checkbox {
             })
             .when(self.disabled, |el| el.opacity(0.5))
             .when(!self.disabled, |el| {
-                el.when_some(self.on_change, |el, on_change| {
-                    el.on_click(move |_, window, cx| on_change(&!checked, window, cx))
-                })
+                let ring = motion::focus_ring(&theme);
+                el.tab_index(0)
+                    .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                    .when_some(self.on_change, |el, on_change| {
+                        el.on_click(move |_, window, cx| on_change(&!checked, window, cx))
+                    })
             })
             .when(checked, |el| {
                 el.child(
