@@ -21,6 +21,7 @@ pub mod drawer;
 pub mod dropdown_menu;
 pub mod empty;
 pub mod hover_card;
+pub mod input;
 pub mod item;
 pub mod kbd;
 pub mod label;
@@ -73,6 +74,7 @@ pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
 pub use hover_card::HoverCard;
+pub use input::Input;
 pub use item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,

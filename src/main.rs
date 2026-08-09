@@ -10,6 +10,7 @@ mod theme;
 use gpui::{App, AppContext, Application, Bounds, QuitMode, WindowBounds, WindowOptions, px, size};
 
 use assets::Assets;
+use components::Input;
 use storybook::Storybook;
 use theme::Theme;
 
@@ -24,6 +25,7 @@ fn main() {
         .with_quit_mode(QuitMode::LastWindowClosed);
     app.run(|cx: &mut App| {
         cx.set_global(Theme::light());
+        Input::register_key_bindings(cx);
         let bounds = Bounds::centered(None, size(px(1100.0), px(720.0)), cx);
         cx.open_window(
             WindowOptions {
@@ -34,7 +36,7 @@ fn main() {
                 }),
                 ..Default::default()
             },
-            |_window, cx| cx.new(|_cx| Storybook::new()),
+            |_window, cx| cx.new(Storybook::new),
         )
         .expect("failed to open window");
         cx.activate(true);

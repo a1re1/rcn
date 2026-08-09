@@ -28,8 +28,8 @@ use crate::components::{
     CardSize, CardTitle, Checkbox, Collapsible, ContextMenu, ContextMenuItem, Dialog,
     DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
     DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
-    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item,
-    ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Input,
+    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
     Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry,
     NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
@@ -87,11 +87,12 @@ enum Story {
     NativeSelectStory,
     NavigationMenuStory,
     ToastStory,
+    InputStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 43] = [
+    const ALL: [Story; 44] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -135,6 +136,7 @@ impl Story {
         Story::NativeSelectStory,
         Story::NavigationMenuStory,
         Story::ToastStory,
+        Story::InputStory,
         // __STORY_ALL__
     ];
 
@@ -183,6 +185,7 @@ impl Story {
             Story::NativeSelectStory => "Native Select",
             Story::NavigationMenuStory => "Navigation Menu",
             Story::ToastStory => "Toast",
+            Story::InputStory => "Input",
             // __STORY_LABELS__
         }
     }
@@ -269,6 +272,7 @@ impl Story {
             }
             Story::NavigationMenuStory => "A collection of links for navigating websites.",
             Story::ToastStory => "A succinct message that is displayed temporarily.",
+            Story::InputStory => "Displays a form input field.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -389,6 +393,55 @@ impl TokenSettings {
     }
 }
 
+impl TokenSettings {
+    /// Back-fill these settings from an imported light theme.
+    fn sync_from(&mut self, light: &Theme) {
+        let primary = light.primary;
+        // A near-black primary is the stock neutral default; anything else is
+        // a brand color the sliders should show.
+        if primary.s < 0.02 && primary.l < 0.1 {
+            self.custom_primary = false;
+        } else {
+            self.custom_primary = true;
+            self.hue = primary.h;
+            self.saturation = primary.s;
+            self.lightness = primary.l;
+        }
+        self.radius = (light.radius / px(1.)).clamp(0., 24.);
+
+        // Infer the closest base gray family from the tinted neutrals.
+        let distance = |base: BaseColor| -> f32 {
+            let candidate = Theme::with_base(base, false);
+            [
+                (candidate.secondary, light.secondary),
+                (candidate.border, light.border),
+                (candidate.muted_foreground, light.muted_foreground),
+            ]
+            .into_iter()
+            .map(|(a, b)| {
+                let (a, b): (gpui::Rgba, gpui::Rgba) = (a.into(), b.into());
+                (a.r - b.r).powi(2) + (a.g - b.g).powi(2) + (a.b - b.b).powi(2)
+            })
+            .sum()
+        };
+        self.base = BaseColor::ALL
+            .into_iter()
+            .min_by(|a, b| distance(*a).total_cmp(&distance(*b)))
+            .unwrap_or_default();
+
+        // Fonts only sync when the imported family is in the picker list;
+        // otherwise the imported theme keeps carrying them until edited.
+        self.font_sans = FONTS
+            .iter()
+            .filter_map(|(_, family)| *family)
+            .find(|family| Some(*family) == light.font_sans.as_deref());
+        self.font_heading = FONTS
+            .iter()
+            .filter_map(|(_, family)| *family)
+            .find(|family| Some(*family) == light.font_heading.as_deref());
+    }
+}
+
 /// Typed payload identifying which slider a drag belongs to.
 struct SliderDrag(&'static str);
 
@@ -477,6 +530,9 @@ pub struct Storybook {
     nav_menu_open: Option<usize>,
     // Toast story state
     toast_visible: bool,
+    // Input story state
+    input_demo: gpui::Entity<Input>,
+    input_disabled: gpui::Entity<Input>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -486,7 +542,18 @@ pub struct Storybook {
 }
 
 impl Storybook {
-    pub fn new() -> Self {
+    pub fn new(cx: &mut Context<Self>) -> Self {
+        let input_demo = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Email");
+            input
+        });
+        let input_disabled = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Disabled");
+            input.set_disabled(true);
+            input
+        });
         let seed = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|d| d.subsec_nanos() as u64 ^ d.as_secs())
@@ -537,6 +604,8 @@ impl Storybook {
             native_select_open: false,
             nav_menu_open: None,
             toast_visible: false,
+            input_demo,
+            input_disabled,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -591,49 +660,7 @@ impl Storybook {
     /// reflects it and later adjustments continue from the imported look
     /// instead of reverting to the previous settings.
     fn sync_settings_from(&mut self, light: &Theme) {
-        let primary = light.primary;
-        // A near-black primary is the stock neutral default; anything else is
-        // a brand color the sliders should show.
-        if primary.s < 0.02 && primary.l < 0.1 {
-            self.tokens.custom_primary = false;
-        } else {
-            self.tokens.custom_primary = true;
-            self.tokens.hue = primary.h;
-            self.tokens.saturation = primary.s;
-            self.tokens.lightness = primary.l;
-        }
-        self.tokens.radius = (light.radius / px(1.)).clamp(0., 24.);
-
-        // Infer the closest base gray family from the tinted neutrals.
-        let distance = |base: BaseColor| -> f32 {
-            let candidate = Theme::with_base(base, false);
-            [
-                (candidate.secondary, light.secondary),
-                (candidate.border, light.border),
-                (candidate.muted_foreground, light.muted_foreground),
-            ]
-            .into_iter()
-            .map(|(a, b)| {
-                let (a, b): (gpui::Rgba, gpui::Rgba) = (a.into(), b.into());
-                (a.r - b.r).powi(2) + (a.g - b.g).powi(2) + (a.b - b.b).powi(2)
-            })
-            .sum()
-        };
-        self.tokens.base = BaseColor::ALL
-            .into_iter()
-            .min_by(|a, b| distance(*a).total_cmp(&distance(*b)))
-            .unwrap_or_default();
-
-        // Fonts only sync when the imported family is in the picker list;
-        // otherwise the imported theme keeps carrying them until edited.
-        self.tokens.font_sans = FONTS
-            .iter()
-            .filter_map(|(_, family)| *family)
-            .find(|family| Some(*family) == light.font_sans.as_deref());
-        self.tokens.font_heading = FONTS
-            .iter()
-            .filter_map(|(_, family)| *family)
-            .find(|family| Some(*family) == light.font_heading.as_deref());
+        self.tokens.sync_from(light);
     }
 
     fn import_from_clipboard(&mut self, cx: &mut Context<Self>) {
@@ -800,6 +827,7 @@ impl Storybook {
             Story::NativeSelectStory => self.native_select_preview(cx).into_any_element(),
             Story::NavigationMenuStory => self.navigation_menu_preview(cx).into_any_element(),
             Story::ToastStory => self.toast_preview(cx).into_any_element(),
+            Story::InputStory => self.input_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1132,6 +1160,7 @@ impl Storybook {
             Story::NativeSelectStory => Vec::new(),
             Story::NavigationMenuStory => Vec::new(),
             Story::ToastStory => Vec::new(),
+            Story::InputStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3009,7 +3038,8 @@ impl Storybook {
     fn select_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         Select::new("select-fruit")
             .placeholder("Select a fruit")
-            .options(["Apple", "Banana", "Blueberry", "Grapes", "Pineapple"])
+            .option("Apple")
+            .options(["Banana", "Blueberry", "Grapes", "Pineapple"])
             .value(self.select_value)
             .open(self.select_open)
             .on_change(cx.listener(|this, value: &usize, _, cx| {
@@ -3023,6 +3053,7 @@ impl Storybook {
     }
     fn native_select_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         NativeSelect::new("native-select-status")
+            .disabled(false)
             .placeholder("Select status")
             .options(["Todo", "In Progress", "Done", "Cancelled"])
             .value(self.native_select_value)
@@ -3052,6 +3083,10 @@ impl Storybook {
                         .gap(px(2.))
                         .child(
                             NavigationMenuLink::new("nav-intro", "Introduction")
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.nav_menu_open = None;
+                                    cx.notify();
+                                }))
                                 .description("Copy-paste components for gpui apps."),
                         )
                         .child(
@@ -3112,6 +3147,38 @@ impl Storybook {
                     ),
                 )
             })
+    }
+    fn input_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let value = self.input_demo.read(cx).text().to_string();
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .w(px(288.))
+            .child(self.input_demo.clone())
+            .child(self.input_disabled.clone())
+            .child(
+                Button::new("input-clear")
+                    .variant(ButtonVariant::Outline)
+                    .size(ButtonSize::Sm)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.input_demo
+                            .update(cx, |input, cx| input.set_text("", cx));
+                        cx.notify();
+                    }))
+                    .child("Clear"),
+            )
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(theme.muted_foreground)
+                    .child(if value.is_empty() {
+                        "value: (empty)".to_string()
+                    } else {
+                        format!("value: {value}")
+                    }),
+            )
     }
 
     // __STORY_PREVIEWS__
@@ -3203,12 +3270,6 @@ impl Render for Storybook {
     }
 }
 
-impl Default for Storybook {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3228,28 +3289,28 @@ mod tests {
   --radius: 0;
 }"#;
         let (light, _) = Theme::from_shadcn_css(css).expect("should parse");
-        let mut storybook = Storybook::new();
-        storybook.sync_settings_from(&light);
-        assert!(storybook.tokens.custom_primary);
+        let mut tokens = TokenSettings::default();
+        tokens.sync_from(&light);
+        assert!(tokens.custom_primary);
         assert!(
-            storybook.tokens.hue < 0.12,
+            tokens.hue < 0.12,
             "red-orange brand should land on a warm hue, got {}",
-            storybook.tokens.hue
+            tokens.hue
         );
-        assert!(storybook.tokens.saturation > 0.3);
-        assert_eq!(storybook.tokens.radius, 0.);
+        assert!(tokens.saturation > 0.3);
+        assert_eq!(tokens.radius, 0.);
         // Warm-tinted neutrals sit closest to the stone family.
-        assert_eq!(storybook.tokens.base, BaseColor::Stone);
+        assert_eq!(tokens.base, BaseColor::Stone);
     }
 
     /// A stock-neutral theme (black primary) must not flip the sliders into
     /// custom-brand mode.
     #[test]
     fn neutral_import_keeps_default_primary() {
-        let mut storybook = Storybook::new();
-        storybook.tokens.custom_primary = true;
-        storybook.sync_settings_from(&Theme::light());
-        assert!(!storybook.tokens.custom_primary);
-        assert_eq!(storybook.tokens.base, BaseColor::Neutral);
+        let mut tokens = TokenSettings::default();
+        tokens.custom_primary = true;
+        tokens.sync_from(&Theme::light());
+        assert!(!tokens.custom_primary);
+        assert_eq!(tokens.base, BaseColor::Neutral);
     }
 }
