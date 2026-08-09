@@ -31,13 +31,14 @@ use crate::components::{
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item,
     ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
-    Menubar, MenubarItem, MenubarMenu, NativeSelect, Pagination, PaginationEllipsis,
-    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
-    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner,
-    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle,
-    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry,
+    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
+    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
+    RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -84,11 +85,12 @@ enum Story {
     MenubarStory,
     SelectStory,
     NativeSelectStory,
+    NavigationMenuStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 41] = [
+    const ALL: [Story; 42] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -130,6 +132,7 @@ impl Story {
         Story::MenubarStory,
         Story::SelectStory,
         Story::NativeSelectStory,
+        Story::NavigationMenuStory,
         // __STORY_ALL__
     ];
 
@@ -176,6 +179,7 @@ impl Story {
             Story::MenubarStory => "Menubar",
             Story::SelectStory => "Select",
             Story::NativeSelectStory => "Native Select",
+            Story::NavigationMenuStory => "Navigation Menu",
             // __STORY_LABELS__
         }
     }
@@ -259,7 +263,9 @@ impl Story {
             }
             Story::NativeSelectStory => {
                 "A native select element for choosing from a list of options."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::NavigationMenuStory => "A collection of links for navigating websites.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -463,6 +469,8 @@ pub struct Storybook {
     // Native select story state
     native_select_value: Option<usize>,
     native_select_open: bool,
+    // Navigation menu story state
+    nav_menu_open: Option<usize>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -521,6 +529,7 @@ impl Storybook {
             select_open: false,
             native_select_value: Some(0),
             native_select_open: false,
+            nav_menu_open: None,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -782,6 +791,7 @@ impl Storybook {
             Story::MenubarStory => self.menubar_preview(cx).into_any_element(),
             Story::SelectStory => self.select_preview(cx).into_any_element(),
             Story::NativeSelectStory => self.native_select_preview(cx).into_any_element(),
+            Story::NavigationMenuStory => self.navigation_menu_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1112,6 +1122,7 @@ impl Storybook {
             Story::MenubarStory => Vec::new(),
             Story::SelectStory => Vec::new(),
             Story::NativeSelectStory => Vec::new(),
+            Story::NavigationMenuStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3015,6 +3026,49 @@ impl Storybook {
                 this.native_select_open = *open;
                 cx.notify();
             }))
+    }
+    fn navigation_menu_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        NavigationMenu::new("nav-menu-demo")
+            .open(self.nav_menu_open)
+            .on_open_change(cx.listener(|this, open: &Option<usize>, _, cx| {
+                this.nav_menu_open = *open;
+                cx.notify();
+            }))
+            .entry(
+                NavigationMenuEntry::new("Getting started").content(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(288.))
+                        .gap(px(2.))
+                        .child(
+                            NavigationMenuLink::new("nav-intro", "Introduction")
+                                .description("Copy-paste components for gpui apps."),
+                        )
+                        .child(
+                            NavigationMenuLink::new("nav-install", "Installation")
+                                .description("How to vendor components into your project."),
+                        ),
+                ),
+            )
+            .entry(
+                NavigationMenuEntry::new("Components").content(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(288.))
+                        .gap(px(2.))
+                        .child(
+                            NavigationMenuLink::new("nav-button", "Button")
+                                .description("Displays a button."),
+                        )
+                        .child(
+                            NavigationMenuLink::new("nav-badge", "Badge")
+                                .description("Displays a badge."),
+                        ),
+                ),
+            )
+            .entry(NavigationMenuEntry::new("Docs"))
     }
 
     // __STORY_PREVIEWS__
