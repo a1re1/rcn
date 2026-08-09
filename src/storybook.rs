@@ -28,8 +28,9 @@ use crate::components::{
     CardSize, CardTitle, Checkbox, Collapsible, ContextMenu, ContextMenuItem, Dialog,
     DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
     DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
-    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Input,
-    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
+    FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, Item,
+    ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
     Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry,
     NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
@@ -89,11 +90,12 @@ enum Story {
     ToastStory,
     InputStory,
     TextareaStory,
+    FieldStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 45] = [
+    const ALL: [Story; 46] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -139,6 +141,7 @@ impl Story {
         Story::ToastStory,
         Story::InputStory,
         Story::TextareaStory,
+        Story::FieldStory,
         // __STORY_ALL__
     ];
 
@@ -189,6 +192,7 @@ impl Story {
             Story::ToastStory => "Toast",
             Story::InputStory => "Input",
             Story::TextareaStory => "Textarea",
+            Story::FieldStory => "Field",
             // __STORY_LABELS__
         }
     }
@@ -278,6 +282,9 @@ impl Story {
             Story::InputStory => "Displays a form input field.",
             Story::TextareaStory => {
                 "Displays a form textarea or a component that looks like a textarea."
+            }
+            Story::FieldStory => {
+                "Combine labels, controls, and help text to compose accessible form fields."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -540,6 +547,9 @@ pub struct Storybook {
     input_disabled: gpui::Entity<Input>,
     // Textarea story state
     textarea_input: gpui::Entity<Input>,
+    // Field story state
+    field_input: gpui::Entity<Input>,
+    field_error_input: gpui::Entity<Input>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -559,6 +569,16 @@ impl Storybook {
             let mut input = Input::new(cx);
             input.placeholder("Type your message here.");
             input.set_bare(true);
+            input
+        });
+        let field_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("you@example.com");
+            input
+        });
+        let field_error_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("evil_rabbit");
             input
         });
         let input_disabled = cx.new(|cx| {
@@ -620,6 +640,8 @@ impl Storybook {
             input_demo,
             input_disabled,
             textarea_input,
+            field_input,
+            field_error_input,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -843,6 +865,7 @@ impl Storybook {
             Story::ToastStory => self.toast_preview(cx).into_any_element(),
             Story::InputStory => self.input_preview(cx).into_any_element(),
             Story::TextareaStory => self.textarea_preview(cx).into_any_element(),
+            Story::FieldStory => self.field_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1177,6 +1200,7 @@ impl Storybook {
             Story::ToastStory => Vec::new(),
             Story::InputStory => Vec::new(),
             Story::TextareaStory => Vec::new(),
+            Story::FieldStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3200,6 +3224,30 @@ impl Storybook {
         div()
             .w(px(288.))
             .child(Textarea::new(self.textarea_input.clone()).rows(4))
+    }
+    fn field_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldSet::new()
+                .child(FieldLegend::new().child("Profile"))
+                .child(
+                    FieldGroup::new()
+                        .child(
+                            Field::new()
+                                .child(Label::new().child("Email"))
+                                .child(self.field_input.clone())
+                                .child(
+                                    FieldDescription::new()
+                                        .child("We'll use this to send you receipts."),
+                                ),
+                        )
+                        .child(
+                            Field::new()
+                                .child(Label::new().child("Username"))
+                                .child(self.field_error_input.clone())
+                                .child(FieldError::new().child("This username is taken.")),
+                        ),
+                ),
+        )
     }
 
     // __STORY_PREVIEWS__

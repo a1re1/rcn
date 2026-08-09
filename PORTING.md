@@ -63,7 +63,7 @@ lands with a storybook story exercising its variants.
 
 - [x] input
 - [x] textarea
-- [ ] field
+- [x] field
 - [x] input-group
 - [x] input-otp
 - [ ] command

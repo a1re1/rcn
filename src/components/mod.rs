@@ -20,6 +20,7 @@ pub mod dialog;
 pub mod drawer;
 pub mod dropdown_menu;
 pub mod empty;
+pub mod field;
 pub mod hover_card;
 pub mod input;
 pub mod item;
@@ -74,6 +75,7 @@ pub use dropdown_menu::{DropdownMenu, DropdownMenuItem};
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
+pub use field::{Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet};
 pub use hover_card::HoverCard;
 pub use input::Input;
 pub use item::{
