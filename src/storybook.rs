@@ -23,7 +23,7 @@ use crate::components::{
     AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Separator, Skeleton, Switch, SwitchSize,
+    PopoverTitle, Progress, Separator, Skeleton, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -42,10 +42,12 @@ enum Story {
     Kbd,
     Card,
     Alert,
+    Progress,
+    // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 13] = [
+    const ALL: [Story; 14] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -59,6 +61,8 @@ impl Story {
         Story::Kbd,
         Story::Card,
         Story::Alert,
+        Story::Progress,
+        // __STORY_ALL__
     ];
 
     fn label(self) -> &'static str {
@@ -76,6 +80,8 @@ impl Story {
             Story::Kbd => "Kbd",
             Story::Card => "Card",
             Story::Alert => "Alert",
+            Story::Progress => "Progress",
+            // __STORY_LABELS__
         }
     }
 
@@ -101,6 +107,8 @@ impl Story {
             Story::Kbd => "Used to display textual user input from keyboard.",
             Story::Card => "Displays a card with header, content, and footer.",
             Story::Alert => "Displays a callout for user attention.",
+            Story::Progress => "Displays an indicator showing the completion progress of a task.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -256,6 +264,9 @@ pub struct Storybook {
     switch_checked: bool,
     switch_size: SwitchSize,
     switch_disabled: bool,
+    // Progress controls
+    progress_value: f32,
+    // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
     popover_open: bool,
@@ -285,6 +296,8 @@ impl Storybook {
             switch_checked: true,
             switch_size: SwitchSize::Default,
             switch_disabled: false,
+            progress_value: 60.,
+            // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
             card_size: CardSize::Default,
@@ -517,6 +530,8 @@ impl Storybook {
             Story::Kbd => Self::kbd_preview().into_any_element(),
             Story::Card => self.card_preview(cx).into_any_element(),
             Story::Alert => self.alert_preview().into_any_element(),
+            Story::Progress => self.progress_preview().into_any_element(),
+            // __STORY_CANVAS__
         };
         div()
             .id("canvas")
@@ -703,6 +718,19 @@ impl Storybook {
                 &theme,
             )],
             Story::Separator => Vec::new(),
+            Story::Progress => vec![Self::control_row(
+                format!("value \u{00b7} {:.0}%", self.progress_value),
+                Self::slider(
+                    "progress-value",
+                    self.progress_value / 100.,
+                    cx,
+                    |this, f| {
+                        this.progress_value = (f * 100.).round();
+                    },
+                ),
+                &theme,
+            )],
+            // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
                 Self::choices(
@@ -1516,6 +1544,16 @@ impl Storybook {
                     .child(AlertTitle::new().child("This one has an icon and a title only.")),
             )
     }
+
+    fn progress_preview(&self) -> impl IntoElement + use<> {
+        div().w(px(288.)).child(
+            Progress::new(self.progress_value)
+                .label("Uploading\u{2026}")
+                .show_value(),
+        )
+    }
+
+    // __STORY_PREVIEWS__
 
     fn card_preview(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx);

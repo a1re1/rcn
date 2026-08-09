@@ -12,12 +12,11 @@ pub mod card;
 pub mod kbd;
 pub mod label;
 pub mod popover;
+pub mod progress;
 pub mod separator;
 pub mod skeleton;
 pub mod switch;
 
-#[allow(unused_imports)] // public API; storybook uses Separator::vertical()
-use self::SeparatorOrientation as _;
 pub use accordion::{Accordion, AccordionItem};
 pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
 pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
@@ -29,6 +28,7 @@ pub use card::{
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
-pub use separator::{Separator, SeparatorOrientation}; // re-exported for callers
+pub use progress::Progress;
+pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use switch::{Switch, SwitchSize};
