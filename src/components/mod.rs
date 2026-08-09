@@ -7,6 +7,7 @@ pub mod accordion;
 pub mod avatar;
 pub mod badge;
 pub mod button;
+pub mod label;
 pub mod popover;
 pub mod separator;
 pub mod skeleton;
@@ -18,6 +19,7 @@ pub use accordion::{Accordion, AccordionItem};
 pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
 pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
+pub use label::Label;
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use separator::{Separator, SeparatorOrientation}; // re-exported for callers
 pub use skeleton::Skeleton;

@@ -18,7 +18,7 @@ lands with a storybook story exercising its variants.
 
 - [x] separator
 - [x] skeleton
-- [ ] label
+- [x] label
 - [ ] kbd
 - [ ] spinner
 - [ ] aspect-ratio
