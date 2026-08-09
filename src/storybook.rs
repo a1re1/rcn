@@ -30,16 +30,16 @@ use crate::components::{
     DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
     FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup,
-    InputGroupAddon, Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup,
-    ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd,
-    KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu,
-    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
-    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
-    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle,
-    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
+    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
+    ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
+    NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
+    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
+    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner,
+    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
+    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -92,11 +92,12 @@ enum Story {
     TextareaStory,
     FieldStory,
     InputGroupStory,
+    InputOtpStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 47] = [
+    const ALL: [Story; 48] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -144,6 +145,7 @@ impl Story {
         Story::TextareaStory,
         Story::FieldStory,
         Story::InputGroupStory,
+        Story::InputOtpStory,
         // __STORY_ALL__
     ];
 
@@ -196,6 +198,7 @@ impl Story {
             Story::TextareaStory => "Textarea",
             Story::FieldStory => "Field",
             Story::InputGroupStory => "Input Group",
+            Story::InputOtpStory => "Input OTP",
             // __STORY_LABELS__
         }
     }
@@ -291,6 +294,9 @@ impl Story {
             }
             Story::InputGroupStory => {
                 "Display additional information or actions to an input or textarea."
+            }
+            Story::InputOtpStory => {
+                "Accessible one-time password component with copy paste functionality."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -559,6 +565,8 @@ pub struct Storybook {
     // Input group story state
     input_group_search: gpui::Entity<Input>,
     input_group_url: gpui::Entity<Input>,
+    // Input OTP story state
+    input_otp: gpui::Entity<Input>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -599,6 +607,11 @@ impl Storybook {
         let input_group_url = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("example.com");
+            input.set_bare(true);
+            input
+        });
+        let input_otp = cx.new(|cx| {
+            let mut input = Input::new(cx);
             input.set_bare(true);
             input
         });
@@ -665,6 +678,7 @@ impl Storybook {
             field_error_input,
             input_group_search,
             input_group_url,
+            input_otp,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -890,6 +904,7 @@ impl Storybook {
             Story::TextareaStory => self.textarea_preview(cx).into_any_element(),
             Story::FieldStory => self.field_preview(cx).into_any_element(),
             Story::InputGroupStory => self.input_group_preview(cx).into_any_element(),
+            Story::InputOtpStory => self.input_otp_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1226,6 +1241,7 @@ impl Storybook {
             Story::TextareaStory => Vec::new(),
             Story::FieldStory => Vec::new(),
             Story::InputGroupStory => Vec::new(),
+            Story::InputOtpStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3304,6 +3320,20 @@ impl Storybook {
                                 .child("Copy"),
                         ),
                     ),
+            )
+    }
+    fn input_otp_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .child(InputOtp::new(self.input_otp.clone(), 6).group(3))
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(theme.muted_foreground)
+                    .child("Click the slots, then type the one-time password."),
             )
     }
 

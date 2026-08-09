@@ -24,6 +24,7 @@ pub mod field;
 pub mod hover_card;
 pub mod input;
 pub mod input_group;
+pub mod input_otp;
 pub mod item;
 pub mod kbd;
 pub mod label;
@@ -80,6 +81,7 @@ pub use field::{Field, FieldDescription, FieldError, FieldGroup, FieldLegend, Fi
 pub use hover_card::HoverCard;
 pub use input::Input;
 pub use input_group::{InputGroup, InputGroupAddon};
+pub use input_otp::InputOtp;
 pub use item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,
