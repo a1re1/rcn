@@ -189,6 +189,7 @@ impl RenderOnce for SidebarContent {
             .flex()
             .flex_col()
             .flex_1()
+            .min_h(px(0.))
             .gap(px(8.))
             .overflow_y_scroll()
             .children(self.children)
