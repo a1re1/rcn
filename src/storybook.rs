@@ -130,8 +130,8 @@ const FONTS: [(&str, Option<&str>); 8] = [
     ("Menlo", Some("Menlo")),
 ];
 
-/// Brand-color presets from shadcn's create page, as oklch (l, c, h) at the
-/// light-mode anchor (tailwind's 600-ish step). `None` is the neutral
+/// Theme presets — shadcn create's "Theme" picker — as oklch (l, c, h) at
+/// the light-mode anchor (tailwind's 600-ish step). `None` is the neutral
 /// default (black / near-white).
 const THEME_PRESETS: [(&str, Option<(f32, f32, f32)>); 8] = [
     ("default", None),
@@ -975,7 +975,7 @@ impl Storybook {
         vec![
             Self::control_row("import theme css", import_row, &theme),
             Self::control_row("base color", base_row, &theme),
-            Self::control_row("brand color", preset_row, &theme),
+            Self::control_row("theme", preset_row, &theme),
             Self::control_row(
                 format!("hue · {:.0}°", hue * 360.),
                 Self::hue_slider("hue-slider", hue, cx, |this, f| {
