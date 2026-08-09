@@ -11,7 +11,6 @@ use gpui::{
     prelude::FluentBuilder as _, px, svg,
 };
 
-use crate::assets::{ICON_CHEVRON_DOWN, ICON_CHEVRON_UP};
 use crate::theme::Theme;
 
 type ToggleHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
@@ -108,9 +107,9 @@ impl RenderOnce for AccordionItem {
         let theme = Theme::of(cx).clone();
 
         let chevron = if self.open {
-            ICON_CHEVRON_UP
+            theme.icons.chevron_up()
         } else {
-            ICON_CHEVRON_DOWN
+            theme.icons.chevron_down()
         };
 
         div()

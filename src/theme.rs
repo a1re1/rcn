@@ -6,7 +6,9 @@
 //! The active theme lives in the gpui `Global` store: read it in a component
 //! with `Theme::of(cx)`, swap it with `cx.set_global(Theme::dark())`.
 
-use gpui::{App, Global, Hsla, Pixels, Rgba, px, rgb, rgba};
+use gpui::{App, Global, Hsla, Pixels, Rgba, SharedString, px, rgb, rgba};
+
+use crate::assets::IconLibrary;
 
 /// Design tokens for one color scheme (shadcn `:root` or `.dark`).
 #[derive(Clone, Debug)]
@@ -38,6 +40,14 @@ pub struct Theme {
     /// Base radius (shadcn `--radius: 0.625rem` = 10px). The sm/md/lg/xl
     /// scale derives from it, mirroring shadcn's calc() chain.
     pub radius: Pixels,
+
+    /// Body font family (shadcn `--font-sans`); `None` uses gpui's default.
+    pub font_sans: Option<SharedString>,
+    /// Heading font family (shadcn `--font-heading`); falls back to
+    /// [`Self::font_sans`].
+    pub font_heading: Option<SharedString>,
+    /// The icon set components draw from.
+    pub icons: IconLibrary,
 }
 
 impl Global for Theme {}
@@ -45,6 +55,11 @@ impl Global for Theme {}
 impl Theme {
     pub fn of(cx: &App) -> &Theme {
         cx.global::<Theme>()
+    }
+
+    /// The heading font family, falling back to the body font.
+    pub fn heading_font(&self) -> Option<SharedString> {
+        self.font_heading.clone().or_else(|| self.font_sans.clone())
     }
 
     /// shadcn `--radius-sm` = radius × 0.6
@@ -91,6 +106,9 @@ impl Theme {
             input: rgb(0xe5e5e5).into(),
             ring: rgb(0xa1a1a1).into(),
             radius: px(10.),
+            font_sans: None,
+            font_heading: None,
+            icons: IconLibrary::Lucide,
         }
     }
 
@@ -119,6 +137,9 @@ impl Theme {
             input: rgba(0xffffff26).into(),
             ring: rgb(0x737373).into(),
             radius: px(10.),
+            font_sans: None,
+            font_heading: None,
+            icons: IconLibrary::Lucide,
         }
     }
 }
@@ -202,6 +223,209 @@ impl BaseColor {
     }
 }
 
+impl Theme {
+    /// Parse a shadcn theme stylesheet — the `:root { --token: … }` /
+    /// `.dark { … }` CSS you copy from shadcn.com/design or a `globals.css` —
+    /// into a (light, dark) theme pair. Tokens the library doesn't use
+    /// (charts, sidebar) are ignored; missing tokens keep their stock neutral
+    /// values. Returns `None` when no `:root` block with at least one known
+    /// token is found.
+    pub fn from_shadcn_css(css: &str) -> Option<(Theme, Theme)> {
+        let root = css_block(css, ":root")?;
+        let (light, applied) = themed_from_block(Theme::light(), root);
+        if applied == 0 {
+            return None;
+        }
+        let dark = match css_block(css, ".dark") {
+            Some(block) => themed_from_block(Theme::dark(), block).0,
+            None => Theme::dark(),
+        };
+        Some((light, dark))
+    }
+}
+
+/// The body of the first `selector { … }` block in `css`.
+fn css_block<'a>(css: &'a str, selector: &str) -> Option<&'a str> {
+    let start = css.find(selector)?;
+    let rest = &css[start + selector.len()..];
+    let open = rest.find('{')?;
+    let body = &rest[open + 1..];
+    Some(&body[..body.find('}')?])
+}
+
+/// Apply every recognized `--token: value` declaration in `block` onto
+/// `theme`; returns the theme and how many declarations applied.
+fn themed_from_block(mut theme: Theme, block: &str) -> (Theme, usize) {
+    let mut applied = 0;
+    for decl in block.split(';') {
+        let Some((name, value)) = decl.split_once(':') else {
+            continue;
+        };
+        let name = name.trim().trim_start_matches("--");
+        let value = value.trim();
+        if name == "radius" {
+            if let Some(radius) = parse_css_length(value) {
+                theme.radius = radius;
+                applied += 1;
+            }
+            continue;
+        }
+        if name == "font-sans" || name == "font-heading" {
+            if let Some(family) = parse_css_font(value) {
+                if name == "font-sans" {
+                    theme.font_sans = Some(family);
+                } else {
+                    theme.font_heading = Some(family);
+                }
+                applied += 1;
+            }
+            continue;
+        }
+        let Some(slot) = token_slot(&mut theme, name) else {
+            continue;
+        };
+        if let Some(color) = parse_css_color(value) {
+            *slot = color;
+            applied += 1;
+        }
+    }
+    (theme, applied)
+}
+
+fn token_slot<'a>(theme: &'a mut Theme, name: &str) -> Option<&'a mut Hsla> {
+    Some(match name {
+        "background" => &mut theme.background,
+        "foreground" => &mut theme.foreground,
+        "card" => &mut theme.card,
+        "card-foreground" => &mut theme.card_foreground,
+        "popover" => &mut theme.popover,
+        "popover-foreground" => &mut theme.popover_foreground,
+        "primary" => &mut theme.primary,
+        "primary-foreground" => &mut theme.primary_foreground,
+        "secondary" => &mut theme.secondary,
+        "secondary-foreground" => &mut theme.secondary_foreground,
+        "muted" => &mut theme.muted,
+        "muted-foreground" => &mut theme.muted_foreground,
+        "accent" => &mut theme.accent,
+        "accent-foreground" => &mut theme.accent_foreground,
+        "destructive" => &mut theme.destructive,
+        "destructive-foreground" => &mut theme.destructive_foreground,
+        "border" => &mut theme.border,
+        "input" => &mut theme.input,
+        "ring" => &mut theme.ring,
+        _ => return None,
+    })
+}
+
+/// `0`, `0.625rem`, or `10px` → pixels.
+fn parse_css_length(value: &str) -> Option<Pixels> {
+    if let Some(rem) = value.strip_suffix("rem") {
+        return Some(px(rem.trim().parse::<f32>().ok()? * 16.));
+    }
+    if let Some(pixels) = value.strip_suffix("px") {
+        return Some(px(pixels.trim().parse::<f32>().ok()?));
+    }
+    Some(px(value.parse::<f32>().ok()?))
+}
+
+/// A number that may carry a `%` suffix, normalized so `50%` → 0.5.
+fn parse_css_number(value: &str) -> Option<f32> {
+    match value.strip_suffix('%') {
+        Some(pct) => Some(pct.trim().parse::<f32>().ok()? / 100.),
+        None => value.parse().ok(),
+    }
+}
+
+/// The color syntaxes shadcn themes have shipped with: `oklch(l c h [/ a])`
+/// (v4), `hsl(h s% l%)` and the bare `h s% l%` triple (v3), and hex.
+fn parse_css_color(value: &str) -> Option<Hsla> {
+    let value = value.trim();
+    if let Some(inner) = value
+        .strip_prefix("oklch(")
+        .and_then(|v| v.strip_suffix(')'))
+    {
+        let (color, a) = split_css_alpha(inner);
+        let parts: Vec<_> = color.split_whitespace().collect();
+        let [l, c, h] = parts.as_slice() else {
+            return None;
+        };
+        let mut color = oklch(
+            parse_css_number(l)?,
+            parse_css_number(c)?,
+            parse_css_number(h)?,
+        );
+        color.a = a?;
+        return Some(color);
+    }
+    if let Some(hex) = value.strip_prefix('#') {
+        let expand = |v: &str| u32::from_str_radix(v, 16).ok();
+        return match hex.len() {
+            3 => {
+                let v = expand(hex)?;
+                let (r, g, b) = ((v >> 8) & 0xf, (v >> 4) & 0xf, v & 0xf);
+                Some(rgb((r * 0x11) << 16 | (g * 0x11) << 8 | (b * 0x11)).into())
+            }
+            6 => Some(rgb(expand(hex)?).into()),
+            8 => Some(rgba(expand(hex)?).into()),
+            _ => None,
+        };
+    }
+    let inner = value
+        .strip_prefix("hsl(")
+        .and_then(|v| v.strip_suffix(')'))
+        .unwrap_or(value);
+    let (color, a) = split_css_alpha(inner);
+    let parts: Vec<_> = color.split_whitespace().collect();
+    let [h, s, l] = parts.as_slice() else {
+        return None;
+    };
+    // Bare triples must look like the hsl shorthand ("240 10% 3.9%") to
+    // avoid parsing arbitrary values as colors.
+    if !s.ends_with('%') || !l.ends_with('%') {
+        return None;
+    }
+    Some(Hsla {
+        h: parse_css_number(h)? / 360.,
+        s: parse_css_number(s)?,
+        l: parse_css_number(l)?,
+        a: a?,
+    })
+}
+
+/// The first concrete family in a CSS font stack: `'Outfit', sans-serif` →
+/// `Outfit`. Generic families and var() references are skipped.
+fn parse_css_font(value: &str) -> Option<SharedString> {
+    value
+        .split(',')
+        .map(|family| family.trim().trim_matches(|c| c == '\'' || c == '"'))
+        .find(|family| {
+            !family.is_empty()
+                && !family.starts_with("var(")
+                && ![
+                    "sans-serif",
+                    "serif",
+                    "monospace",
+                    "system-ui",
+                    "ui-sans-serif",
+                    "ui-serif",
+                    "ui-monospace",
+                    "cursive",
+                    "fantasy",
+                ]
+                .contains(family)
+        })
+        .map(|family| SharedString::from(family.to_owned()))
+}
+
+/// Split a CSS color body on its `/ alpha` tail. Returns the color part and
+/// the alpha (1.0 when absent, `None` when present but malformed).
+fn split_css_alpha(inner: &str) -> (&str, Option<f32>) {
+    match inner.split_once('/') {
+        Some((color, alpha)) => (color.trim(), parse_css_number(alpha.trim())),
+        None => (inner.trim(), Some(1.)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -232,6 +456,67 @@ mod tests {
             assert_eq!(based.primary, stock.primary);
             assert_eq!(based.dark, stock.dark);
         }
+    }
+
+    /// A trimmed copy of a real theme copied from shadcn.com/design
+    /// (including its single-line `.dark` tail).
+    const DESIGN_CSS: &str = r#"
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.147 0.004 49.3);
+  --primary: oklch(0.553 0.195 38.402);
+  --primary-foreground: oklch(0.98 0.016 73.684);
+  --muted-foreground: oklch(0.547 0.021 43.1);
+  --chart-1: oklch(0.837 0.128 66.29);
+  --radius: 0;
+  --sidebar: oklch(0.986 0.002 67.8);
+}
+
+.dark {
+  --background: oklch(0.147 0.004 49.3);
+  --primary: oklch(0.47 0.157 37.304);
+  --border: oklch(1 0 0 / 10%);  --ring: oklch(0.547 0.021 43.1);  --sidebar-ring: oklch(0.547 0.021 43.1);}
+"#;
+
+    #[test]
+    fn imports_design_css() {
+        let (light, dark) = Theme::from_shadcn_css(DESIGN_CSS).expect("should parse");
+        assert_close(light.primary, oklch(0.553, 0.195, 38.402));
+        assert_close(light.foreground, oklch(0.147, 0.004, 49.3));
+        assert_eq!(light.radius, px(0.));
+        // Unlisted tokens keep their stock values.
+        assert_eq!(light.secondary, Theme::light().secondary);
+        assert_close(dark.background, oklch(0.147, 0.004, 49.3));
+        assert_close(dark.primary, oklch(0.47, 0.157, 37.304));
+        assert!((dark.border.a - 0.1).abs() < 0.001, "translucent border");
+        // Dark blocks don't inherit light values for unlisted tokens.
+        assert_eq!(dark.secondary, Theme::dark().secondary);
+    }
+
+    #[test]
+    fn imports_v3_hsl_and_hex_colors() {
+        let css = ":root { --background: 20 14.3% 4.1%; --primary: hsl(24 90% 50%); --ring: #e7000b; --radius: 0.625rem; }";
+        let (light, _) = Theme::from_shadcn_css(css).expect("should parse");
+        assert!((light.background.h - 20. / 360.).abs() < 0.001);
+        assert!((light.background.l - 0.041).abs() < 0.001);
+        assert!((light.primary.s - 0.9).abs() < 0.001);
+        assert_eq!(light.ring, rgb(0xe7000b).into());
+        assert_eq!(light.radius, px(10.));
+    }
+
+    #[test]
+    fn imports_font_declarations() {
+        let css = ":root { --primary: #000000; --font-sans: 'Outfit', ui-sans-serif, sans-serif; --font-heading: var(--font-raleway), Raleway, serif; }";
+        let (light, _) = Theme::from_shadcn_css(css).expect("should parse");
+        assert_eq!(light.font_sans.as_deref(), Some("Outfit"));
+        assert_eq!(light.font_heading.as_deref(), Some("Raleway"));
+    }
+
+    #[test]
+    fn rejects_css_without_tokens() {
+        assert!(Theme::from_shadcn_css("body { margin: 0 }").is_none());
+        assert!(Theme::from_shadcn_css(":root { --thing: 12; }").is_none());
+        assert!(Theme::from_shadcn_css("not css at all").is_none());
     }
 
     /// Tinted bases keep the neutral lightness structure: light backgrounds

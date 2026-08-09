@@ -17,6 +17,7 @@ use gpui::{
     hsla, prelude::*, px, relative, rgb,
 };
 
+use crate::assets::IconLibrary;
 use crate::components::{
     Accordion, AccordionItem, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
     BadgeVariant, Button, ButtonSize, ButtonVariant, Popover, PopoverDescription, PopoverHeader,
@@ -116,6 +117,19 @@ const AVATAR_SIZES: [(&str, AvatarSize); 3] = [
 const SWITCH_SIZES: [(&str, SwitchSize); 2] =
     [("sm", SwitchSize::Sm), ("default", SwitchSize::Default)];
 
+/// Font choices: fonts bundled with macOS, so every pick resolves. `None`
+/// is gpui's default UI font.
+const FONTS: [(&str, Option<&str>); 8] = [
+    ("system", None),
+    ("Helvetica Neue", Some("Helvetica Neue")),
+    ("Avenir Next", Some("Avenir Next")),
+    ("Futura", Some("Futura")),
+    ("Gill Sans", Some("Gill Sans")),
+    ("Georgia", Some("Georgia")),
+    ("Palatino", Some("Palatino")),
+    ("Menlo", Some("Menlo")),
+];
+
 /// Brand-color presets from shadcn's create page, as oklch (l, c, h) at the
 /// light-mode anchor (tailwind's 600-ish step). `None` is the neutral
 /// default (black / near-white).
@@ -133,6 +147,11 @@ const THEME_PRESETS: [(&str, Option<(f32, f32, f32)>); 8] = [
 /// The global token adjustments layered over the stock shadcn themes.
 struct TokenSettings {
     base: BaseColor,
+    /// Body font family; `None` is gpui's default.
+    font_sans: Option<&'static str>,
+    /// Heading font family; `None` falls back to the body font.
+    font_heading: Option<&'static str>,
+    icons: IconLibrary,
     /// When false, primary stays the stock neutral (black / near-white).
     custom_primary: bool,
     /// Custom brand color in HSL, each 0..1 (gpui's `Hsla` space).
@@ -146,6 +165,9 @@ impl Default for TokenSettings {
     fn default() -> Self {
         Self {
             base: BaseColor::Neutral,
+            font_sans: None,
+            font_heading: None,
+            icons: IconLibrary::default(),
             custom_primary: false,
             hue: 0.6,
             saturation: 0.7,
@@ -186,6 +208,11 @@ pub struct Storybook {
     story: Story,
     dark: bool,
     tokens: TokenSettings,
+    /// A (light, dark) pair imported from shadcn theme CSS; overrides the
+    /// generated tokens until another token control is touched.
+    imported: Option<(Theme, Theme)>,
+    /// Feedback from the last import attempt: (message, success).
+    import_status: Option<(String, bool)>,
     rng: u64,
     // Button controls
     button_variant: ButtonVariant,
@@ -214,6 +241,8 @@ impl Storybook {
             story: Story::Tokens,
             dark: false,
             tokens: TokenSettings::default(),
+            imported: None,
+            import_status: None,
             rng: seed | 1,
             button_variant: ButtonVariant::Default,
             button_size: ButtonSize::Default,
@@ -230,19 +259,63 @@ impl Storybook {
 
     /// Rebuild the global `Theme` from the current token settings and mode.
     fn apply_tokens(&self, cx: &mut Context<Self>) {
-        let mut theme = Theme::with_base(self.tokens.base, self.dark);
-        if let Some(primary) = self.tokens.primary(self.dark) {
-            theme.primary = primary;
-            theme.primary_foreground = if primary.l > 0.65 {
-                rgb(0x171717).into()
+        let theme = if let Some((light, dark)) = &self.imported {
+            if self.dark {
+                dark.clone()
             } else {
-                rgb(0xfafafa).into()
-            };
-            theme.ring = primary;
+                light.clone()
+            }
+        } else {
+            let mut theme = Theme::with_base(self.tokens.base, self.dark);
+            if let Some(primary) = self.tokens.primary(self.dark) {
+                theme.primary = primary;
+                theme.primary_foreground = if primary.l > 0.65 {
+                    rgb(0x171717).into()
+                } else {
+                    rgb(0xfafafa).into()
+                };
+                theme.ring = primary;
+            }
+            theme.radius = px(self.tokens.radius);
+            theme
+        };
+        // Fonts and icons layer over both generated and imported themes;
+        // an imported theme's own fonts win unless the picker overrides them.
+        let mut theme = theme;
+        if let Some(font) = self.tokens.font_sans {
+            theme.font_sans = Some(font.into());
         }
-        theme.radius = px(self.tokens.radius);
+        if let Some(font) = self.tokens.font_heading {
+            theme.font_heading = Some(font.into());
+        }
+        theme.icons = self.tokens.icons;
         cx.set_global(theme);
         cx.notify();
+    }
+
+    /// Drop an imported theme (called whenever a generated-token control is
+    /// touched, so the controls always describe what's on screen).
+    fn clear_import(&mut self) {
+        self.imported = None;
+        self.import_status = None;
+    }
+
+    fn import_from_clipboard(&mut self, cx: &mut Context<Self>) {
+        let text = cx.read_from_clipboard().and_then(|item| item.text());
+        match text.as_deref().and_then(Theme::from_shadcn_css) {
+            Some(pair) => {
+                self.imported = Some(pair);
+                self.import_status = Some(("Theme imported — light + dark applied.".into(), true));
+                self.apply_tokens(cx);
+            }
+            None => {
+                self.import_status = Some((
+                    "Clipboard doesn't look like shadcn theme CSS (:root { --token: … }).".into(),
+                    false,
+                ));
+                cx.notify();
+            }
+        }
     }
 
     fn toggle_theme(&mut self, _: &ClickEvent, _window: &mut Window, cx: &mut Context<Self>) {
@@ -261,6 +334,7 @@ impl Storybook {
     }
 
     fn shuffle(&mut self, cx: &mut Context<Self>) {
+        self.clear_import();
         self.tokens.custom_primary = true;
         self.tokens.hue = self.rand();
         self.tokens.saturation = 0.5 + 0.45 * self.rand();
@@ -293,6 +367,7 @@ impl Storybook {
                     .py(px(14.))
                     .text_size(px(15.))
                     .font_weight(FontWeight::SEMIBOLD)
+                    .when_some(theme.heading_font(), |el, font| el.font_family(font))
                     .child("rcn"),
             )
             .child(
@@ -372,6 +447,7 @@ impl Storybook {
                             .text_size(px(18.))
                             .line_height(px(24.))
                             .font_weight(FontWeight::SEMIBOLD)
+                            .when_some(theme.heading_font(), |el, font| el.font_family(font))
                             .child(self.story.label()),
                     )
                     .child(
@@ -754,6 +830,7 @@ impl Storybook {
             self.tokens.base,
             cx,
             |this, v, cx| {
+                this.clear_import();
                 this.tokens.base = v;
                 this.apply_tokens(cx);
             },
@@ -797,6 +874,7 @@ impl Storybook {
                             .border_2()
                             .border_color(if selected { theme.ring } else { theme.border })
                             .on_click(cx.listener(move |this, _, _, cx| {
+                                this.clear_import();
                                 match value {
                                     Some((l, c, h)) => {
                                         let p = oklch(l, c, h);
@@ -818,12 +896,40 @@ impl Storybook {
         let lightness = self.tokens.lightness;
         let radius = self.tokens.radius;
 
+        let import_row = div()
+            .flex()
+            .flex_col()
+            .gap(px(6.))
+            .child(
+                Button::new("import-theme")
+                    .variant(ButtonVariant::Outline)
+                    .size(ButtonSize::Sm)
+                    .on_click(cx.listener(|this, _, _, cx| this.import_from_clipboard(cx)))
+                    .child("Paste from clipboard"),
+            )
+            .when_some(self.import_status.clone(), |el, (message, success)| {
+                el.child(
+                    div()
+                        .text_size(px(11.))
+                        .line_height(px(15.))
+                        .text_color(if success {
+                            theme.muted_foreground
+                        } else {
+                            theme.destructive
+                        })
+                        .child(message),
+                )
+            })
+            .into_any_element();
+
         vec![
+            Self::control_row("import theme css", import_row, &theme),
             Self::control_row("base color", base_row, &theme),
             Self::control_row("brand color", preset_row, &theme),
             Self::control_row(
                 format!("hue · {:.0}°", hue * 360.),
                 Self::hue_slider("hue-slider", hue, cx, |this, f| {
+                    this.clear_import();
                     this.tokens.custom_primary = true;
                     this.tokens.hue = f;
                 }),
@@ -832,6 +938,7 @@ impl Storybook {
             Self::control_row(
                 format!("saturation · {:.0}%", saturation * 100.),
                 Self::slider("saturation-slider", saturation, cx, |this, f| {
+                    this.clear_import();
                     this.tokens.custom_primary = true;
                     this.tokens.saturation = f;
                 }),
@@ -840,6 +947,7 @@ impl Storybook {
             Self::control_row(
                 format!("lightness · {:.0}%", lightness * 100.),
                 Self::slider("lightness-slider", lightness, cx, |this, f| {
+                    this.clear_import();
                     this.tokens.custom_primary = true;
                     this.tokens.lightness = f;
                 }),
@@ -848,8 +956,51 @@ impl Storybook {
             Self::control_row(
                 format!("radius · {:.0}px", radius),
                 Self::slider("radius-slider", radius / 24., cx, |this, f| {
+                    this.clear_import();
                     this.tokens.radius = (f * 24.).round();
                 }),
+                &theme,
+            ),
+            Self::control_row(
+                "font",
+                Self::choices(
+                    "font-sans",
+                    &FONTS,
+                    self.tokens.font_sans,
+                    cx,
+                    |this, v, cx| {
+                        this.tokens.font_sans = v;
+                        this.apply_tokens(cx);
+                    },
+                ),
+                &theme,
+            ),
+            Self::control_row(
+                "heading font",
+                Self::choices(
+                    "font-heading",
+                    &FONTS,
+                    self.tokens.font_heading,
+                    cx,
+                    |this, v, cx| {
+                        this.tokens.font_heading = v;
+                        this.apply_tokens(cx);
+                    },
+                ),
+                &theme,
+            ),
+            Self::control_row(
+                "icon library",
+                Self::choices(
+                    "icon-library",
+                    &IconLibrary::ALL.map(|lib| (lib.label(), lib)),
+                    self.tokens.icons,
+                    cx,
+                    |this, v, cx| {
+                        this.tokens.icons = v;
+                        this.apply_tokens(cx);
+                    },
+                ),
                 &theme,
             ),
             div()
@@ -869,6 +1020,7 @@ impl Storybook {
                         .variant(ButtonVariant::Outline)
                         .size(ButtonSize::Sm)
                         .on_click(cx.listener(|this, _, _, cx| {
+                            this.clear_import();
                             this.tokens = TokenSettings::default();
                             this.apply_tokens(cx);
                         }))
@@ -1006,7 +1158,7 @@ impl Storybook {
         if icon_only {
             button.child(
                 gpui::svg()
-                    .path(crate::assets::ICON_CHEVRON_RIGHT)
+                    .path(theme.icons.chevron_right())
                     .size(px(16.))
                     .text_color(theme.foreground),
             )
@@ -1118,6 +1270,7 @@ impl Render for Storybook {
             .size_full()
             .bg(theme.background)
             .text_color(theme.foreground)
+            .when_some(theme.font_sans.clone(), |el, font| el.font_family(font))
             .child(self.sidebar(cx))
             .child(self.canvas(cx))
             .child(self.controls_panel(cx))
