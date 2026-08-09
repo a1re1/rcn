@@ -74,7 +74,7 @@ lands with a storybook story exercising its variants.
 - [x] calendar
 - [x] carousel
 - [x] resizable
-- [ ] sidebar
+- [x] sidebar
 - [x] date-picker — no base-vega registry item; composition of calendar + popover, ported as a story once both land
 - [ ] data-table — no base-vega registry item; docs-only composition over table, ported as a story
 - [ ] chart — recharts-based upstream; will need a gpui-native adaptation

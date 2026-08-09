@@ -38,10 +38,11 @@ use crate::components::{
     PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Progress, RadioGroup, RadioGroupItem, ResizableDirection, ResizablePanelGroup,
     ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
-    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
-    TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
+    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
+    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
+    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
+    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -101,11 +102,12 @@ enum Story {
     DatePickerStory,
     CarouselStory,
     ResizableStory,
+    SidebarStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 54] = [
+    const ALL: [Story; 55] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -160,6 +162,7 @@ impl Story {
         Story::DatePickerStory,
         Story::CarouselStory,
         Story::ResizableStory,
+        Story::SidebarStory,
         // __STORY_ALL__
     ];
 
@@ -219,6 +222,7 @@ impl Story {
             Story::DatePickerStory => "Date Picker",
             Story::CarouselStory => "Carousel",
             Story::ResizableStory => "Resizable",
+            Story::SidebarStory => "Sidebar",
             // __STORY_LABELS__
         }
     }
@@ -329,7 +333,9 @@ impl Story {
             Story::CarouselStory => "A carousel with motion and swipe built using Embla.",
             Story::ResizableStory => {
                 "Accessible resizable panel groups and layouts with keyboard support."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::SidebarStory => "A composable, themeable and customizable sidebar component.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -616,6 +622,9 @@ pub struct Storybook {
     carousel_index: usize,
     // Resizable story state
     resizable_fraction: f32,
+    // Sidebar story state
+    sidebar_open: bool,
+    sidebar_active: usize,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -755,6 +764,8 @@ impl Storybook {
             date_picker_open: false,
             carousel_index: 0,
             resizable_fraction: 0.5,
+            sidebar_open: true,
+            sidebar_active: 0,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -987,6 +998,7 @@ impl Storybook {
             Story::DatePickerStory => self.date_picker_preview(cx).into_any_element(),
             Story::CarouselStory => self.carousel_preview(cx).into_any_element(),
             Story::ResizableStory => self.resizable_preview(cx).into_any_element(),
+            Story::SidebarStory => self.sidebar_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1330,6 +1342,7 @@ impl Storybook {
             Story::DatePickerStory => Vec::new(),
             Story::CarouselStory => Vec::new(),
             Story::ResizableStory => Vec::new(),
+            Story::SidebarStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3561,6 +3574,74 @@ impl Storybook {
                             (1. - self.resizable_fraction) * 100.
                         ))),
                 ),
+            )
+    }
+    fn sidebar_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let items = ["Home", "Inbox", "Calendar", "Search", "Settings"];
+        div()
+            .w(px(480.))
+            .h(px(320.))
+            .rounded(theme.radius_lg())
+            .border_1()
+            .border_color(theme.border)
+            .overflow_hidden()
+            .child(
+                SidebarProvider::new()
+                    .open(self.sidebar_open)
+                    .sidebar(
+                        Sidebar::new()
+                            .child(
+                                SidebarHeader::new().child(
+                                    div()
+                                        .px(px(8.))
+                                        .text_size(px(14.))
+                                        .font_weight(FontWeight::SEMIBOLD)
+                                        .child("Acme Inc"),
+                                ),
+                            )
+                            .child(SidebarContent::new().child(
+                                SidebarGroup::new().label("Application").children(
+                                    items.into_iter().enumerate().map(|(index, label)| {
+                                        SidebarMenuButton::new(("sidebar-item", index))
+                                            .active(self.sidebar_active == index)
+                                            .on_click(cx.listener(move |this, _, _, cx| {
+                                                this.sidebar_active = index;
+                                                cx.notify();
+                                            }))
+                                            .child(label)
+                                    }),
+                                ),
+                            ))
+                            .child(
+                                SidebarFooter::new().child(
+                                    div()
+                                        .px(px(8.))
+                                        .text_size(px(12.))
+                                        .text_color(theme.muted_foreground)
+                                        .child("evil rabbit"),
+                                ),
+                            ),
+                    )
+                    .inset(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(8.))
+                            .p(px(12.))
+                            .child(SidebarTrigger::new("sidebar-trigger").on_click(cx.listener(
+                                |this, _, _, cx| {
+                                    this.sidebar_open = !this.sidebar_open;
+                                    cx.notify();
+                                },
+                            )))
+                            .child(
+                                div()
+                                    .text_size(px(14.))
+                                    .text_color(theme.muted_foreground)
+                                    .child(format!("Active: {}", items[self.sidebar_active])),
+                            ),
+                    ),
             )
     }
 

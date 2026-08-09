@@ -45,6 +45,7 @@ pub mod scroll_area;
 pub mod select;
 pub mod separator;
 pub mod sheet;
+pub mod sidebar;
 pub mod skeleton;
 pub mod slider;
 pub mod spinner;
@@ -113,6 +114,10 @@ pub use scroll_area::ScrollArea;
 pub use select::Select;
 pub use separator::Separator;
 pub use sheet::{Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle};
+pub use sidebar::{
+    Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton,
+    SidebarProvider, SidebarTrigger,
+};
 pub use skeleton::Skeleton;
 pub use slider::Slider;
 pub use spinner::Spinner;
