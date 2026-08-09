@@ -57,7 +57,7 @@ lands with a storybook story exercising its variants.
 - [x] select
 - [x] native-select
 - [x] navigation-menu
-- [ ] toast
+- [x] toast
 
 ## Wave 4 — text input
 
