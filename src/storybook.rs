@@ -37,8 +37,8 @@ use crate::components::{
     RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
     SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
-    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Toast, ToastViewport, Toggle, ToggleGroup,
+    ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -86,11 +86,12 @@ enum Story {
     SelectStory,
     NativeSelectStory,
     NavigationMenuStory,
+    ToastStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 42] = [
+    const ALL: [Story; 43] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -133,6 +134,7 @@ impl Story {
         Story::SelectStory,
         Story::NativeSelectStory,
         Story::NavigationMenuStory,
+        Story::ToastStory,
         // __STORY_ALL__
     ];
 
@@ -180,6 +182,7 @@ impl Story {
             Story::SelectStory => "Select",
             Story::NativeSelectStory => "Native Select",
             Story::NavigationMenuStory => "Navigation Menu",
+            Story::ToastStory => "Toast",
             // __STORY_LABELS__
         }
     }
@@ -265,6 +268,7 @@ impl Story {
                 "A native select element for choosing from a list of options."
             }
             Story::NavigationMenuStory => "A collection of links for navigating websites.",
+            Story::ToastStory => "A succinct message that is displayed temporarily.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -471,6 +475,8 @@ pub struct Storybook {
     native_select_open: bool,
     // Navigation menu story state
     nav_menu_open: Option<usize>,
+    // Toast story state
+    toast_visible: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -530,6 +536,7 @@ impl Storybook {
             native_select_value: Some(0),
             native_select_open: false,
             nav_menu_open: None,
+            toast_visible: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -792,6 +799,7 @@ impl Storybook {
             Story::SelectStory => self.select_preview(cx).into_any_element(),
             Story::NativeSelectStory => self.native_select_preview(cx).into_any_element(),
             Story::NavigationMenuStory => self.navigation_menu_preview(cx).into_any_element(),
+            Story::ToastStory => self.toast_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1123,6 +1131,7 @@ impl Storybook {
             Story::SelectStory => Vec::new(),
             Story::NativeSelectStory => Vec::new(),
             Story::NavigationMenuStory => Vec::new(),
+            Story::ToastStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3069,6 +3078,40 @@ impl Storybook {
                 ),
             )
             .entry(NavigationMenuEntry::new("Docs"))
+    }
+    fn toast_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .child(
+                Button::new("toast-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.toast_visible = true;
+                        cx.notify();
+                    }))
+                    .child("Show Toast"),
+            )
+            .when(self.toast_visible, |el| {
+                el.child(
+                    ToastViewport::new().child(
+                        Toast::new("toast-demo", "Event has been created")
+                            .description("Sunday, December 03, 2023 at 9:00 AM")
+                            .action(
+                                Button::new("toast-undo")
+                                    .variant(ButtonVariant::Outline)
+                                    .size(ButtonSize::Xs)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.toast_visible = false;
+                                        cx.notify();
+                                    }))
+                                    .child("Undo"),
+                            )
+                            .on_close(cx.listener(|this, _: &ClickEvent, _, cx| {
+                                this.toast_visible = false;
+                                cx.notify();
+                            })),
+                    ),
+                )
+            })
     }
 
     // __STORY_PREVIEWS__
