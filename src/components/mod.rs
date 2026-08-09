@@ -24,6 +24,7 @@ pub mod hover_card;
 pub mod item;
 pub mod kbd;
 pub mod label;
+pub mod menubar;
 pub mod pagination;
 pub mod popover;
 pub mod progress;
@@ -74,6 +75,7 @@ pub use item::{
 };
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
+pub use menubar::{Menubar, MenubarItem, MenubarMenu};
 pub use pagination::{
     Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious,
 };

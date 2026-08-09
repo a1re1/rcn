@@ -31,13 +31,13 @@ use crate::components::{
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, HoverCard, Item,
     ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
     ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
-    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
-    ScrollArea, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
-    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
-    TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
-    Tooltip,
+    Menubar, MenubarItem, MenubarMenu, Pagination, PaginationEllipsis, PaginationLink,
+    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -81,11 +81,12 @@ enum Story {
     DrawerStory,
     DropdownMenuStory,
     ContextMenuStory,
+    MenubarStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 38] = [
+    const ALL: [Story; 39] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -124,6 +125,7 @@ impl Story {
         Story::DrawerStory,
         Story::DropdownMenuStory,
         Story::ContextMenuStory,
+        Story::MenubarStory,
         // __STORY_ALL__
     ];
 
@@ -167,6 +169,7 @@ impl Story {
             Story::DrawerStory => "Drawer",
             Story::DropdownMenuStory => "Dropdown Menu",
             Story::ContextMenuStory => "Context Menu",
+            Story::MenubarStory => "Menubar",
             // __STORY_LABELS__
         }
     }
@@ -243,7 +246,9 @@ impl Story {
             Story::DropdownMenuStory => "Displays a menu to the user, triggered by a button.",
             Story::ContextMenuStory => {
                 "Displays a menu located at the pointer, triggered by a right click."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::MenubarStory => "A visually persistent menu common in desktop applications.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -439,6 +444,8 @@ pub struct Storybook {
     dropdown_status_checked: bool,
     // Context menu story state
     context_menu_at: Option<gpui::Point<gpui::Pixels>>,
+    // Menubar story state
+    menubar_open: Option<usize>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -492,6 +499,7 @@ impl Storybook {
             dropdown_open: false,
             dropdown_status_checked: true,
             context_menu_at: None,
+            menubar_open: None,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -750,6 +758,7 @@ impl Storybook {
             Story::DrawerStory => self.drawer_preview(cx).into_any_element(),
             Story::DropdownMenuStory => self.dropdown_menu_preview(cx).into_any_element(),
             Story::ContextMenuStory => self.context_menu_preview(cx).into_any_element(),
+            Story::MenubarStory => self.menubar_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1077,6 +1086,7 @@ impl Storybook {
             Story::DrawerStory => Vec::new(),
             Story::DropdownMenuStory => Vec::new(),
             Story::ContextMenuStory => Vec::new(),
+            Story::MenubarStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2900,6 +2910,55 @@ impl Storybook {
                 ContextMenuItem::new("cm-fullurls")
                     .checked(false)
                     .child("Show Full URLs"),
+            )
+    }
+    fn menubar_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        Menubar::new("menubar-demo")
+            .open(self.menubar_open)
+            .on_open_change(cx.listener(|this, open: &Option<usize>, _, cx| {
+                this.menubar_open = *open;
+                cx.notify();
+            }))
+            .menu(
+                MenubarMenu::new("File")
+                    .item(
+                        MenubarItem::new("mb-new-tab")
+                            .shortcut("\u{2318}T")
+                            .child("New Tab"),
+                    )
+                    .item(
+                        MenubarItem::new("mb-new-window")
+                            .shortcut("\u{2318}N")
+                            .child("New Window"),
+                    )
+                    .separator()
+                    .item(
+                        MenubarItem::new("mb-print")
+                            .shortcut("\u{2318}P")
+                            .child("Print..."),
+                    ),
+            )
+            .menu(
+                MenubarMenu::new("Edit")
+                    .item(
+                        MenubarItem::new("mb-undo")
+                            .shortcut("\u{2318}Z")
+                            .child("Undo"),
+                    )
+                    .item(
+                        MenubarItem::new("mb-redo")
+                            .shortcut("\u{21e7}\u{2318}Z")
+                            .child("Redo"),
+                    ),
+            )
+            .menu(
+                MenubarMenu::new("View")
+                    .item(
+                        MenubarItem::new("mb-reload")
+                            .checked(true)
+                            .child("Always Show Bookmarks"),
+                    )
+                    .item(MenubarItem::new("mb-fullscreen").child("Toggle Fullscreen")),
             )
     }
 
