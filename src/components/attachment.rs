@@ -11,6 +11,7 @@ use gpui::{
     div, prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 #[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
@@ -156,12 +157,15 @@ impl RenderOnce for Attachment {
                     }),
             )
             .when_some(self.on_remove, |el, on_remove| {
-                el.child(
+                el.child({
+                    let ring = motion::focus_ring(&theme);
                     div()
                         .id("attachment-remove")
                         .flex_shrink_0()
                         .rounded(theme.radius_sm())
                         .p(px(2.))
+                        .tab_index(0)
+                        .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
                         .hover(|s| s.bg(alpha(theme.muted, 0.8)))
                         .on_click(on_remove)
                         .child(
@@ -169,8 +173,8 @@ impl RenderOnce for Attachment {
                                 .path(theme.icons.x())
                                 .size(px(14.))
                                 .text_color(theme.muted_foreground),
-                        ),
-                )
+                        )
+                })
             })
     }
 }

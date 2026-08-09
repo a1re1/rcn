@@ -13,6 +13,7 @@ use gpui::{
     prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::motion;
 use crate::theme::{Theme, alpha};
 
 pub type OpenChangeHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
@@ -106,7 +107,8 @@ impl RenderOnce for Dialog {
                             .children(self.children)
                             // Close: absolute top-4 right-4, muted x
                             .when_some(close_button, |el, close| {
-                                el.child(
+                                el.child({
+                                    let ring = motion::focus_ring(&theme);
                                     div()
                                         .id("dialog-close")
                                         .absolute()
@@ -114,6 +116,10 @@ impl RenderOnce for Dialog {
                                         .right(px(16.))
                                         .rounded(theme.radius_sm())
                                         .p(px(2.))
+                                        .tab_index(0)
+                                        .focus_visible(move |s| {
+                                            s.border_color(theme.ring).shadow(ring.clone())
+                                        })
                                         .hover(|s| s.bg(alpha(theme.muted, 0.8)))
                                         .on_click(move |_, window, cx| close(&false, window, cx))
                                         .child(
@@ -121,8 +127,8 @@ impl RenderOnce for Dialog {
                                                 .path(theme.icons.x())
                                                 .size(px(16.))
                                                 .text_color(theme.muted_foreground),
-                                        ),
-                                )
+                                        )
+                                })
                             }),
                     )),
             ),
