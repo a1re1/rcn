@@ -51,8 +51,9 @@ solid before the molecules that compose them.
 
 ### Tier 2 — molecules on the atoms
 
-- [x] accordion — audited in the infrastructure PR (focus + keyboard on
-  triggers, disabled items, 200ms ease-out reveal)
+- [x] accordion — Base UI root state (multiple / controlled / uncontrolled),
+  root + item disabled, bordered variant, animated expand/collapse height
+  (200ms ease-out); RTL out of scope
 - [x] alert — (static presentation — matches source; parent-context destructive tint TODO)
 - [x] card — (static presentation — matches source layout parts; CSS-var spacing cascade omitted)
 - [x] empty — (static presentation — matches source; dashed border approximated solid)

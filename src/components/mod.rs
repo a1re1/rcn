@@ -65,7 +65,7 @@ pub mod toggle;
 pub mod toggle_group;
 pub mod tooltip;
 
-pub use accordion::{Accordion, AccordionItem};
+pub use accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
 pub use alert_dialog::{
     AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,

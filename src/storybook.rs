@@ -13,33 +13,33 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, FontWeight, Hsla, Window, div, hsla,
-    prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, Window, div,
+    hsla, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
 use crate::components::{
-    Accordion, AccordionItem, Alert, AlertDescription, AlertDialog, AlertDialogDescription,
-    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertTitle, AlertVariant, AspectRatio,
-    Attachment, AttachmentState, Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge,
-    BadgeVariant, BarChart, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink,
-    BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Bubble, BubbleAlign, BubbleReactions,
-    BubbleSide, BubbleVariant, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText,
-    ButtonSize, ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent,
-    CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Carousel, ChartSeries, Checkbox,
-    Collapsible, Combobox, Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem,
-    DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer,
-    DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem,
-    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
-    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
-    InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
-    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
-    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
-    MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
-    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
-    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
-    Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
+    Accordion, AccordionContent, AccordionItem, AccordionTrigger, Alert, AlertDescription,
+    AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+    AlertTitle, AlertVariant, AspectRatio, Attachment, AttachmentState, Avatar, AvatarGroup,
+    AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb, BreadcrumbEllipsis,
+    BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Bubble,
+    BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button, ButtonGroup,
+    ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar, CalendarDate, Card,
+    CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
+    Carousel, ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem,
+    ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
+    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
+    FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
+    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
+    Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
+    MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
+    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
+    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
     SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
@@ -747,9 +747,12 @@ pub struct Storybook {
     questionnaire_selected: Option<usize>,
     // Accordion parity controls
     accordion_disable_third: bool,
+    accordion_multiple: bool,
+    accordion_root_disabled: bool,
+    // Controlled-mode example: the open set lives here, not in the component.
+    accordion_value: Vec<ElementId>,
     // __STORY_STATE__
-    // Accordion / Popover state
-    accordion_open: Option<usize>,
+    // Popover state
     popover_open: bool,
     // Card controls
     card_size: CardSize,
@@ -895,8 +898,10 @@ impl Storybook {
             questionnaire_selected: Some(0),
             focus_handle,
             accordion_disable_third: false,
+            accordion_multiple: false,
+            accordion_root_disabled: false,
+            accordion_value: vec![("ex-acc-ctl", 1usize).into()],
             // __STORY_STATE_INIT__
-            accordion_open: Some(0),
             popover_open: false,
             card_size: CardSize::Default,
         }
@@ -1412,28 +1417,130 @@ impl Storybook {
                         .into_any_element(),
                 ),
             ],
-            Story::Accordion => vec![(
-                "With a disabled item",
-                div()
-                    .w(px(384.))
-                    .child(
-                        Accordion::new()
-                            .child(
-                                AccordionItem::new("ex-acc-1")
-                                    .trigger("Available item")
-                                    .content("This item can be toggled.")
-                                    .open(false),
-                            )
-                            .child(
-                                AccordionItem::new("ex-acc-2")
-                                    .trigger("Disabled item")
-                                    .content("Unreachable.")
-                                    .disabled(true)
-                                    .last(true),
+            Story::Accordion => vec![
+                (
+                    "Multiple",
+                    div()
+                        .w(px(384.))
+                        .child(
+                            Accordion::new("ex-acc-multiple")
+                                .multiple(true)
+                                .default_value(["ex-acc-multi-1", "ex-acc-multi-2"])
+                                .child(
+                                    AccordionItem::new("ex-acc-multi-1")
+                                        .trigger("First item")
+                                        .content("Open by default alongside the second item."),
+                                )
+                                .child(
+                                    AccordionItem::new("ex-acc-multi-2")
+                                        .trigger("Second item")
+                                        .content("Multiple mode keeps several panels open."),
+                                )
+                                .child(
+                                    AccordionItem::new("ex-acc-multi-3")
+                                        .trigger("Third item")
+                                        .content("Toggle any combination of panels."),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled item",
+                    div()
+                        .w(px(384.))
+                        .child(
+                            Accordion::new("ex-acc-disabled")
+                                .default_value(["ex-acc-dis-1"])
+                                .child(
+                                    AccordionItem::new("ex-acc-dis-1")
+                                        .trigger("Available item")
+                                        .content("This item can be toggled."),
+                                )
+                                .child(
+                                    AccordionItem::new("ex-acc-dis-2")
+                                        .trigger("Disabled item")
+                                        .content("Unreachable.")
+                                        .disabled(true),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Borders",
+                    div()
+                        .w(px(384.))
+                        .child(
+                            Accordion::new("ex-acc-borders")
+                                .bordered(true)
+                                .default_value(["ex-acc-border-1"])
+                                .child(
+                                    AccordionItem::new("ex-acc-border-1")
+                                        .trigger("Bordered shell")
+                                        .content(
+                                            "Outer border, rounded corners, and horizontal padding.",
+                                        ),
+                                )
+                                .child(
+                                    AccordionItem::new("ex-acc-border-2")
+                                        .trigger("Between-item rules")
+                                        .content("Items still draw a divider between rows."),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Controlled",
+                    div()
+                        .w(px(384.))
+                        .child(
+                            Accordion::new("ex-acc-controlled")
+                                .value(self.accordion_value.iter().cloned())
+                                .on_value_change(cx.listener(
+                                    |this, value: &[ElementId], _, cx| {
+                                        this.accordion_value = value.to_vec();
+                                        cx.notify();
+                                    },
+                                ))
+                                .children((1..=2usize).map(|n| {
+                                    AccordionItem::new(("ex-acc-ctl", n))
+                                        .trigger(format!("Controlled item {n}"))
+                                        .content(
+                                            "The storybook owns this open set via value + \
+                                             on_value_change.",
+                                        )
+                                })),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "In a card",
+                    div()
+                        .w(px(384.))
+                        .child(
+                            Card::new().child(
+                                CardContent::new().child(
+                                    Accordion::new("ex-acc-card")
+                                        .default_value(["ex-acc-card-1"])
+                                        .child(
+                                            AccordionItem::new("ex-acc-card-1")
+                                                .trigger("Inside a card")
+                                                .content(
+                                                    "The card resizes smoothly as this panel opens and closes.",
+                                                ),
+                                        )
+                                        .child(
+                                            AccordionItem::new("ex-acc-card-2")
+                                                .trigger("Another section")
+                                                .content(
+                                                    "Height animation keeps the surrounding card in flow.",
+                                                ),
+                                        ),
+                                ),
                             ),
-                    )
-                    .into_any_element(),
-            )],
+                        )
+                        .into_any_element(),
+                ),
+            ],
             Story::Badge => vec![(
                 "Variants",
                 div()
@@ -1780,6 +1887,30 @@ impl Storybook {
             ],
             Story::Accordion => vec![
                 Self::control_row(
+                    "multiple",
+                    Switch::new("ctl-accordion-multiple")
+                        .checked(self.accordion_multiple)
+                        .size(SwitchSize::Sm)
+                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                            this.accordion_multiple = *on;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "disable all",
+                    Switch::new("ctl-accordion-root-disabled")
+                        .checked(self.accordion_root_disabled)
+                        .size(SwitchSize::Sm)
+                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                            this.accordion_root_disabled = *on;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
                     "disable third item",
                     Switch::new("ctl-accordion-disabled")
                         .checked(self.accordion_disable_third)
@@ -1789,25 +1920,6 @@ impl Storybook {
                             cx.notify();
                         }))
                         .into_any_element(),
-                    &theme,
-                ),
-                Self::control_row(
-                    "open item",
-                    Self::choices(
-                        "accordion-open",
-                        &[
-                            ("none", None),
-                            ("first", Some(0)),
-                            ("second", Some(1)),
-                            ("third", Some(2)),
-                        ],
-                        self.accordion_open,
-                        cx,
-                        |this, v, cx| {
-                            this.accordion_open = v;
-                            cx.notify();
-                        },
-                    ),
                     &theme,
                 ),
             ],
@@ -2623,47 +2735,41 @@ impl Storybook {
             }))
     }
 
-    fn accordion_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let items = [
-            (
-                "Product Information",
-                "Our flagship product combines cutting-edge technology with sleek design. \
-                 Built with premium materials, it offers unparalleled performance and \
-                 reliability.",
-            ),
-            (
-                "Shipping Details",
-                "We offer worldwide shipping through trusted courier partners. Standard \
-                 delivery takes 3-5 business days, while express shipping ensures delivery \
-                 within 1-2 business days.",
-            ),
-            (
-                "Return Policy",
-                "We stand behind our products with a comprehensive 30-day return policy. If \
-                 you're not completely satisfied, simply return the item in its original \
-                 condition.",
-            ),
-        ];
-        let count = items.len();
-        div()
-            .w(px(384.))
-            .child(Accordion::new().children(items.into_iter().enumerate().map(
-                |(index, (title, body))| {
-                    AccordionItem::new(("accordion-item", index))
-                        .trigger(title)
-                        .content(body)
-                        .open(self.accordion_open == Some(index))
-                        .last(index + 1 == count)
-                        .on_toggle(cx.listener(move |this, _: &ClickEvent, _, cx| {
-                            this.accordion_open = if this.accordion_open == Some(index) {
-                                None
-                            } else {
-                                Some(index)
-                            };
-                            cx.notify();
-                        }))
-                },
-            )))
+    fn accordion_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(384.)).child(
+            Accordion::new("accordion-demo")
+                .default_value(["item-1"])
+                .multiple(self.accordion_multiple)
+                .disabled(self.accordion_root_disabled)
+                .child(
+                    AccordionItem::new("item-1")
+                        .child(AccordionTrigger::new().child("Product Information"))
+                        .child(AccordionContent::new().child(
+                            "Our flagship product combines cutting-edge technology with sleek \
+                             design. Built with premium materials, it offers unparalleled \
+                             performance and reliability.",
+                        )),
+                )
+                .child(
+                    AccordionItem::new("item-2")
+                        .child(AccordionTrigger::new().child("Shipping Details"))
+                        .child(AccordionContent::new().child(
+                            "We offer worldwide shipping through trusted courier partners. \
+                             Standard delivery takes 3-5 business days, while express shipping \
+                             ensures delivery within 1-2 business days.",
+                        )),
+                )
+                .child(
+                    AccordionItem::new("item-3")
+                        .child(AccordionTrigger::new().child("Return Policy"))
+                        .child(AccordionContent::new().child(
+                            "We stand behind our products with a comprehensive 30-day return \
+                             policy. If you're not completely satisfied, simply return the item \
+                             in its original condition.",
+                        ))
+                        .disabled(self.accordion_disable_third),
+                ),
+        )
     }
 
     fn separator_preview(cx: &App) -> impl IntoElement + use<> {

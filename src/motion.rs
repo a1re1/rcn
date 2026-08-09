@@ -49,9 +49,12 @@ pub fn enter_fast() -> Animation {
     Animation::new(Duration::from_millis(100)).with_easing(ease())
 }
 
+/// Clock shared by [`expand`] and the accordion's post-animation settle timer.
+pub const EXPAND_DURATION: Duration = Duration::from_millis(200);
+
 /// `accordion-down` / `collapsible-down`: 200ms `ease-out`.
 pub fn expand() -> Animation {
-    Animation::new(Duration::from_millis(200)).with_easing(ease_out())
+    Animation::new(EXPAND_DURATION).with_easing(ease_out())
 }
 
 /// Wrap an overlay panel with the popover family's enter animation —
