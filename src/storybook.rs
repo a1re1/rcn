@@ -26,7 +26,8 @@ use crate::components::{
     EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
     ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
     ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
+    Progress, Separator, Skeleton, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
+    TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -50,11 +51,12 @@ enum Story {
     AspectRatio,
     Empty,
     Item,
+    Table,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 18] = [
+    const ALL: [Story; 19] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -73,6 +75,7 @@ impl Story {
         Story::AspectRatio,
         Story::Empty,
         Story::Item,
+        Story::Table,
         // __STORY_ALL__
     ];
 
@@ -96,6 +99,7 @@ impl Story {
             Story::AspectRatio => "Aspect Ratio",
             Story::Empty => "Empty",
             Story::Item => "Item",
+            Story::Table => "Table",
             // __STORY_LABELS__
         }
     }
@@ -127,6 +131,7 @@ impl Story {
             Story::AspectRatio => "Displays content within a desired ratio.",
             Story::Empty => "Use to display an empty state, such as no results or missing data.",
             Story::Item => "A flexible list row with media, content, and actions.",
+            Story::Table => "A responsive table component.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -288,6 +293,8 @@ pub struct Storybook {
     // Item controls
     item_variant: ItemVariant,
     item_size: ItemSize,
+    // Table story state
+    table_selected: Option<usize>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -321,6 +328,7 @@ impl Storybook {
             progress_value: 60.,
             item_variant: ItemVariant::Outline,
             item_size: ItemSize::Default,
+            table_selected: Some(1),
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -559,6 +567,7 @@ impl Storybook {
             Story::AspectRatio => Self::aspect_ratio_preview(cx).into_any_element(),
             Story::Empty => Self::empty_preview(cx).into_any_element(),
             Story::Item => self.item_preview(cx).into_any_element(),
+            Story::Table => self.table_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -799,6 +808,7 @@ impl Storybook {
                     &theme,
                 ),
             ],
+            Story::Table => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1780,6 +1790,62 @@ impl Storybook {
                         ),
                 ),
         )
+    }
+
+    fn table_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let invoices = [
+            ("INV001", "Paid", "Credit Card", "$250.00"),
+            ("INV002", "Pending", "PayPal", "$150.00"),
+            ("INV003", "Unpaid", "Bank Transfer", "$350.00"),
+            ("INV004", "Paid", "Credit Card", "$450.00"),
+        ];
+        let count = invoices.len();
+        div()
+            .w(px(480.))
+            .child(
+                Table::new()
+                    .child(
+                        TableHeader::new().child(
+                            TableRow::new()
+                                .child(TableHead::new().w(px(100.)).child("Invoice"))
+                                .child(TableHead::new().child("Status"))
+                                .child(TableHead::new().child("Method"))
+                                .child(TableHead::new().w(px(100.)).child("Amount")),
+                        ),
+                    )
+                    .child(
+                        TableBody::new().children(invoices.into_iter().enumerate().map(
+                            |(index, (invoice, status, method, amount))| {
+                                TableRow::new()
+                                    .id(("table-row", index))
+                                    .selected(self.table_selected == Some(index))
+                                    .last(index + 1 == count)
+                                    .child(TableCell::new().w(px(100.)).child(invoice))
+                                    .child(TableCell::new().child(status))
+                                    .child(TableCell::new().child(method))
+                                    .child(TableCell::new().w(px(100.)).child(amount))
+                                    .into_any_element()
+                            },
+                        )),
+                    )
+                    .child(
+                        TableFooter::new().child(
+                            TableRow::new()
+                                .last(true)
+                                .child(TableCell::new().child("Total"))
+                                .child(TableCell::new().w(px(100.)).child("$1,200.00")),
+                        ),
+                    )
+                    .child(TableCaption::new().child("A list of your recent invoices.")),
+            )
+            .id("table-click-catcher")
+            .on_click(cx.listener(|this, _, _, cx| {
+                this.table_selected = match this.table_selected {
+                    Some(i) => Some((i + 1) % 4),
+                    None => Some(0),
+                };
+                cx.notify();
+            }))
     }
 
     // __STORY_PREVIEWS__

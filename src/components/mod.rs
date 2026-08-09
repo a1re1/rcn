@@ -20,6 +20,7 @@ pub mod separator;
 pub mod skeleton;
 pub mod spinner;
 pub mod switch;
+pub mod table;
 
 pub use accordion::{Accordion, AccordionItem};
 pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
@@ -45,3 +46,6 @@ pub use separator::Separator;
 pub use skeleton::Skeleton;
 pub use spinner::Spinner;
 pub use switch::{Switch, SwitchSize};
+pub use table::{
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
+};
