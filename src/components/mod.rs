@@ -17,6 +17,7 @@ pub mod checkbox;
 pub mod collapsible;
 pub mod dialog;
 pub mod drawer;
+pub mod dropdown_menu;
 pub mod empty;
 pub mod hover_card;
 pub mod item;
@@ -60,6 +61,7 @@ pub use checkbox::Checkbox;
 pub use collapsible::Collapsible;
 pub use dialog::{Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle};
 pub use drawer::{Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle};
+pub use dropdown_menu::{DropdownMenu, DropdownMenuItem};
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };

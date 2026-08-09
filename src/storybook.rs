@@ -27,16 +27,16 @@ use crate::components::{
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Checkbox, Collapsible, Dialog, DialogDescription, DialogFooter,
     DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
-    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
-    HoverCard, Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader,
-    ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup,
-    Label, Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious,
-    Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
-    ScrollArea, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
-    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
-    TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
-    Tooltip,
+    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, HoverCard, Item, ItemActions, ItemContent, ItemDescription,
+    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Pagination, PaginationEllipsis, PaginationLink,
+    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup, ToggleGroupItem,
+    ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -78,11 +78,12 @@ enum Story {
     AlertDialogStory,
     SheetStory,
     DrawerStory,
+    DropdownMenuStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 36] = [
+    const ALL: [Story; 37] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -119,6 +120,7 @@ impl Story {
         Story::AlertDialogStory,
         Story::SheetStory,
         Story::DrawerStory,
+        Story::DropdownMenuStory,
         // __STORY_ALL__
     ];
 
@@ -160,6 +162,7 @@ impl Story {
             Story::AlertDialogStory => "Alert Dialog",
             Story::SheetStory => "Sheet",
             Story::DrawerStory => "Drawer",
+            Story::DropdownMenuStory => "Dropdown Menu",
             // __STORY_LABELS__
         }
     }
@@ -232,7 +235,9 @@ impl Story {
             }
             Story::DrawerStory => {
                 "A drawer component for rendering content from the bottom of the screen."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::DropdownMenuStory => "Displays a menu to the user, triggered by a button.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -423,6 +428,9 @@ pub struct Storybook {
     sheet_side: SheetSide,
     // Drawer story state
     drawer_open: bool,
+    // Dropdown menu story state
+    dropdown_open: bool,
+    dropdown_status_checked: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -473,6 +481,8 @@ impl Storybook {
             sheet_open: false,
             sheet_side: SheetSide::Right,
             drawer_open: false,
+            dropdown_open: false,
+            dropdown_status_checked: true,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -729,6 +739,7 @@ impl Storybook {
             Story::AlertDialogStory => self.alert_dialog_preview(cx).into_any_element(),
             Story::SheetStory => self.sheet_preview(cx).into_any_element(),
             Story::DrawerStory => self.drawer_preview(cx).into_any_element(),
+            Story::DropdownMenuStory => self.dropdown_menu_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1054,6 +1065,7 @@ impl Storybook {
                 &theme,
             )],
             Story::DrawerStory => Vec::new(),
+            Story::DropdownMenuStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -2241,31 +2253,46 @@ impl Storybook {
     }
     fn toggle_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let labels = ["Bold", "Italic", "Underline"];
-        div().flex().flex_col().gap(px(16.)).children(
-            [ToggleVariant::Default, ToggleVariant::Outline].map(|variant| {
-                let mut group = ToggleGroup::new().variant(variant);
-                for (index, label) in labels.into_iter().enumerate() {
-                    let on = self.toggle_group_on[index];
-                    group = group.item(
-                        ToggleGroupItem::new((
-                            if variant == ToggleVariant::Outline {
-                                "tg-outline"
-                            } else {
-                                "tg-default"
-                            },
-                            index,
-                        ))
-                        .pressed(on)
-                        .on_change(cx.listener(move |this, pressed: &bool, _, cx| {
-                            this.toggle_group_on[index] = *pressed;
-                            cx.notify();
-                        }))
-                        .child(label),
-                    );
-                }
-                group
-            }),
-        )
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                ToggleGroup::new()
+                    .variant(ToggleVariant::Outline)
+                    .size(ToggleSize::Sm)
+                    .item(ToggleGroupItem::new("tg-sm-a").pressed(true).child("Sm"))
+                    .item(
+                        ToggleGroupItem::new("tg-sm-b")
+                            .disabled(true)
+                            .child("Disabled"),
+                    ),
+            )
+            .children(
+                [ToggleVariant::Default, ToggleVariant::Outline].map(|variant| {
+                    let mut group = ToggleGroup::new().variant(variant);
+                    for (index, label) in labels.into_iter().enumerate() {
+                        let on = self.toggle_group_on[index];
+                        group = group.item(
+                            ToggleGroupItem::new((
+                                if variant == ToggleVariant::Outline {
+                                    "tg-outline"
+                                } else {
+                                    "tg-default"
+                                },
+                                index,
+                            ))
+                            .pressed(on)
+                            .on_change(cx.listener(move |this, pressed: &bool, _, cx| {
+                                this.toggle_group_on[index] = *pressed;
+                                cx.notify();
+                            }))
+                            .child(label),
+                        );
+                    }
+                    group
+                }),
+            )
     }
     fn button_group_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
@@ -2760,6 +2787,52 @@ impl Storybook {
                                     .child("Submit"),
                             ),
                     ),
+            )
+    }
+    fn dropdown_menu_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        DropdownMenu::new("dropdown-demo")
+            .open(self.dropdown_open)
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.dropdown_open = *open;
+                cx.notify();
+            }))
+            .trigger(
+                Button::new("dropdown-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .child("Open Menu"),
+            )
+            .label("My Account")
+            .separator()
+            .item(
+                DropdownMenuItem::new("dd-profile")
+                    .shortcut("\u{2318}P")
+                    .child("Profile"),
+            )
+            .item(
+                DropdownMenuItem::new("dd-billing")
+                    .shortcut("\u{2318}B")
+                    .child("Billing"),
+            )
+            .item(
+                DropdownMenuItem::new("dd-status")
+                    .checked(self.dropdown_status_checked)
+                    .on_select(cx.listener(|this, _, _, cx| {
+                        this.dropdown_status_checked = !this.dropdown_status_checked;
+                        cx.notify();
+                    }))
+                    .child("Show Status Bar"),
+            )
+            .item(
+                DropdownMenuItem::new("dd-disabled")
+                    .disabled(true)
+                    .child("API (disabled)"),
+            )
+            .separator()
+            .item(
+                DropdownMenuItem::new("dd-logout")
+                    .destructive(true)
+                    .shortcut("\u{21e7}\u{2318}Q")
+                    .child("Log out"),
             )
     }
 
