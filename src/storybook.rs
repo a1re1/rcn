@@ -24,23 +24,23 @@ use crate::components::{
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
-    ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem,
-    ContextMenu, ContextMenuItem, Dialog, DialogDescription, DialogFooter, DialogHeader,
-    DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu,
-    DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
-    FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
-    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
-    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem,
-    MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination,
-    PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
-    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption,
-    TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList,
-    TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem,
-    ToggleSize, ToggleVariant, Tooltip,
+    ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent, CardDescription,
+    CardFooter, CardHeader, CardSize, CardTitle, Checkbox, Collapsible, Combobox, Command,
+    CommandGroup, CommandItem, ContextMenu, ContextMenuItem, Dialog, DialogDescription,
+    DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader,
+    DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription,
+    EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError,
+    FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup, InputGroupAddon, InputOtp,
+    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label,
+    Menubar, MenubarItem, MenubarMenu, NativeSelect, NavigationMenu, NavigationMenuEntry,
+    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
+    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
+    RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Skeleton, Slider, Spinner, Switch, SwitchSize,
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs,
+    TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast, ToastViewport, Toggle,
+    ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -96,11 +96,12 @@ enum Story {
     InputOtpStory,
     CommandStory,
     ComboboxStory,
+    CalendarStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 50] = [
+    const ALL: [Story; 51] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -151,6 +152,7 @@ impl Story {
         Story::InputOtpStory,
         Story::CommandStory,
         Story::ComboboxStory,
+        Story::CalendarStory,
         // __STORY_ALL__
     ];
 
@@ -206,6 +208,7 @@ impl Story {
             Story::InputOtpStory => "Input OTP",
             Story::CommandStory => "Command",
             Story::ComboboxStory => "Combobox",
+            Story::CalendarStory => "Calendar",
             // __STORY_LABELS__
         }
     }
@@ -308,6 +311,9 @@ impl Story {
             Story::CommandStory => "Fast, composable, unstyled command menu.",
             Story::ComboboxStory => {
                 "Autocomplete input and command palette with a list of suggestions."
+            }
+            Story::CalendarStory => {
+                "A date field component that allows users to enter and edit date."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -584,6 +590,9 @@ pub struct Storybook {
     combobox_search: gpui::Entity<Input>,
     combobox_value: Option<usize>,
     combobox_open: bool,
+    // Calendar story state
+    calendar_month: (i32, u32),
+    calendar_selected: Option<CalendarDate>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -716,6 +725,8 @@ impl Storybook {
             combobox_search,
             combobox_value: None,
             combobox_open: false,
+            calendar_month: (2026, 8),
+            calendar_selected: Some(CalendarDate::new(2026, 8, 9)),
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -944,6 +955,7 @@ impl Storybook {
             Story::InputOtpStory => self.input_otp_preview(cx).into_any_element(),
             Story::CommandStory => self.command_preview(cx).into_any_element(),
             Story::ComboboxStory => self.combobox_preview(cx).into_any_element(),
+            Story::CalendarStory => self.calendar_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1283,6 +1295,7 @@ impl Storybook {
             Story::InputOtpStory => Vec::new(),
             Story::CommandStory => Vec::new(),
             Story::ComboboxStory => Vec::new(),
+            Story::CalendarStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3417,6 +3430,18 @@ impl Storybook {
             }))
             .on_open_change(cx.listener(|this, open: &bool, _, cx| {
                 this.combobox_open = *open;
+                cx.notify();
+            }))
+    }
+    fn calendar_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        Calendar::new(self.calendar_month.0, self.calendar_month.1)
+            .selected(self.calendar_selected)
+            .on_month_change(cx.listener(|this, month: &(i32, u32), _, cx| {
+                this.calendar_month = *month;
+                cx.notify();
+            }))
+            .on_select(cx.listener(|this, date: &CalendarDate, _, cx| {
+                this.calendar_selected = Some(*date);
                 cx.notify();
             }))
     }
