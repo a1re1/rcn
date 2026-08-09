@@ -1,40 +1,17 @@
-//! Bare-bones gpui bootstrap: opens a window and renders "Hello, gpui!".
-//!
-//! This is the seed of the rcn storybook — a gpui app for browsing the
-//! component library. For now it only proves the toolchain works: platform
-//! init, a window, styled divs, and real text rendering.
+//! rcn — a copy-paste component library for gpui. This binary is the
+//! storybook: browse each component in isolation and play with its options
+//! in the controls panel (see [`storybook`]).
 
-use gpui::{
-    App, AppContext, Application, Bounds, Context, QuitMode, Window, WindowBounds, WindowOptions,
-    div, prelude::*, px, rgb, size,
-};
+mod assets;
+mod components;
+mod storybook;
+mod theme;
 
-struct HelloWorld;
+use gpui::{App, AppContext, Application, Bounds, QuitMode, WindowBounds, WindowOptions, px, size};
 
-impl Render for HelloWorld {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .flex()
-            .flex_col()
-            .gap_2()
-            .items_center()
-            .justify_center()
-            .size_full()
-            .bg(rgb(0x1e1e2e))
-            .child(
-                div()
-                    .text_2xl()
-                    .text_color(rgb(0xcdd6f4))
-                    .child("Hello, gpui!"),
-            )
-            .child(
-                div()
-                    .text_sm()
-                    .text_color(rgb(0x6c7086))
-                    .child("rcn — component library bootstrap"),
-            )
-    }
-}
+use assets::Assets;
+use storybook::Storybook;
+use theme::Theme;
 
 fn main() {
     // At this gpui rev the platform lives in the gpui_platform crate; zed's own
@@ -42,9 +19,12 @@ fn main() {
     let platform = gpui_platform::current_platform(false);
     // macOS's default keeps the process alive after the last window closes
     // (document-app convention); a single-window tool should just quit.
-    let app = Application::with_platform(platform).with_quit_mode(QuitMode::LastWindowClosed);
+    let app = Application::with_platform(platform)
+        .with_assets(Assets)
+        .with_quit_mode(QuitMode::LastWindowClosed);
     app.run(|cx: &mut App| {
-        let bounds = Bounds::centered(None, size(px(800.0), px(600.0)), cx);
+        cx.set_global(Theme::light());
+        let bounds = Bounds::centered(None, size(px(1100.0), px(720.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
@@ -54,7 +34,7 @@ fn main() {
                 }),
                 ..Default::default()
             },
-            |_window, cx| cx.new(|_cx| HelloWorld),
+            |_window, cx| cx.new(|_cx| Storybook::new()),
         )
         .expect("failed to open window");
         cx.activate(true);
