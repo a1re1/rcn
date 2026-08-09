@@ -23,7 +23,7 @@ use crate::components::{
     AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
     CardSize, CardTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, Separator, Skeleton, Switch, SwitchSize,
+    PopoverTitle, Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -43,11 +43,12 @@ enum Story {
     Card,
     Alert,
     Progress,
+    Spinner,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 14] = [
+    const ALL: [Story; 15] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -62,6 +63,7 @@ impl Story {
         Story::Card,
         Story::Alert,
         Story::Progress,
+        Story::Spinner,
         // __STORY_ALL__
     ];
 
@@ -81,6 +83,7 @@ impl Story {
             Story::Card => "Card",
             Story::Alert => "Alert",
             Story::Progress => "Progress",
+            Story::Spinner => "Spinner",
             // __STORY_LABELS__
         }
     }
@@ -108,6 +111,7 @@ impl Story {
             Story::Card => "Displays a card with header, content, and footer.",
             Story::Alert => "Displays a callout for user attention.",
             Story::Progress => "Displays an indicator showing the completion progress of a task.",
+            Story::Spinner => "An indicator that can be used to show a loading state.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -531,6 +535,7 @@ impl Storybook {
             Story::Card => self.card_preview(cx).into_any_element(),
             Story::Alert => self.alert_preview().into_any_element(),
             Story::Progress => self.progress_preview().into_any_element(),
+            Story::Spinner => Self::spinner_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -730,6 +735,7 @@ impl Storybook {
                 ),
                 &theme,
             )],
+            Story::Spinner => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1551,6 +1557,24 @@ impl Storybook {
                 .label("Uploading\u{2026}")
                 .show_value(),
         )
+    }
+
+    fn spinner_preview(cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(px(16.))
+            .child(Spinner::new())
+            .child(Spinner::new().size(px(24.)))
+            .child(Spinner::new().size(px(32.)).color(theme.muted_foreground))
+            .child(
+                Button::new("spinner-button")
+                    .disabled(true)
+                    .child(Spinner::new().size(px(16.)).color(theme.primary_foreground))
+                    .child("Please wait"),
+            )
     }
 
     // __STORY_PREVIEWS__

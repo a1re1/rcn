@@ -15,6 +15,7 @@ pub mod popover;
 pub mod progress;
 pub mod separator;
 pub mod skeleton;
+pub mod spinner;
 pub mod switch;
 
 pub use accordion::{Accordion, AccordionItem};
@@ -31,4 +32,5 @@ pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use progress::Progress;
 pub use separator::Separator;
 pub use skeleton::Skeleton;
+pub use spinner::Spinner;
 pub use switch::{Switch, SwitchSize};
