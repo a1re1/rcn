@@ -40,7 +40,7 @@ lands with a storybook story exercising its variants.
 - [x] collapsible
 - [x] tabs
 - [x] slider
-- [ ] pagination
+- [x] pagination
 - [ ] scroll-area
 
 ## Wave 3 — overlays & menus

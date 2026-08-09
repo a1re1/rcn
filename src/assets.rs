@@ -50,6 +50,10 @@ impl IconLibrary {
         format!("icons/{}/chevron-right.svg", self.dir())
     }
 
+    pub fn chevron_left(self) -> String {
+        format!("icons/{}/chevron-left.svg", self.dir())
+    }
+
     pub fn check(self) -> String {
         format!("icons/{}/check.svg", self.dir())
     }
@@ -128,6 +132,22 @@ const ICONS: &[(&str, &[u8])] = &[
         filled!(
             "24 24",
             "M13.1717 12L8.22192 7.05025L9.63614 5.63604L16.0001 12L9.63614 18.364L8.22192 16.9497L13.1717 12Z"
+        ),
+    ),
+    ("icons/lucide/chevron-left.svg", stroked!("m15 18-6-6 6-6")),
+    ("icons/tabler/chevron-left.svg", stroked!("M15 6l-6 6l6 6")),
+    (
+        "icons/phosphor/chevron-left.svg",
+        filled!(
+            "256 256",
+            "M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"
+        ),
+    ),
+    (
+        "icons/remix/chevron-left.svg",
+        filled!(
+            "24 24",
+            "M10.8284 12L15.7782 16.9497L14.364 18.364L8 12L14.364 5.63604L15.7782 7.05025L10.8284 12Z"
         ),
     ),
     ("icons/lucide/check.svg", stroked!("M20 6 9 17l-5-5")),
