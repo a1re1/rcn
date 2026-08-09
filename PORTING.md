@@ -46,7 +46,7 @@ lands with a storybook story exercising its variants.
 ## Wave 3 — overlays & menus
 
 - [x] tooltip
-- [ ] hover-card
+- [x] hover-card
 - [ ] dialog
 - [x] alert-dialog
 - [ ] sheet
