@@ -84,7 +84,7 @@ lands with a storybook story exercising its variants.
 - [x] attachment
 - [x] bubble
 - [ ] direction
-- [ ] marker
+- [x] marker
 - [x] message
 - [x] message-scroller
 - [ ] questionnaire

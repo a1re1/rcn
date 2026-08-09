@@ -34,10 +34,10 @@ use crate::components::{
     Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
     InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
     ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, Message,
-    MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader,
-    NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination,
-    PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
+    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
+    MessageHeader, NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink,
+    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious, Popover,
     PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
     ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
     SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
@@ -111,11 +111,12 @@ enum Story {
     MessageStory,
     BubbleStory,
     AttachmentStory,
+    MarkerStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 60] = [
+    const ALL: [Story; 61] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -176,6 +177,7 @@ impl Story {
         Story::MessageStory,
         Story::BubbleStory,
         Story::AttachmentStory,
+        Story::MarkerStory,
         // __STORY_ALL__
     ];
 
@@ -241,6 +243,7 @@ impl Story {
             Story::MessageStory => "Message",
             Story::BubbleStory => "Bubble",
             Story::AttachmentStory => "Attachment",
+            Story::MarkerStory => "Marker",
             // __STORY_LABELS__
         }
     }
@@ -359,7 +362,9 @@ impl Story {
             Story::BubbleStory => "Chat bubbles with variants and floating reactions.",
             Story::AttachmentStory => {
                 "A file chip with media, metadata, upload states, and removal."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::MarkerStory => "Inline conversation markers like date dividers and event notes.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -1037,6 +1042,7 @@ impl Storybook {
             Story::MessageStory => self.message_preview(cx).into_any_element(),
             Story::BubbleStory => self.bubble_preview().into_any_element(),
             Story::AttachmentStory => self.attachment_preview(cx).into_any_element(),
+            Story::MarkerStory => self.marker_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1406,6 +1412,7 @@ impl Storybook {
                 &theme,
             )],
             Story::AttachmentStory => Vec::new(),
+            Story::MarkerStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3918,6 +3925,24 @@ impl Storybook {
                         .child("Restore attachment"),
                 )
             })
+    }
+    fn marker_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .w(px(384.))
+            .child(Marker::new().child("Yesterday"))
+            .child(
+                Marker::new()
+                    .variant(MarkerVariant::Separator)
+                    .child("Today"),
+            )
+            .child(
+                Marker::new()
+                    .variant(MarkerVariant::Border)
+                    .child("Alex joined the conversation"),
+            )
     }
 
     // __STORY_PREVIEWS__
