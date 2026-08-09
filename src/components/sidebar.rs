@@ -13,6 +13,7 @@ use gpui::{
     prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::motion;
 use crate::theme::Theme;
 
 /// The shell: sidebar rail + inset main content, filling its container.
@@ -348,6 +349,11 @@ impl RenderOnce for SidebarMenuButton {
                 el.bg(theme.accent)
                     .text_color(theme.accent_foreground)
                     .font_weight(FontWeight::MEDIUM)
+            })
+            .map(|el| {
+                let ring = motion::focus_ring(&theme);
+                el.tab_index(0)
+                    .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
             })
             .when(!self.active, |el| {
                 el.hover(|s| s.bg(theme.accent).text_color(theme.accent_foreground))

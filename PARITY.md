@@ -36,18 +36,18 @@ solid before the molecules that compose them.
 - [ ] label
 - [ ] kbd
 - [ ] separator
-- [ ] skeleton
+- [x] skeleton — animate-pulse (2s opacity breathing)
 - [ ] spinner
 - [ ] aspect-ratio
 - [ ] avatar
-- [ ] checkbox
-- [ ] radio-group
-- [ ] switch
-- [ ] toggle
-- [ ] slider
+- [x] checkbox — (keyboard focus + ring)
+- [x] radio-group — (keyboard focus + ring)
+- [x] switch — (keyboard focus + ring)
+- [x] toggle — (keyboard focus + ring)
+- [x] slider — keyboard focus ring + arrow-key steps
 - [ ] progress
-- [ ] input
-- [ ] textarea
+- [x] input — full focus ring shadow (was border-only)
+- [x] textarea — focus ring shadow
 
 ### Tier 2 — molecules on the atoms
 
@@ -58,13 +58,13 @@ solid before the molecules that compose them.
 - [ ] empty
 - [ ] item
 - [ ] field
-- [ ] input-group
+- [x] input-group — focus ring shadow on the shell
 - [ ] input-otp
 - [ ] button-group
-- [ ] toggle-group
-- [ ] tabs
-- [ ] collapsible
-- [ ] breadcrumb
+- [x] toggle-group — (keyboard focus + ring)
+- [x] tabs — (keyboard focus + ring)
+- [x] collapsible — (200ms animated reveal)
+- [x] breadcrumb — (link focus rings)
 - [ ] pagination
 - [ ] table
 - [ ] scroll-area
@@ -73,34 +73,34 @@ solid before the molecules that compose them.
 
 ### Tier 3 — overlays (popover foundation → menus → modals)
 
-- [ ] tooltip
-- [ ] hover-card
-- [ ] popover
-- [ ] dropdown-menu
-- [ ] context-menu
-- [ ] menubar
-- [ ] select
-- [ ] native-select
-- [ ] dialog
-- [ ] alert-dialog
-- [ ] sheet
-- [ ] drawer
-- [ ] toast
-- [ ] navigation-menu
+- [x] tooltip — enter animation (100ms ease fade+slide)
+- [x] hover-card — enter animation (100ms ease fade+slide)
+- [x] popover — enter animation (100ms ease fade+slide)
+- [x] dropdown-menu — enter animation (100ms ease fade+slide)
+- [x] context-menu — enter animation (100ms ease fade+slide)
+- [x] menubar — enter animation (100ms ease fade+slide)
+- [x] select — enter animation (100ms ease fade+slide)
+- [x] native-select — enter animation (100ms ease fade+slide)
+- [x] dialog — 200ms enter animation, backdrop fade, Escape closes (storybook root)
+- [x] alert-dialog — 200ms enter animation
+- [x] sheet — 500ms ease-in-out slide from its edge, Escape closes
+- [x] drawer — 500ms slide-up, Escape closes
+- [x] toast — enter animation
+- [x] navigation-menu — enter animation (100ms ease fade+slide)
 
 ### Tier 4 — composites
 
 - [ ] command
-- [ ] combobox
+- [x] combobox — enter animation on the panel
 - [ ] calendar
-- [ ] date-picker
+- [x] date-picker — enter animation on the panel
 - [ ] carousel
 - [ ] resizable
-- [ ] sidebar
+- [x] sidebar — (menu focus rings)
 - [ ] data-table
 - [ ] chart
 - [ ] message
 - [ ] bubble
 - [ ] message-scroller
 - [ ] attachment
-- [ ] questionnaire
+- [x] questionnaire — (choice focus rings)

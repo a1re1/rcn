@@ -1,14 +1,16 @@
 //! Collapsible — port of shadcn base-vega `ui/collapsible.tsx`.
 //!
 //! Controlled: the caller owns `open`, the trigger reports clicks via
-//! `on_toggle`, and the content renders only while open (no height
-//! animation, like the accordion).
+//! `on_toggle`, and the content reveals with a 200ms expand animation
+//! (same clock as accordion).
 
 use gpui::{
-    AnyElement, App, ClickEvent, ElementId, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _,
-    px,
+    AnimationExt as _, AnyElement, App, ClickEvent, ElementId, InteractiveElement as _,
+    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
+    prelude::FluentBuilder as _, px,
 };
+
+use crate::motion;
 
 type ToggleHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 
@@ -61,6 +63,8 @@ impl Collapsible {
 
 impl RenderOnce for Collapsible {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        // Clone before moving into the trigger child (same as accordion).
+        let id = self.id.clone();
         div()
             .flex()
             .flex_col()
@@ -71,6 +75,17 @@ impl RenderOnce for Collapsible {
                     .when_some(self.on_toggle, |el, on_toggle| el.on_click(on_toggle))
                     .children(self.trigger),
             )
-            .when(self.open, |el| el.children(self.content))
+            // Content: overflow-hidden wrapper + 200ms expand (fade + slide).
+            // True height animation needs pre-measured content (TODO(rcn)).
+            .when(self.open, |el| {
+                el.child(
+                    div()
+                        .overflow_hidden()
+                        .child(div().children(self.content))
+                        .with_animation(id, motion::expand(), |el, delta| {
+                            el.opacity(delta).mt(px(-8. * (1. - delta)))
+                        }),
+                )
+            })
     }
 }
