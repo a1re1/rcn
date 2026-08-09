@@ -35,6 +35,7 @@ pub mod item;
 pub mod kbd;
 pub mod label;
 pub mod menubar;
+pub mod message;
 pub mod native_select;
 pub mod navigation_menu;
 pub mod pagination;
@@ -103,6 +104,10 @@ pub use item::{
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use menubar::{Menubar, MenubarItem, MenubarMenu};
+pub use message::{
+    Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
+    MessageHeader,
+};
 pub use native_select::NativeSelect;
 pub use navigation_menu::{NavigationMenu, NavigationMenuEntry, NavigationMenuLink};
 pub use pagination::{

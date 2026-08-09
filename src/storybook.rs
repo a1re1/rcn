@@ -33,7 +33,8 @@ use crate::components::{
     FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup,
     InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
     ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
-    ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
+    ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, Message, MessageAlign,
+    MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader, NativeSelect,
     NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
     PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Progress, RadioGroup, RadioGroupItem, ResizableDirection, ResizablePanelGroup,
@@ -105,11 +106,12 @@ enum Story {
     SidebarStory,
     DataTableStory,
     ChartStory,
+    MessageStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 57] = [
+    const ALL: [Story; 58] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -167,6 +169,7 @@ impl Story {
         Story::SidebarStory,
         Story::DataTableStory,
         Story::ChartStory,
+        Story::MessageStory,
         // __STORY_ALL__
     ];
 
@@ -229,6 +232,7 @@ impl Story {
             Story::SidebarStory => "Sidebar",
             Story::DataTableStory => "Data Table",
             Story::ChartStory => "Chart",
+            Story::MessageStory => "Message",
             // __STORY_LABELS__
         }
     }
@@ -343,6 +347,7 @@ impl Story {
             Story::SidebarStory => "A composable, themeable and customizable sidebar component.",
             Story::DataTableStory => "Powerful table and datagrids built on the table primitives.",
             Story::ChartStory => "Beautiful charts built with the theme's chart tokens.",
+            Story::MessageStory => "A chat message row with avatar, content, and meta rows.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -1012,6 +1017,7 @@ impl Storybook {
             Story::SidebarStory => self.sidebar_preview(cx).into_any_element(),
             Story::DataTableStory => self.data_table_preview(cx).into_any_element(),
             Story::ChartStory => self.chart_preview(cx).into_any_element(),
+            Story::MessageStory => self.message_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1358,6 +1364,7 @@ impl Storybook {
             Story::SidebarStory => Vec::new(),
             Story::DataTableStory => Vec::new(),
             Story::ChartStory => Vec::new(),
+            Story::MessageStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3749,6 +3756,51 @@ impl Storybook {
                     "Mobile",
                     [80., 200., 120., 190., 130., 140.],
                 )),
+        )
+    }
+    fn message_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let plain_bubble = |text: &'static str, end: bool| {
+            div()
+                .w_auto()
+                .max_w(px(280.))
+                .rounded(theme.radius_xl())
+                .px(px(12.))
+                .py(px(8.))
+                .map(|el| {
+                    if end {
+                        el.bg(theme.primary).text_color(theme.primary_foreground)
+                    } else {
+                        el.bg(theme.muted).text_color(theme.foreground)
+                    }
+                })
+                .child(text)
+        };
+        div().w(px(384.)).child(
+            MessageGroup::new()
+                .child(
+                    Message::new()
+                        .child(MessageAvatar::new().child(Avatar::new("LR")))
+                        .child(
+                            MessageContent::new()
+                                .child(MessageHeader::new().child("Lord Rabbit \u{00b7} 10:42"))
+                                .child(plain_bubble(
+                                    "Hey! How's the gpui port coming along?",
+                                    false,
+                                )),
+                        ),
+                )
+                .child(
+                    Message::new().align(MessageAlign::End).child(
+                        MessageContent::new()
+                            .align(MessageAlign::End)
+                            .child(plain_bubble(
+                                "Almost done \u{2014} shipping the last components now.",
+                                true,
+                            ))
+                            .child(MessageFooter::new().child("Read 10:45")),
+                    ),
+                ),
         )
     }
 
