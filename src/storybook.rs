@@ -1434,6 +1434,233 @@ impl Storybook {
                     )
                     .into_any_element(),
             )],
+            Story::Badge => vec![(
+                "Variants",
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
+                    .child(
+                        Badge::new()
+                            .variant(BadgeVariant::Secondary)
+                            .child("Secondary"),
+                    )
+                    .child(
+                        Badge::new()
+                            .variant(BadgeVariant::Destructive)
+                            .child("Destructive"),
+                    )
+                    .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
+                    .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
+                    .child(Badge::new().variant(BadgeVariant::Link).child("Link"))
+                    .into_any_element(),
+            )],
+            Story::Switch => vec![(
+                "Sizes",
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        Switch::new("ex-switch-sm")
+                            .size(SwitchSize::Sm)
+                            .checked(true),
+                    )
+                    .child(Switch::new("ex-switch-default").checked(true))
+                    .child(Switch::new("ex-switch-disabled").disabled(true))
+                    .into_any_element(),
+            )],
+            Story::Checkbox => vec![(
+                "States",
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(Checkbox::new("ex-cb-unchecked").checked(false))
+                            .child(Label::new().child("Unchecked")),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(Checkbox::new("ex-cb-checked").checked(true))
+                            .child(Label::new().child("Checked")),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(
+                                Checkbox::new("ex-cb-disabled")
+                                    .checked(false)
+                                    .disabled(true),
+                            )
+                            .child(Label::new().disabled(true).child("Disabled")),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(
+                                Checkbox::new("ex-cb-disabled-checked")
+                                    .checked(true)
+                                    .disabled(true),
+                            )
+                            .child(Label::new().disabled(true).child("Disabled checked")),
+                    )
+                    .into_any_element(),
+            )],
+            Story::Toggle => vec![(
+                "Variants and sizes",
+                div()
+                    .flex()
+                    .flex_row()
+                    .flex_wrap()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        Toggle::new("ex-toggle-default")
+                            .variant(ToggleVariant::Default)
+                            .pressed(true)
+                            .child("Default"),
+                    )
+                    .child(
+                        Toggle::new("ex-toggle-outline")
+                            .variant(ToggleVariant::Outline)
+                            .pressed(true)
+                            .child("Outline"),
+                    )
+                    .child(
+                        Toggle::new("ex-toggle-sm")
+                            .size(ToggleSize::Sm)
+                            .pressed(true)
+                            .child("Small"),
+                    )
+                    .child(
+                        Toggle::new("ex-toggle-md")
+                            .size(ToggleSize::Default)
+                            .pressed(true)
+                            .child("Default"),
+                    )
+                    .child(
+                        Toggle::new("ex-toggle-lg")
+                            .size(ToggleSize::Lg)
+                            .pressed(true)
+                            .child("Large"),
+                    )
+                    .into_any_element(),
+            )],
+            Story::Alert => vec![(
+                "Destructive",
+                Alert::new()
+                    .variant(AlertVariant::Destructive)
+                    .icon(crate::assets::ICON_CIRCLE_ALERT)
+                    .child(AlertTitle::new().child("Error"))
+                    .child(
+                        AlertDescription::new()
+                            .child("Your session has expired. Please log in again."),
+                    )
+                    .into_any_element(),
+            )],
+            Story::Card => vec![(
+                "Small size",
+                Card::new()
+                    .size(CardSize::Sm)
+                    .child(
+                        CardHeader::new()
+                            .size(CardSize::Sm)
+                            .child(CardTitle::new().child("Small card"))
+                            .child(CardDescription::new().child("Compact card layout.")),
+                    )
+                    .child(
+                        CardContent::new()
+                            .size(CardSize::Sm)
+                            .child("A short content line."),
+                    )
+                    .into_any_element(),
+            )],
+            Story::Tabs => vec![(
+                "Line variant",
+                Tabs::new()
+                    .child(
+                        TabsList::new()
+                            .variant(TabsVariant::Line)
+                            .trigger(
+                                TabsTrigger::new("ex-tabs-line-1")
+                                    .active(true)
+                                    .child("Account"),
+                            )
+                            .trigger(TabsTrigger::new("ex-tabs-line-2").child("Password")),
+                    )
+                    .into_any_element(),
+            )],
+            Story::Avatar => vec![(
+                "Sizes",
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(12.))
+                    .child(Avatar::new("SM").size(AvatarSize::Sm))
+                    .child(Avatar::new("DF").size(AvatarSize::Default))
+                    .child(Avatar::new("LG").size(AvatarSize::Lg))
+                    .into_any_element(),
+            )],
+            Story::Kbd => vec![(
+                "Combination",
+                KbdGroup::new()
+                    .child(Kbd::new().child("\u{2318}"))
+                    .child(Kbd::new().child("K"))
+                    .into_any_element(),
+            )],
+            Story::Spinner => vec![(
+                "Sizes",
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_center()
+                    .gap(px(16.))
+                    .child(Spinner::new().size(px(16.)))
+                    .child(Spinner::new().size(px(24.)))
+                    .child(Spinner::new().size(px(32.)))
+                    .into_any_element(),
+            )],
+            Story::Progress => vec![(
+                "Values",
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(12.))
+                    .w(px(320.))
+                    .child(Progress::new(25.).show_value())
+                    .child(Progress::new(60.).show_value())
+                    .child(Progress::new(90.).show_value())
+                    .into_any_element(),
+            )],
+            Story::SliderStory => vec![(
+                "Disabled",
+                Slider::new("ex-slider-disabled")
+                    .value(40.)
+                    .disabled(true)
+                    .into_any_element(),
+            )],
             _ => Vec::new(),
         }
     }
