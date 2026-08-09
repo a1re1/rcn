@@ -29,7 +29,7 @@ use crate::components::{
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover,
     PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
     Separator, Skeleton, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
-    TableFooter, TableHead, TableHeader, TableRow,
+    TableFooter, TableHead, TableHeader, TableRow, Toggle, ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -57,11 +57,12 @@ enum Story {
     Breadcrumb,
     Checkbox,
     RadioGroup,
+    Toggle,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 22] = [
+    const ALL: [Story; 23] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -84,6 +85,7 @@ impl Story {
         Story::Breadcrumb,
         Story::Checkbox,
         Story::RadioGroup,
+        Story::Toggle,
         // __STORY_ALL__
     ];
 
@@ -111,6 +113,7 @@ impl Story {
             Story::Breadcrumb => "Breadcrumb",
             Story::Checkbox => "Checkbox",
             Story::RadioGroup => "Radio Group",
+            Story::Toggle => "Toggle",
             // __STORY_LABELS__
         }
     }
@@ -151,7 +154,9 @@ impl Story {
             }
             Story::RadioGroup => {
                 "A set of checkable buttons where only one can be checked at a time."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::Toggle => "A two-state button that can be either on or off.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -318,6 +323,9 @@ pub struct Storybook {
     checkbox_checked: bool,
     // Radio group story state
     radio_selected: usize,
+    // Toggle story state
+    toggle_pressed: bool,
+    toggle_outline_pressed: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -354,6 +362,8 @@ impl Storybook {
             table_selected: Some(1),
             checkbox_checked: true,
             radio_selected: 1,
+            toggle_pressed: true,
+            toggle_outline_pressed: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -596,6 +606,7 @@ impl Storybook {
             Story::Breadcrumb => Self::breadcrumb_preview().into_any_element(),
             Story::Checkbox => self.checkbox_preview(cx).into_any_element(),
             Story::RadioGroup => self.radio_group_preview(cx).into_any_element(),
+            Story::Toggle => self.toggle_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -851,6 +862,7 @@ impl Storybook {
                 &theme,
             )],
             Story::RadioGroup => Vec::new(),
+            Story::Toggle => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1968,6 +1980,54 @@ impl Storybook {
                 )
                 .child(Label::new().child(label))
         }))
+    }
+    fn toggle_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(px(8.))
+            .child(
+                Toggle::new("toggle-italic")
+                    .pressed(self.toggle_pressed)
+                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
+                        this.toggle_pressed = *pressed;
+                        cx.notify();
+                    }))
+                    .child("Italic"),
+            )
+            .child(
+                Toggle::new("toggle-outline")
+                    .variant(ToggleVariant::Outline)
+                    .pressed(self.toggle_outline_pressed)
+                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
+                        this.toggle_outline_pressed = *pressed;
+                        cx.notify();
+                    }))
+                    .child("Outline"),
+            )
+            .child(
+                Toggle::new("toggle-icon")
+                    .size(ToggleSize::Sm)
+                    .pressed(self.toggle_pressed)
+                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
+                        this.toggle_pressed = *pressed;
+                        cx.notify();
+                    }))
+                    .child(
+                        gpui::svg()
+                            .path(theme.icons.chevron_down())
+                            .size(px(16.))
+                            .text_color(theme.foreground),
+                    ),
+            )
+            .child(
+                Toggle::new("toggle-disabled")
+                    .size(ToggleSize::Lg)
+                    .disabled(true)
+                    .child("Disabled"),
+            )
     }
 
     // __STORY_PREVIEWS__

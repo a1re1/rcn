@@ -34,8 +34,8 @@ lands with a storybook story exercising its variants.
 
 - [x] checkbox
 - [x] radio-group
-- [ ] toggle
-- [ ] toggle-group
+- [x] toggle
+- [x] toggle-group
 - [ ] button-group
 - [ ] collapsible
 - [ ] tabs

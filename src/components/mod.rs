@@ -24,6 +24,7 @@ pub mod skeleton;
 pub mod spinner;
 pub mod switch;
 pub mod table;
+pub mod toggle;
 
 pub use accordion::{Accordion, AccordionItem};
 pub use alert::{Alert, AlertDescription, AlertTitle, AlertVariant};
@@ -58,3 +59,4 @@ pub use switch::{Switch, SwitchSize};
 pub use table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };
+pub use toggle::{Toggle, ToggleSize, ToggleVariant};
