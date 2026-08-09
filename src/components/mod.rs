@@ -12,6 +12,7 @@ pub mod badge;
 pub mod breadcrumb;
 pub mod button;
 pub mod button_group;
+pub mod calendar;
 pub mod card;
 pub mod checkbox;
 pub mod collapsible;
@@ -67,6 +68,7 @@ pub use breadcrumb::{
 };
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
+pub use calendar::{Calendar, CalendarDate};
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };

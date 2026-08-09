@@ -71,7 +71,7 @@ lands with a storybook story exercising its variants.
 
 ## Wave 5 — composite & complex
 
-- [ ] calendar
+- [x] calendar
 - [ ] carousel
 - [ ] resizable
 - [ ] sidebar
