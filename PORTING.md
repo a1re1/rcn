@@ -72,7 +72,7 @@ lands with a storybook story exercising its variants.
 ## Wave 5 — composite & complex
 
 - [x] calendar
-- [ ] carousel
+- [x] carousel
 - [ ] resizable
 - [ ] sidebar
 - [x] date-picker — no base-vega registry item; composition of calendar + popover, ported as a story once both land
