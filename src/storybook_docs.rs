@@ -360,6 +360,11 @@ pub static BUTTON_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Button",
+        signature: "pub fn tooltip_rich( mut self, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self",
+        doc: "Attach a rich hover tooltip (mirrors shadcn's `<TooltipTrigger render={<Button/>}>` composition). Needed because [`crate::components::ButtonGroup`] takes typed [`Button`] items, so a wrapping [`crate::components::Tooltip`] div cannot sit inside a group.",
+    },
+    ApiEntry {
+        type_name: "Button",
         signature: "pub(crate) fn group_position(mut self, position: GroupPosition) -> Self",
         doc: "Used by ButtonGroup to join neighboring buttons.",
     },
@@ -1184,13 +1189,18 @@ pub static KBD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Kbd",
+        signature: "pub fn in_tooltip(mut self) -> Self",
+        doc: "Explicit port of the `in-data-[slot=tooltip-content]` context styles (`bg-background/20 text-background`, dark `bg-background/10`). gpui has no CSS context selectors, so callers opt in when rendering a Kbd inside tooltip content.",
+    },
+    ApiEntry {
         type_name: "KbdGroup",
         signature: "pub fn new() -> Self",
         doc: "",
     },
 ];
 
-pub static KBD_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(12.))\n    .child(\n        KbdGroup::new()\n            .child(Kbd::new().child(\"⌘\"))\n            .child(Kbd::new().child(\"K\")),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(4.))\n            .child(Kbd::new().child(\"Ctrl\"))\n            .child(Kbd::new().child(\"⇧\"))\n            .child(Kbd::new().child(\"Alt\")),\n    )\n    .child(\n        KbdGroup::new()\n            .child(Kbd::new().child(\"Ctrl\"))\n            .child(\"+\")\n            .child(Kbd::new().child(\"B\")),\n    )\n    ";
+pub static KBD_USAGE: &str = "// kbd-demo: ⌘⇧⌥⌃ group + Ctrl + B group\ndiv()\n    .flex()\n    .flex_col()\n    .items_center()\n    .gap(px(16.))\n    .child(\n        KbdGroup::new()\n            .child(Kbd::new().child(\"⌘\"))\n            .child(Kbd::new().child(\"⇧\"))\n            .child(Kbd::new().child(\"⌥\"))\n            .child(Kbd::new().child(\"⌃\")),\n    )\n    .child(\n        KbdGroup::new()\n            .child(Kbd::new().child(\"Ctrl\"))\n            .child(\"+\")\n            .child(Kbd::new().child(\"B\")),\n    )\n    ";
 
 pub static LABEL_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2204,13 +2214,23 @@ pub static TOOLTIP_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "TooltipView",
+        signature: "pub fn rich(content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self",
+        doc: "Rich element content built on each render (shadcn's `TooltipContent` accepts arbitrary children).",
+    },
+    ApiEntry {
         type_name: "Tooltip",
         signature: "pub fn new(id: impl Into<ElementId>, text: impl Into<SharedString>) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn rich( id: impl Into<ElementId>, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self",
+        doc: "Rich counterpart of [`Tooltip::new`]: the closure builds the bubble body on each render (arbitrary elements, not just a string).",
+    },
 ];
 
-pub static TOOLTIP_USAGE: &str = "div().child(\n    Tooltip::new(\"tooltip-demo\", \"Add to library\").child(\n        Button::new(\"tooltip-trigger\")\n            .variant(ButtonVariant::Outline)\n            .child(\"Hover me\"),\n    ),\n)\n    ";
+pub static TOOLTIP_USAGE: &str = "div()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(12.))\n    .child(\n        Tooltip::new(\"tooltip-demo\", \"Add to library\").child(\n            Button::new(\"tooltip-trigger\")\n                .variant(ButtonVariant::Outline)\n                .child(\"Hover me\"),\n        ),\n    )\n    .child(\n        Tooltip::rich(\"tooltip-rich-demo\", |_, _| {\n            div()\n                .flex()\n                .flex_row()\n                .items_center()\n                .gap(px(4.))\n                .child(\"Save Changes\")\n                .child(Kbd::new().in_tooltip().child(\"S\"))\n                .into_any_element()\n        })\n        .child(\n            Button::new(\"tooltip-rich-trigger\")\n                .variant(ButtonVariant::Outline)\n                .child(\"Rich tooltip\"),\n        ),\n    )\n    ";
 
 /// Docs lookup by component module name.
 pub static COMPONENT_DOCS: &[ComponentDocs] = &[
