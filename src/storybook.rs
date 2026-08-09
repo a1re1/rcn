@@ -483,8 +483,12 @@ impl Storybook {
             .flex()
             .flex_col()
             .flex_1()
+            // Shrinkable below its content's min-width, so a narrow window
+            // squeezes the canvas instead of pushing the controls panel out.
+            .min_w(px(0.))
             .h_full()
             .overflow_y_scroll()
+            .overflow_x_hidden()
             .child(
                 div()
                     .flex()
