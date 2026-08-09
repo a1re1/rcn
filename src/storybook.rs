@@ -26,7 +26,7 @@ use crate::components::{
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Calendar, CalendarDate, Card, CardAction, CardContent, CardDescription,
     CardFooter, CardHeader, CardSize, CardTitle, Checkbox, Collapsible, Combobox, Command,
-    CommandGroup, CommandItem, ContextMenu, ContextMenuItem, Dialog, DialogDescription,
+    CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription,
     DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader,
     DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription,
     EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError,
@@ -97,11 +97,12 @@ enum Story {
     CommandStory,
     ComboboxStory,
     CalendarStory,
+    DatePickerStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 51] = [
+    const ALL: [Story; 52] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -153,6 +154,7 @@ impl Story {
         Story::CommandStory,
         Story::ComboboxStory,
         Story::CalendarStory,
+        Story::DatePickerStory,
         // __STORY_ALL__
     ];
 
@@ -209,6 +211,7 @@ impl Story {
             Story::CommandStory => "Command",
             Story::ComboboxStory => "Combobox",
             Story::CalendarStory => "Calendar",
+            Story::DatePickerStory => "Date Picker",
             // __STORY_LABELS__
         }
     }
@@ -314,7 +317,9 @@ impl Story {
             }
             Story::CalendarStory => {
                 "A date field component that allows users to enter and edit date."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::DatePickerStory => "A date picker component with range and presets.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -593,6 +598,10 @@ pub struct Storybook {
     // Calendar story state
     calendar_month: (i32, u32),
     calendar_selected: Option<CalendarDate>,
+    // Date picker story state
+    date_picker_value: Option<CalendarDate>,
+    date_picker_month: (i32, u32),
+    date_picker_open: bool,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -727,6 +736,9 @@ impl Storybook {
             combobox_open: false,
             calendar_month: (2026, 8),
             calendar_selected: Some(CalendarDate::new(2026, 8, 9)),
+            date_picker_value: None,
+            date_picker_month: (2026, 8),
+            date_picker_open: false,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -956,6 +968,7 @@ impl Storybook {
             Story::CommandStory => self.command_preview(cx).into_any_element(),
             Story::ComboboxStory => self.combobox_preview(cx).into_any_element(),
             Story::CalendarStory => self.calendar_preview(cx).into_any_element(),
+            Story::DatePickerStory => self.date_picker_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1296,6 +1309,7 @@ impl Storybook {
             Story::CommandStory => Vec::new(),
             Story::ComboboxStory => Vec::new(),
             Story::CalendarStory => Vec::new(),
+            Story::DatePickerStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3442,6 +3456,23 @@ impl Storybook {
             }))
             .on_select(cx.listener(|this, date: &CalendarDate, _, cx| {
                 this.calendar_selected = Some(*date);
+                cx.notify();
+            }))
+    }
+    fn date_picker_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        DatePicker::new("date-picker-demo", self.date_picker_month)
+            .value(self.date_picker_value)
+            .open(self.date_picker_open)
+            .on_select(cx.listener(|this, date: &CalendarDate, _, cx| {
+                this.date_picker_value = Some(*date);
+                cx.notify();
+            }))
+            .on_month_change(cx.listener(|this, month: &(i32, u32), _, cx| {
+                this.date_picker_month = *month;
+                cx.notify();
+            }))
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.date_picker_open = *open;
                 cx.notify();
             }))
     }
