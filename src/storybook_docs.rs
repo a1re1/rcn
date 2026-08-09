@@ -449,6 +449,16 @@ pub static CARD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Card",
+        signature: "pub fn spacing(mut self, spacing: gpui::Pixels) -> Self",
+        doc: "Overrides the size preset spacing (mirrors shadcn `[--card-spacing:*]`).",
+    },
+    ApiEntry {
+        type_name: "Card",
+        signature: "pub fn flush_top(mut self) -> Self",
+        doc: "Sets pt(0) for full-bleed leading images (gpui stand-in for has-[>img:first-child]:pt-0).",
+    },
+    ApiEntry {
         type_name: "CardHeader",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -459,9 +469,24 @@ pub static CARD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "CardHeader",
+        signature: "pub fn spacing(mut self, spacing: gpui::Pixels) -> Self",
+        doc: "Overrides the size preset spacing.",
+    },
+    ApiEntry {
+        type_name: "CardHeader",
+        signature: "pub fn action(mut self, action: impl gpui::IntoElement) -> Self",
+        doc: "Places an action at the end of a 1fr+auto header row (mirrors has-data-[slot=card-action] grid).",
+    },
+    ApiEntry {
         type_name: "CardTitle",
         signature: "pub fn new() -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "CardTitle",
+        signature: "pub fn size(mut self, size: CardSize) -> Self",
+        doc: "Default = 16px/22px; Sm = 14px/19px (mirrors group-data-[size=sm]/card:text-sm).",
     },
     ApiEntry {
         type_name: "CardDescription",
@@ -471,7 +496,7 @@ pub static CARD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "CardAction",
         signature: "pub fn new() -> Self",
-        doc: "",
+        doc: "Standalone action slot; prefer CardHeader::action() for the nova header layout.",
     },
     ApiEntry {
         type_name: "CardContent",
@@ -484,18 +509,33 @@ pub static CARD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "CardContent",
+        signature: "pub fn spacing(mut self, spacing: gpui::Pixels) -> Self",
+        doc: "Overrides the size preset spacing.",
+    },
+    ApiEntry {
+        type_name: "CardContent",
+        signature: "pub fn flush_bottom(mut self) -> Self",
+        doc: "Sets mb(-spacing) for edge-to-edge content above a footer (mirrors -mb-(--card-spacing)).",
+    },
+    ApiEntry {
         type_name: "CardFooter",
         signature: "pub fn new() -> Self",
-        doc: "",
+        doc: "Must be the last child of Card; applies mb(-spacing) to cancel the card root bottom py.",
     },
     ApiEntry {
         type_name: "CardFooter",
         signature: "pub fn size(mut self, size: CardSize) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "CardFooter",
+        signature: "pub fn spacing(mut self, spacing: gpui::Pixels) -> Self",
+        doc: "Overrides the size preset spacing.",
     },
 ];
 
-pub static CARD_USAGE: &str = "let theme = Theme::of(cx);\nlet size = self.card_size;\n// Card is RenderOnce+ParentElement (not Styled); width goes on a wrapper.\ndiv().w(px(350.)).child(\n    Card::new()\n        .size(size)\n        .child(\n            CardHeader::new()\n                .size(size)\n                .child(\n                    div()\n                        .flex()\n                        .flex_row()\n                        .items_start()\n                        .child(CardTitle::new().child(\"Login to your account\"))\n                        .child(\n                            CardAction::new().child(\n                                Button::new(\"card-sign-up\")\n                                    .variant(ButtonVariant::Outline)\n                                    .size(ButtonSize::Sm)\n                                    .child(\"Sign Up\"),\n                            ),\n                        ),\n                )\n                .child(\n                    CardDescription::new()\n                        .child(\"Enter your details below to login to your account\"),\n                ),\n        )\n        .child(\n            CardContent::new().size(size).child(\n                div()\n                    .h(px(64.))\n                    .w_full()\n                    .rounded(theme.radius_md())\n                    .bg(theme.muted),\n            ),\n        )\n        .child(\n            CardFooter::new().size(size).child(\n                div().w_full().child(\n                    Button::new(\"card-login\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Login\"),\n                ),\n            ),\n        ),\n)\n    ";
+pub static CARD_USAGE: &str = "let size = self.card_size;\n// Card is RenderOnce+ParentElement (not Styled); width goes on a wrapper.\ndiv().w(px(384.)).child(\n    Card::new()\n        .size(size)\n        .child(\n            CardHeader::new()\n                .size(size)\n                .action(\n                    Button::new(\"card-sign-up\")\n                        .variant(ButtonVariant::Link)\n                        .child(\"Sign Up\"),\n                )\n                .child(\n                    CardTitle::new()\n                        .size(size)\n                        .child(\"Login to your account\"),\n                )\n                .child(\n                    CardDescription::new()\n                        .child(\"Enter your email below to login to your account\"),\n                ),\n        )\n        .child(\n            CardContent::new().size(size).child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(24.))\n                    .child(\n                        div()\n                            .flex()\n                            .flex_col()\n                            .gap(px(8.))\n                            .child(Label::new().child(\"Email\"))\n                            .child(self.card_email_input.clone()),\n                    )\n                    .child(\n                        div()\n                            .flex()\n                            .flex_col()\n                            .gap(px(8.))\n                            .child(\n                                div()\n                                    .flex()\n                                    .flex_row()\n                                    .items_center()\n                                    .child(Label::new().child(\"Password\"))\n                                    .child(\n                                        div()\n                                            .id(\"card-forgot-password\")\n                                            .ml_auto()\n                                            .text_size(px(14.))\n                                            .line_height(px(20.))\n                                            .cursor_pointer()\n                                            .hover(|s| s.underline())\n                                            .child(\"Forgot your password?\"),\n                                    ),\n                            )\n                            .child(self.card_password_input.clone()),\n                    ),\n            ),\n        )\n        .child(\n            CardFooter::new().size(size).child(\n                div()\n                    .w_full()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .child(\n                        div().w_full().child(\n                            Button::new(\"card-login\")\n                                .variant(ButtonVariant::Default)\n                                .child(\"Login\"),\n                        ),\n                    )\n                    .child(\n                        div().w_full().child(\n                            Button::new(\"card-login-google\")\n                                .variant(ButtonVariant::Outline)\n                                .child(\"Login with Google\"),\n                        ),\n                    ),\n            ),\n        ),\n)\n    ";
 
 pub static CAROUSEL_API: &[ApiEntry] = &[
     ApiEntry {
