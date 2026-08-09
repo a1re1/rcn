@@ -45,13 +45,14 @@ impl RenderOnce for Textarea {
             .rounded(theme.radius_md())
             .border_1()
             .border_color(if focused { theme.ring } else { theme.input })
+            .when(focused, |el| el.shadow(crate::motion::focus_ring(&theme)))
             .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
             .px(px(12.))
             .py(px(8.))
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.foreground)
-            .shadow_xs()
+            .when(!focused, |el| el.shadow_xs())
             .child(self.input)
     }
 }
