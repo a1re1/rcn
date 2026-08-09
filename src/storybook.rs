@@ -30,7 +30,8 @@ use crate::components::{
     ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Progress, RadioGroup, RadioGroupItem, Separator, Skeleton, Spinner, Switch,
     SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant,
+    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Toggle, ToggleGroup,
+    ToggleGroupItem, ToggleSize, ToggleVariant,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -62,11 +63,12 @@ enum Story {
     ToggleGroup,
     ButtonGroup,
     Collapsible,
+    Tabs,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 26] = [
+    const ALL: [Story; 27] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -93,6 +95,7 @@ impl Story {
         Story::ToggleGroup,
         Story::ButtonGroup,
         Story::Collapsible,
+        Story::Tabs,
         // __STORY_ALL__
     ];
 
@@ -124,6 +127,7 @@ impl Story {
             Story::ToggleGroup => "Toggle Group",
             Story::ButtonGroup => "Button Group",
             Story::Collapsible => "Collapsible",
+            Story::Tabs => "Tabs",
             // __STORY_LABELS__
         }
     }
@@ -171,6 +175,7 @@ impl Story {
                 "A container that groups related buttons together with a consistent style."
             }
             Story::Collapsible => "An interactive component which expands and collapses a panel.",
+            Story::Tabs => "A set of layered sections of content displayed one at a time.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -345,6 +350,9 @@ pub struct Storybook {
     toggle_group_on: [bool; 3],
     // Collapsible story state
     collapsible_open: bool,
+    // Tabs story state
+    tabs_active: usize,
+    tabs_variant: TabsVariant,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -385,6 +393,8 @@ impl Storybook {
             toggle_outline_pressed: false,
             toggle_group_on: [true, false, false],
             collapsible_open: false,
+            tabs_active: 0,
+            tabs_variant: TabsVariant::Default,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -631,6 +641,7 @@ impl Storybook {
             Story::ToggleGroup => self.toggle_group_preview(cx).into_any_element(),
             Story::ButtonGroup => Self::button_group_preview(cx).into_any_element(),
             Story::Collapsible => self.collapsible_preview(cx).into_any_element(),
+            Story::Tabs => self.tabs_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -899,6 +910,23 @@ impl Storybook {
                         cx.notify();
                     }))
                     .into_any_element(),
+                &theme,
+            )],
+            Story::Tabs => vec![Self::control_row(
+                "variant",
+                Self::choices(
+                    "tabs-variant",
+                    &[
+                        ("default", TabsVariant::Default),
+                        ("line", TabsVariant::Line),
+                    ],
+                    self.tabs_variant,
+                    cx,
+                    |this, v, cx| {
+                        this.tabs_variant = v;
+                        cx.notify();
+                    },
+                ),
                 &theme,
             )],
             // __STORY_CONTROLS__
@@ -2202,6 +2230,64 @@ impl Storybook {
                         .child(repo_row("@radix-ui/colors"))
                         .child(repo_row("@stitches/react")),
                 ),
+        )
+    }
+    fn tabs_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let panel = |title: &'static str, body: &'static str| {
+            Card::new()
+                .size(CardSize::Sm)
+                .child(
+                    CardHeader::new()
+                        .size(CardSize::Sm)
+                        .child(CardTitle::new().child(title))
+                        .child(CardDescription::new().child(body)),
+                )
+                .child(
+                    CardContent::new().size(CardSize::Sm).child(
+                        div()
+                            .h(px(48.))
+                            .w_full()
+                            .rounded(theme.radius_md())
+                            .bg(theme.muted),
+                    ),
+                )
+        };
+        div().w(px(400.)).child(
+            Tabs::new()
+                .child(
+                    TabsList::new()
+                        .variant(self.tabs_variant)
+                        .trigger(
+                            TabsTrigger::new("tab-account")
+                                .active(self.tabs_active == 0)
+                                .on_select(cx.listener(|this, _, _, cx| {
+                                    this.tabs_active = 0;
+                                    cx.notify();
+                                }))
+                                .child("Account"),
+                        )
+                        .trigger(
+                            TabsTrigger::new("tab-password")
+                                .active(self.tabs_active == 1)
+                                .on_select(cx.listener(|this, _, _, cx| {
+                                    this.tabs_active = 1;
+                                    cx.notify();
+                                }))
+                                .child("Password"),
+                        ),
+                )
+                .child(TabsContent::new().child(if self.tabs_active == 0 {
+                    panel(
+                        "Account",
+                        "Make changes to your account here. Click save when you're done.",
+                    )
+                } else {
+                    panel(
+                        "Password",
+                        "Change your password here. After saving, you'll be logged out.",
+                    )
+                })),
         )
     }
 
