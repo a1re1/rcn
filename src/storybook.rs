@@ -25,14 +25,14 @@ use crate::components::{
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Checkbox, Collapsible, ContextMenu, ContextMenuItem, Dialog,
-    DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
-    DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
-    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field,
-    FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input, InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemFooter,
-    ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle,
-    ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
+    CardSize, CardTitle, Checkbox, Collapsible, Command, CommandGroup, CommandItem, ContextMenu,
+    ContextMenuItem, Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer,
+    DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem,
+    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
+    Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet, HoverCard, Input,
+    InputGroup, InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription,
+    ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSeparator, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Menubar, MenubarItem, MenubarMenu, NativeSelect,
     NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis,
     PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Progress, RadioGroup, RadioGroupItem, ScrollArea, Select, Separator, Sheet,
@@ -93,11 +93,12 @@ enum Story {
     FieldStory,
     InputGroupStory,
     InputOtpStory,
+    CommandStory,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 48] = [
+    const ALL: [Story; 49] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -146,6 +147,7 @@ impl Story {
         Story::FieldStory,
         Story::InputGroupStory,
         Story::InputOtpStory,
+        Story::CommandStory,
         // __STORY_ALL__
     ];
 
@@ -199,6 +201,7 @@ impl Story {
             Story::FieldStory => "Field",
             Story::InputGroupStory => "Input Group",
             Story::InputOtpStory => "Input OTP",
+            Story::CommandStory => "Command",
             // __STORY_LABELS__
         }
     }
@@ -297,7 +300,9 @@ impl Story {
             }
             Story::InputOtpStory => {
                 "Accessible one-time password component with copy paste functionality."
-            } // __STORY_DESCRIPTIONS__
+            }
+            Story::CommandStory => "Fast, composable, unstyled command menu.",
+            // __STORY_DESCRIPTIONS__
         }
     }
 }
@@ -567,6 +572,8 @@ pub struct Storybook {
     input_group_url: gpui::Entity<Input>,
     // Input OTP story state
     input_otp: gpui::Entity<Input>,
+    // Command story state
+    command_input: gpui::Entity<Input>,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -615,6 +622,16 @@ impl Storybook {
             input.set_bare(true);
             input
         });
+        let command_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type a command or search...");
+            input.set_bare(true);
+            input
+        });
+        // Live-refresh stories that derive UI from input text.
+        for input in [&command_input, &input_otp, &input_demo] {
+            cx.observe(input, |_, _, cx| cx.notify()).detach();
+        }
         let input_disabled = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Disabled");
@@ -679,6 +696,7 @@ impl Storybook {
             input_group_search,
             input_group_url,
             input_otp,
+            command_input,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -905,6 +923,7 @@ impl Storybook {
             Story::FieldStory => self.field_preview(cx).into_any_element(),
             Story::InputGroupStory => self.input_group_preview(cx).into_any_element(),
             Story::InputOtpStory => self.input_otp_preview(cx).into_any_element(),
+            Story::CommandStory => self.command_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -1242,6 +1261,7 @@ impl Storybook {
             Story::FieldStory => Vec::new(),
             Story::InputGroupStory => Vec::new(),
             Story::InputOtpStory => Vec::new(),
+            Story::CommandStory => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -3335,6 +3355,33 @@ impl Storybook {
                     .text_color(theme.muted_foreground)
                     .child("Click the slots, then type the one-time password."),
             )
+    }
+    fn command_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(360.)).child(
+            Command::new(self.command_input.clone())
+                .empty_message("No results found.")
+                .group(
+                    CommandGroup::new("Suggestions")
+                        .item(CommandItem::new("cmd-calendar", "Calendar"))
+                        .item(CommandItem::new("cmd-emoji", "Search Emoji"))
+                        .item(
+                            CommandItem::new("cmd-calc", "Calculator").on_select(cx.listener(
+                                |this, _, _, cx| {
+                                    this.command_input.update(cx, |input, cx| {
+                                        input.set_text("", cx);
+                                    });
+                                    cx.notify();
+                                },
+                            )),
+                        ),
+                )
+                .group(
+                    CommandGroup::new("Settings")
+                        .item(CommandItem::new("cmd-profile", "Profile").shortcut("\u{2318}P"))
+                        .item(CommandItem::new("cmd-billing", "Billing").shortcut("\u{2318}B"))
+                        .item(CommandItem::new("cmd-settings", "Settings").shortcut("\u{2318}S")),
+                ),
+        )
     }
 
     // __STORY_PREVIEWS__
