@@ -10,6 +10,7 @@ pub mod avatar;
 pub mod badge;
 pub mod button;
 pub mod card;
+pub mod empty;
 pub mod kbd;
 pub mod label;
 pub mod popover;
@@ -27,6 +28,9 @@ pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
+};
+pub use empty::{
+    Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;

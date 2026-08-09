@@ -22,8 +22,9 @@ use crate::components::{
     Accordion, AccordionItem, Alert, AlertDescription, AlertTitle, AlertVariant, AspectRatio,
     Avatar, AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, Button, ButtonSize,
     ButtonVariant, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
-    CardSize, CardTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
+    CardSize, CardTitle, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, Kbd, KbdGroup, Label, Popover, PopoverDescription,
+    PopoverHeader, PopoverTitle, Progress, Separator, Skeleton, Spinner, Switch, SwitchSize,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -45,11 +46,12 @@ enum Story {
     Progress,
     Spinner,
     AspectRatio,
+    Empty,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 16] = [
+    const ALL: [Story; 17] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -66,6 +68,7 @@ impl Story {
         Story::Progress,
         Story::Spinner,
         Story::AspectRatio,
+        Story::Empty,
         // __STORY_ALL__
     ];
 
@@ -87,6 +90,7 @@ impl Story {
             Story::Progress => "Progress",
             Story::Spinner => "Spinner",
             Story::AspectRatio => "Aspect Ratio",
+            Story::Empty => "Empty",
             // __STORY_LABELS__
         }
     }
@@ -116,6 +120,7 @@ impl Story {
             Story::Progress => "Displays an indicator showing the completion progress of a task.",
             Story::Spinner => "An indicator that can be used to show a loading state.",
             Story::AspectRatio => "Displays content within a desired ratio.",
+            Story::Empty => "Use to display an empty state, such as no results or missing data.",
             // __STORY_DESCRIPTIONS__
         }
     }
@@ -541,6 +546,7 @@ impl Storybook {
             Story::Progress => self.progress_preview().into_any_element(),
             Story::Spinner => Self::spinner_preview(cx).into_any_element(),
             Story::AspectRatio => Self::aspect_ratio_preview(cx).into_any_element(),
+            Story::Empty => Self::empty_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -742,6 +748,7 @@ impl Storybook {
             )],
             Story::Spinner => Vec::new(),
             Story::AspectRatio => Vec::new(),
+            Story::Empty => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1598,6 +1605,42 @@ impl Storybook {
                     .text_color(theme.muted_foreground)
                     .child("16 : 9"),
             ),
+        )
+    }
+
+    fn empty_preview(cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div().w(px(420.)).child(
+            Empty::new()
+                .child(
+                    EmptyHeader::new()
+                        .child(
+                            EmptyMedia::new().variant(EmptyMediaVariant::Icon).child(
+                                gpui::svg()
+                                    .path(theme.icons.chevron_right())
+                                    .size(px(24.))
+                                    .text_color(theme.foreground),
+                            ),
+                        )
+                        .child(EmptyTitle::new().child("No Projects Yet"))
+                        .child(EmptyDescription::new().child(
+                            "You haven't created any projects yet. Get started by creating your first project.",
+                        )),
+                )
+                .child(
+                    EmptyContent::new().child(
+                        div()
+                            .flex()
+                            .flex_row()
+                            .gap(px(8.))
+                            .child(Button::new("empty-create").child("Create Project"))
+                            .child(
+                                Button::new("empty-import")
+                                    .variant(ButtonVariant::Outline)
+                                    .child("Import Project"),
+                            ),
+                    ),
+                ),
         )
     }
 
