@@ -379,6 +379,76 @@ impl Story {
             // __STORY_DESCRIPTIONS__
         }
     }
+
+    /// The component module backing this story (drives the docs sections);
+    /// `None` for pages without a single backing module.
+    fn module(self) -> Option<&'static str> {
+        Some(match self {
+            Story::Tokens => return None,
+            Story::Button => "button",
+            Story::Badge => "badge",
+            Story::Avatar => "avatar",
+            Story::Switch => "switch",
+            Story::Accordion => "accordion",
+            Story::Popover => "popover",
+            Story::Separator => "separator",
+            Story::Skeleton => "skeleton",
+            Story::Label => "label",
+            Story::Kbd => "kbd",
+            Story::Card => "card",
+            Story::Alert => "alert",
+            Story::Progress => "progress",
+            Story::Spinner => "spinner",
+            Story::AspectRatio => "aspect_ratio",
+            Story::Empty => "empty",
+            Story::Item => "item",
+            Story::Table => "table",
+            Story::Breadcrumb => "breadcrumb",
+            Story::Checkbox => "checkbox",
+            Story::RadioGroup => "radio_group",
+            Story::Toggle => "toggle",
+            Story::ToggleGroup => "toggle_group",
+            Story::ButtonGroup => "button_group",
+            Story::Collapsible => "collapsible",
+            Story::Tabs => "tabs",
+            Story::SliderStory => "slider",
+            Story::PaginationStory => "pagination",
+            Story::ScrollArea => "scroll_area",
+            Story::TooltipStory => "tooltip",
+            Story::HoverCardStory => "hover_card",
+            Story::DialogStory => "dialog",
+            Story::AlertDialogStory => "alert_dialog",
+            Story::SheetStory => "sheet",
+            Story::DrawerStory => "drawer",
+            Story::DropdownMenuStory => "dropdown_menu",
+            Story::ContextMenuStory => "context_menu",
+            Story::MenubarStory => "menubar",
+            Story::SelectStory => "select",
+            Story::NativeSelectStory => "native_select",
+            Story::NavigationMenuStory => "navigation_menu",
+            Story::ToastStory => "toast",
+            Story::InputStory => "input",
+            Story::TextareaStory => "textarea",
+            Story::FieldStory => "field",
+            Story::InputGroupStory => "input_group",
+            Story::InputOtpStory => "input_otp",
+            Story::CommandStory => "command",
+            Story::ComboboxStory => "combobox",
+            Story::CalendarStory => "calendar",
+            Story::DatePickerStory => "date_picker",
+            Story::CarouselStory => "carousel",
+            Story::ResizableStory => "resizable",
+            Story::SidebarStory => "sidebar",
+            Story::DataTableStory => return None,
+            Story::ChartStory => "chart",
+            Story::MessageStory => "message",
+            Story::BubbleStory => "bubble",
+            Story::MessageScrollerStory => "message_scroller",
+            Story::AttachmentStory => "attachment",
+            Story::QuestionnaireStory => "questionnaire",
+            Story::MarkerStory => "marker",
+        })
+    }
 }
 
 const BUTTON_VARIANTS: [(&str, ButtonVariant); 6] = [
@@ -1056,13 +1126,17 @@ impl Storybook {
             Story::QuestionnaireStory => self.questionnaire_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
+        let docs = self
+            .story
+            .module()
+            .and_then(crate::storybook_docs::docs_for);
+        let extra_examples = self.story_examples(cx);
+
         div()
             .id("canvas")
             .flex()
             .flex_col()
             .flex_1()
-            // Shrinkable below its content's min-width, so a narrow window
-            // squeezes the canvas instead of pushing the controls panel out.
             .min_w(px(0.))
             .h_full()
             .overflow_y_scroll()
@@ -1071,43 +1145,298 @@ impl Storybook {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(4.))
+                    .gap(px(24.))
                     .px(px(28.))
-                    .pt(px(24.))
+                    .py(px(24.))
+                    // Title + description
                     .child(
                         div()
-                            .text_size(px(18.))
-                            .line_height(px(24.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .when_some(theme.heading_font(), |el, font| el.font_family(font))
-                            .child(self.story.label()),
+                            .flex()
+                            .flex_col()
+                            .gap(px(4.))
+                            .child(
+                                div()
+                                    .text_size(px(20.))
+                                    .line_height(px(28.))
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .when_some(theme.heading_font(), |el, font| {
+                                        el.font_family(font)
+                                    })
+                                    .child(self.story.label()),
+                            )
+                            .child(
+                                div()
+                                    .text_size(px(14.))
+                                    .line_height(px(20.))
+                                    .text_color(theme.muted_foreground)
+                                    .child(self.story.description()),
+                            ),
                     )
-                    .child(
-                        div()
-                            .text_size(px(13.))
-                            .line_height(px(18.))
-                            .text_color(theme.muted_foreground)
-                            .child(self.story.description()),
-                    ),
-            )
-            .child(
-                div().flex().flex_1().p(px(28.)).child(
-                    Card::new().child(
-                        CardContent::new().child(
-                            div()
-                                .flex()
-                                .w_full()
-                                .min_h(px(280.))
-                                .items_center()
-                                .justify_center()
-                                .p(px(8.))
-                                .child(preview),
-                        ),
-                    ),
-                ),
+                    // Primary example, in a frame that grows with content
+                    .child(Self::example_frame(&theme, None, preview))
+                    // Extra example flavors
+                    .children(extra_examples.into_iter().map(|(title, example)| {
+                        Self::example_frame(&theme, Some(title), example)
+                    }))
+                    // Installation
+                    .when_some(docs, |el, docs| {
+                        el.child(Self::docs_heading(&theme, "Installation"))
+                            .child(Self::code_block(
+                                &theme,
+                                "install-code",
+                                &format!(
+                                    "# rcn is copy-paste, shadcn style: vendor the component\n# (plus src/theme.rs and src/motion.rs) into your gpui app.\ncp {} your-app/src/components/",
+                                    docs.source_path
+                                ),
+                            ))
+                            .child(Self::docs_heading(&theme, "Usage"))
+                            .child(Self::code_block(&theme, "usage-code", docs.usage))
+                            .child(Self::docs_heading(&theme, "API Reference"))
+                            .child(Self::api_table(&theme, docs.api))
+                    }),
             )
     }
 
+    /// A titled example frame that grows with its content (no clipping).
+    fn example_frame(
+        theme: &Theme,
+        title: Option<&'static str>,
+        example: AnyElement,
+    ) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(8.))
+            .when_some(title, |el, title| {
+                el.child(Self::docs_heading(theme, title))
+            })
+            .child(
+                div()
+                    .flex()
+                    .w_full()
+                    .min_h(px(220.))
+                    .items_center()
+                    .justify_center()
+                    .rounded(theme.radius_lg())
+                    .border_1()
+                    .border_color(theme.border)
+                    .p(px(32.))
+                    .child(example),
+            )
+    }
+
+    fn docs_heading(theme: &Theme, title: &'static str) -> impl IntoElement + use<> {
+        div()
+            .pt(px(8.))
+            .text_size(px(16.))
+            .line_height(px(24.))
+            .font_weight(FontWeight::SEMIBOLD)
+            .when_some(theme.heading_font(), |el, font| el.font_family(font))
+            .child(title)
+    }
+
+    /// A monospace code block (line-per-row so formatting is preserved).
+    fn code_block(theme: &Theme, id: &'static str, code: &str) -> impl IntoElement + use<> {
+        div()
+            .id(id)
+            .w_full()
+            .rounded(theme.radius_lg())
+            .border_1()
+            .border_color(theme.border)
+            .bg(if theme.dark {
+                theme.card
+            } else {
+                theme.secondary
+            })
+            .p(px(16.))
+            .overflow_x_scroll()
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .font_family("Menlo")
+                    .text_size(px(12.))
+                    .line_height(px(18.))
+                    .text_color(theme.foreground)
+                    .children(code.lines().map(|line| {
+                        div().whitespace_nowrap().child(if line.is_empty() {
+                            " ".to_string()
+                        } else {
+                            line.to_string()
+                        })
+                    })),
+            )
+    }
+
+    /// The generated API reference: builder signatures grouped by type.
+    fn api_table(
+        theme: &Theme,
+        api: &'static [crate::storybook_docs::ApiEntry],
+    ) -> impl IntoElement + use<> {
+        let mut rows: Vec<AnyElement> = Vec::new();
+        let mut last_type = "";
+        for entry in api {
+            if entry.type_name != last_type {
+                last_type = entry.type_name;
+                rows.push(
+                    div()
+                        .pt(px(12.))
+                        .text_size(px(14.))
+                        .font_weight(FontWeight::MEDIUM)
+                        .child(entry.type_name)
+                        .into_any_element(),
+                );
+            }
+            rows.push(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(2.))
+                    .py(px(6.))
+                    .border_b_1()
+                    .border_color(theme.border)
+                    .child(
+                        div()
+                            .font_family("Menlo")
+                            .text_size(px(12.))
+                            .line_height(px(17.))
+                            .text_color(theme.foreground)
+                            .child(entry.signature),
+                    )
+                    .when(!entry.doc.is_empty(), |el| {
+                        el.child(
+                            div()
+                                .text_size(px(13.))
+                                .line_height(px(18.))
+                                .text_color(theme.muted_foreground)
+                                .child(entry.doc),
+                        )
+                    })
+                    .into_any_element(),
+            );
+        }
+        div().flex().flex_col().children(rows)
+    }
+
+    /// Additional named example flavors per story (shadcn docs style);
+    /// stories default to just their primary example.
+    fn story_examples(&self, cx: &mut Context<Self>) -> Vec<(&'static str, AnyElement)> {
+        let theme = Theme::of(cx).clone();
+        match self.story {
+            Story::Button => vec![
+                (
+                    "Variants",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Button::new("ex-btn-default").child("Button"))
+                        .child(
+                            Button::new("ex-btn-outline")
+                                .variant(ButtonVariant::Outline)
+                                .child("Outline"),
+                        )
+                        .child(
+                            Button::new("ex-btn-secondary")
+                                .variant(ButtonVariant::Secondary)
+                                .child("Secondary"),
+                        )
+                        .child(
+                            Button::new("ex-btn-ghost")
+                                .variant(ButtonVariant::Ghost)
+                                .child("Ghost"),
+                        )
+                        .child(
+                            Button::new("ex-btn-destructive")
+                                .variant(ButtonVariant::Destructive)
+                                .child("Destructive"),
+                        )
+                        .child(
+                            Button::new("ex-btn-link")
+                                .variant(ButtonVariant::Link)
+                                .child("Link"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Button::new("ex-btn-xs")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Xs)
+                                .child("Extra Small"),
+                        )
+                        .child(
+                            Button::new("ex-btn-sm")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Sm)
+                                .child("Small"),
+                        )
+                        .child(
+                            Button::new("ex-btn-md")
+                                .variant(ButtonVariant::Outline)
+                                .child("Default"),
+                        )
+                        .child(
+                            Button::new("ex-btn-lg")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Lg)
+                                .child("Large"),
+                        )
+                        .child(
+                            Button::new("ex-btn-icon")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Icon)
+                                .child(
+                                    gpui::svg()
+                                        .path(theme.icons.chevron_right())
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    Button::new("ex-btn-disabled")
+                        .disabled(true)
+                        .child("Disabled")
+                        .into_any_element(),
+                ),
+            ],
+            Story::Accordion => vec![(
+                "With a disabled item",
+                div()
+                    .w(px(384.))
+                    .child(
+                        Accordion::new()
+                            .child(
+                                AccordionItem::new("ex-acc-1")
+                                    .trigger("Available item")
+                                    .content("This item can be toggled.")
+                                    .open(false),
+                            )
+                            .child(
+                                AccordionItem::new("ex-acc-2")
+                                    .trigger("Disabled item")
+                                    .content("Unreachable.")
+                                    .disabled(true)
+                                    .last(true),
+                            ),
+                    )
+                    .into_any_element(),
+            )],
+            _ => Vec::new(),
+        }
+    }
     fn controls_panel(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let rows: Vec<AnyElement> = match self.story {

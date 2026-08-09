@@ -6,6 +6,7 @@ mod assets;
 mod components;
 mod motion;
 mod storybook;
+mod storybook_docs;
 mod theme;
 
 use gpui::{
