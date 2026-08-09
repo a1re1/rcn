@@ -27,9 +27,9 @@ use crate::components::{
     EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle, Progress, Separator, Skeleton, Spinner,
-    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, RadioGroup, RadioGroupItem,
+    Separator, Skeleton, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
+    TableFooter, TableHead, TableHeader, TableRow,
 };
 use crate::theme::{BaseColor, Theme, oklch};
 
@@ -56,11 +56,12 @@ enum Story {
     Table,
     Breadcrumb,
     Checkbox,
+    RadioGroup,
     // __STORY_VARIANTS__
 }
 
 impl Story {
-    const ALL: [Story; 21] = [
+    const ALL: [Story; 22] = [
         Story::Tokens,
         Story::Button,
         Story::Badge,
@@ -82,6 +83,7 @@ impl Story {
         Story::Table,
         Story::Breadcrumb,
         Story::Checkbox,
+        Story::RadioGroup,
         // __STORY_ALL__
     ];
 
@@ -108,6 +110,7 @@ impl Story {
             Story::Table => "Table",
             Story::Breadcrumb => "Breadcrumb",
             Story::Checkbox => "Checkbox",
+            Story::RadioGroup => "Radio Group",
             // __STORY_LABELS__
         }
     }
@@ -145,6 +148,9 @@ impl Story {
             }
             Story::Checkbox => {
                 "A control that allows the user to toggle between checked and not checked."
+            }
+            Story::RadioGroup => {
+                "A set of checkable buttons where only one can be checked at a time."
             } // __STORY_DESCRIPTIONS__
         }
     }
@@ -310,6 +316,8 @@ pub struct Storybook {
     table_selected: Option<usize>,
     // Checkbox controls
     checkbox_checked: bool,
+    // Radio group story state
+    radio_selected: usize,
     // __STORY_STATE__
     // Accordion / Popover state
     accordion_open: Option<usize>,
@@ -345,6 +353,7 @@ impl Storybook {
             item_size: ItemSize::Default,
             table_selected: Some(1),
             checkbox_checked: true,
+            radio_selected: 1,
             // __STORY_STATE_INIT__
             accordion_open: Some(0),
             popover_open: false,
@@ -586,6 +595,7 @@ impl Storybook {
             Story::Table => self.table_preview(cx).into_any_element(),
             Story::Breadcrumb => Self::breadcrumb_preview().into_any_element(),
             Story::Checkbox => self.checkbox_preview(cx).into_any_element(),
+            Story::RadioGroup => self.radio_group_preview(cx).into_any_element(),
             // __STORY_CANVAS__
         };
         div()
@@ -840,6 +850,7 @@ impl Storybook {
                     .into_any_element(),
                 &theme,
             )],
+            Story::RadioGroup => Vec::new(),
             // __STORY_CONTROLS__
             Story::Alert => vec![Self::control_row(
                 "variant",
@@ -1939,6 +1950,26 @@ impl Storybook {
                     .child(Label::new().disabled(true).child("Disabled checked")),
             )
     }
+    fn radio_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let options = ["Default", "Comfortable", "Compact"];
+        RadioGroup::new().children(options.into_iter().enumerate().map(|(index, label)| {
+            div()
+                .flex()
+                .flex_row()
+                .items_center()
+                .gap(px(8.))
+                .child(
+                    RadioGroupItem::new(("radio-item", index))
+                        .checked(self.radio_selected == index)
+                        .on_select(cx.listener(move |this, _, _, cx| {
+                            this.radio_selected = index;
+                            cx.notify();
+                        })),
+                )
+                .child(Label::new().child(label))
+        }))
+    }
+
     // __STORY_PREVIEWS__
 
     fn card_preview(&self, cx: &App) -> impl IntoElement + use<> {
