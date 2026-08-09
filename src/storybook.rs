@@ -925,65 +925,51 @@ impl Storybook {
 
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        div()
-            .flex()
-            .flex_col()
-            .w(px(200.))
-            .flex_shrink_0()
-            .h_full()
-            .border_r_1()
-            .border_color(theme.border)
-            .bg(if theme.dark {
-                theme.card
-            } else {
-                theme.secondary
-            })
+        let mut components: Vec<Story> = Story::ALL
+            .into_iter()
+            .filter(|story| *story != Story::Tokens)
+            .collect();
+        components.sort_by_key(|story| story.label());
+
+        Sidebar::new()
             .child(
-                div()
-                    .px(px(16.))
-                    .py(px(14.))
-                    .text_size(px(15.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .when_some(theme.heading_font(), |el, font| el.font_family(font))
-                    .child("rcn"),
+                SidebarHeader::new().child(
+                    div()
+                        .px(px(8.))
+                        .py(px(6.))
+                        .text_size(px(15.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .when_some(theme.heading_font(), |el, font| el.font_family(font))
+                        .child("rcn"),
+                ),
             )
             .child(
-                div()
-                    .id("storybook-nav")
-                    .flex()
-                    .flex_col()
-                    .flex_1()
-                    .min_h(px(0.))
-                    .overflow_y_scroll()
-                    .gap(px(2.))
-                    .px(px(8.))
-                    .children(Story::ALL.into_iter().enumerate().map(|(index, story)| {
-                        let selected = self.story == story;
-                        div()
-                            .id(("nav", index))
-                            .px(px(8.))
-                            .py(px(5.))
-                            .rounded(theme.radius_sm())
-                            .text_size(px(13.))
-                            .line_height(px(18.))
-                            .map(|el| {
-                                if selected {
-                                    el.bg(theme.primary)
-                                        .text_color(theme.primary_foreground)
-                                        .font_weight(FontWeight::MEDIUM)
-                                } else {
-                                    el.text_color(theme.foreground).hover(|s| s.bg(theme.muted))
-                                }
-                            })
-                            .on_click(cx.listener(move |this, _, _, cx| {
-                                this.story = story;
-                                cx.notify();
-                            }))
-                            .child(story.label())
-                    })),
+                SidebarContent::new()
+                    .child(
+                        SidebarGroup::new().label("Theme").child(
+                            SidebarMenuButton::new("nav-tokens")
+                                .active(self.story == Story::Tokens)
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.story = Story::Tokens;
+                                    cx.notify();
+                                }))
+                                .child(Story::Tokens.label()),
+                        ),
+                    )
+                    .child(SidebarGroup::new().label("Components").children(
+                        components.into_iter().enumerate().map(|(index, story)| {
+                            SidebarMenuButton::new(("nav-component", index))
+                                .active(self.story == story)
+                                .on_click(cx.listener(move |this, _, _, cx| {
+                                    this.story = story;
+                                    cx.notify();
+                                }))
+                                .child(story.label())
+                        }),
+                    )),
             )
             .child(
-                div().p(px(12.)).child(
+                SidebarFooter::new().child(
                     Button::new("theme-toggle")
                         .variant(ButtonVariant::Outline)
                         .size(ButtonSize::Sm)
@@ -996,7 +982,6 @@ impl Storybook {
                 ),
             )
     }
-
     fn canvas(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let preview: AnyElement = match self.story {
@@ -1101,17 +1086,18 @@ impl Storybook {
             )
             .child(
                 div().flex().flex_1().p(px(28.)).child(
-                    div()
-                        .flex()
-                        .flex_1()
-                        .min_h(px(280.))
-                        .items_center()
-                        .justify_center()
-                        .rounded(theme.radius_lg())
-                        .border_1()
-                        .border_color(theme.border)
-                        .p(px(32.))
-                        .child(preview),
+                    Card::new().child(
+                        CardContent::new().child(
+                            div()
+                                .flex()
+                                .w_full()
+                                .min_h(px(280.))
+                                .items_center()
+                                .justify_center()
+                                .p(px(8.))
+                                .child(preview),
+                        ),
+                    ),
                 ),
             )
     }
@@ -4126,15 +4112,21 @@ impl Render for Storybook {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         div()
-            .flex()
-            .flex_row()
             .size_full()
             .bg(theme.background)
             .text_color(theme.foreground)
             .when_some(theme.font_sans.clone(), |el, font| el.font_family(font))
-            .child(self.sidebar(cx))
-            .child(self.canvas(cx))
-            .child(self.controls_panel(cx))
+            .child(
+                SidebarProvider::new().sidebar(self.sidebar(cx)).inset(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .size_full()
+                        .min_w(px(0.))
+                        .child(self.canvas(cx))
+                        .child(self.controls_panel(cx)),
+                ),
+            )
     }
 }
 
