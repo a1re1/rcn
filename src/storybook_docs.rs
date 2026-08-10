@@ -1744,27 +1744,67 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "ResizablePanelGroup",
-        signature: "pub fn fraction(mut self, fraction: f32) -> Self",
+        signature: "pub fn panel(mut self, panel: ResizablePanel) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "ResizablePanelGroup",
-        signature: "pub fn first(mut self, panel: impl IntoElement) -> Self",
+        signature: "pub fn handle(mut self, handle: ResizableHandle) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "ResizablePanelGroup",
-        signature: "pub fn second(mut self, panel: impl IntoElement) -> Self",
+        signature: "pub fn on_layout_change( mut self, handler: impl Fn(&Vec<f32>, &mut Window, &mut App) + 'static, ) -> Self",
         doc: "",
     },
     ApiEntry {
-        type_name: "ResizablePanelGroup",
-        signature: "pub fn on_fraction_change( mut self, handler: impl Fn(&f32, &mut Window, &mut App) + 'static, ) -> Self",
+        type_name: "ResizablePanel",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizablePanel",
+        signature: "pub fn default_size(mut self, size: f32) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizablePanel",
+        signature: "pub fn min_size(mut self, size: f32) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizablePanel",
+        signature: "pub fn max_size(mut self, size: f32) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizablePanel",
+        signature: "pub fn collapsible(mut self, collapsible: bool) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizablePanel",
+        signature: "pub fn collapsed_size(mut self, size: f32) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizablePanel",
+        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizableHandle",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "ResizableHandle",
+        signature: "pub fn with_handle(mut self, with_handle: bool) -> Self",
         doc: "",
     },
 ];
 
-pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label: String| {\n    div()\n        .flex()\n        .size_full()\n        .items_center()\n        .justify_center()\n        .text_size(px(14.))\n        .font_weight(FontWeight::MEDIUM)\n        .text_color(theme.foreground)\n        .child(label)\n};\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(16.))\n    .child(\n        div().w(px(420.)).h(px(160.)).child(\n            ResizablePanelGroup::new(\"resizable-vertical\")\n                .direction(ResizableDirection::Vertical)\n                .fraction(0.4)\n                .first(panel(\"Header\".into()))\n                .second(panel(\"Content\".into())),\n        ),\n    )\n    .child(\n        div().w(px(420.)).h(px(200.)).child(\n            ResizablePanelGroup::new(\"resizable-demo\")\n                .fraction(self.resizable_fraction)\n                .on_fraction_change(cx.listener(|this, fraction: &f32, _, cx| {\n                    this.resizable_fraction = *fraction;\n                    cx.notify();\n                }))\n                .first(panel(format!(\"{:.0}%\", self.resizable_fraction * 100.)))\n                .second(panel(format!(\n                    \"{:.0}%\",\n                    (1. - self.resizable_fraction) * 100.\n                ))),\n        ),\n    )\n    ";
+pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label: &'static str| {\n    div()\n        .flex()\n        .size_full()\n        .items_center()\n        .justify_center()\n        .p(px(24.))\n        .text_size(px(14.))\n        .font_weight(FontWeight::SEMIBOLD)\n        .text_color(theme.foreground)\n        .child(label)\n};\n// Compose in shadcn order: Panel, Handle, Panel, \u{2026} Layout state is\n// managed internally \u{2014} drag just works, no wiring needed.\ndiv()\n    .w(px(384.))\n    .h(px(200.))\n    .rounded(theme.radius_lg())\n    .border_1()\n    .border_color(theme.border)\n    .overflow_hidden()\n    .child(\n        ResizablePanelGroup::new(\"resizable\")\n            .panel(ResizablePanel::new().child(panel(\"One\")))\n            .handle(ResizableHandle::new())\n            .panel(ResizablePanel::new().child(panel(\"Two\"))),\n    )\n    ";
 
 pub static SCROLL_AREA_API: &[ApiEntry] = &[
     ApiEntry {
