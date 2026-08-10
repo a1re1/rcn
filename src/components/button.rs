@@ -2,17 +2,21 @@
 //!
 //! Variants: Default, Outline, Secondary, Ghost, Destructive, Link.
 //! Sizes: Default, Xs, Sm, Lg and the square Icon, IconXs, IconSm, IconLg.
-//! Builders: `rounded_full`, `icon_inline_start`, `icon_inline_end`.
+//! Builders: `rounded_full`, `icon_inline_start`, `icon_inline_end`,
+//! `tooltip_rich`.
 //!
 //! Omitted from the source (no gpui equivalent yet): focus-visible ring,
 //! aria-invalid styles.
 
+use std::rc::Rc;
+
 use gpui::{
-    AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
+    AnyElement, App, AppContext as _, ClickEvent, ElementId, FontWeight, InteractiveElement as _,
+    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
     prelude::FluentBuilder as _, px,
 };
 
+use crate::components::tooltip::TooltipView;
 use crate::motion;
 use crate::theme::{Theme, alpha};
 
@@ -52,6 +56,7 @@ pub enum ButtonSize {
 }
 
 type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
+type TooltipContent = Rc<dyn Fn(&mut Window, &mut App) -> AnyElement>;
 
 #[derive(IntoElement)]
 pub struct Button {
@@ -64,6 +69,7 @@ pub struct Button {
     icon_inline_end: bool,
     group_position: Option<GroupPosition>,
     on_click: Option<ClickHandler>,
+    tooltip: Option<TooltipContent>,
     children: Vec<AnyElement>,
 }
 
@@ -79,6 +85,7 @@ impl Button {
             icon_inline_end: false,
             group_position: None,
             on_click: None,
+            tooltip: None,
             children: Vec::new(),
         }
     }
@@ -121,10 +128,20 @@ impl Button {
 
     /// Child `data-icon="inline-end"` — trim end padding
     /// (`has-data-[icon=inline-end]:pr-2` / `pr-1.5` for Xs/Sm).
-    // Mirrors icon_inline_start; not yet exercised by the storybook.
-    #[allow(dead_code)]
     pub fn icon_inline_end(mut self) -> Self {
         self.icon_inline_end = true;
+        self
+    }
+
+    /// Attach a rich hover tooltip (mirrors shadcn's
+    /// `<TooltipTrigger render={<Button/>}>` composition). Needed because
+    /// [`crate::components::ButtonGroup`] takes typed [`Button`] items, so a
+    /// wrapping [`crate::components::Tooltip`] div cannot sit inside a group.
+    pub fn tooltip_rich(
+        mut self,
+        content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static,
+    ) -> Self {
+        self.tooltip = Some(Rc::new(content));
         self
     }
 
@@ -296,6 +313,7 @@ impl RenderOnce for Button {
         };
 
         // active:translate-y-px; disabled:opacity-50 + no pointer events.
+        // Optional rich tooltip via gpui's .tooltip() (needs AnyView).
         styled
             .when(self.disabled, |s| s.opacity(0.5))
             .when(!self.disabled, |s| {
@@ -303,6 +321,13 @@ impl RenderOnce for Button {
                     .focus_visible(move |s| s.border_color(ring_border).shadow(ring_shadow.clone()))
                     .active(|s| s.top(px(1.)))
                     .when_some(self.on_click, |s, on_click| s.on_click(on_click))
+            })
+            .when_some(self.tooltip, |s, content| {
+                s.tooltip(move |_window, cx| {
+                    let content = Rc::clone(&content);
+                    cx.new(move |_| TooltipView::rich(move |window, app| content(window, app)))
+                        .into()
+                })
             })
             .children(self.children)
     }

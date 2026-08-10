@@ -715,6 +715,8 @@ pub struct Storybook {
     // Input group story state
     input_group_search: gpui::Entity<Input>,
     input_group_url: gpui::Entity<Input>,
+    // Kbd story — Input Group example
+    kbd_input: gpui::Entity<Input>,
     // Input OTP story state
     input_otp: gpui::Entity<Input>,
     // Command story state
@@ -796,6 +798,12 @@ impl Storybook {
         let input_group_url = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("example.com");
+            input.set_bare(true);
+            input
+        });
+        let kbd_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search...");
             input.set_bare(true);
             input
         });
@@ -904,6 +912,7 @@ impl Storybook {
             field_error_input,
             input_group_search,
             input_group_url,
+            kbd_input,
             input_otp,
             command_input,
             combobox_search,
@@ -2224,13 +2233,123 @@ impl Storybook {
                     .child(Avatar::new("LG").size(AvatarSize::Lg))
                     .into_any_element(),
             )],
-            Story::Kbd => vec![(
-                "Combination",
-                KbdGroup::new()
-                    .child(Kbd::new().child("\u{2318}"))
-                    .child(Kbd::new().child("K"))
-                    .into_any_element(),
-            )],
+            Story::Kbd => vec![
+                (
+                    "Group",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap(px(4.))
+                        .text_size(px(14.))
+                        .line_height(px(20.))
+                        .text_color(theme.muted_foreground)
+                        .child("Use")
+                        .child(
+                            KbdGroup::new()
+                                .child(Kbd::new().child("Ctrl + B"))
+                                .child(Kbd::new().child("Ctrl + K")),
+                        )
+                        .child("to open the command palette")
+                        .into_any_element(),
+                ),
+                (
+                    "Button",
+                    Button::new("kbd-ex-accept")
+                        .variant(ButtonVariant::Outline)
+                        .icon_inline_end()
+                        .child("Accept")
+                        .child(
+                            div()
+                                .relative()
+                                .left(px(2.))
+                                .child(Kbd::new().child("⏎")),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Tooltip",
+                    ButtonGroup::new()
+                        .item(
+                            Button::new("kbd-ex-save")
+                                .variant(ButtonVariant::Outline)
+                                .child("Save")
+                                .tooltip_rich(|_, _| {
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .items_center()
+                                        .gap(px(4.))
+                                        .child("Save Changes")
+                                        .child(Kbd::new().in_tooltip().child("S"))
+                                        .into_any_element()
+                                }),
+                        )
+                        .item(
+                            Button::new("kbd-ex-print")
+                                .variant(ButtonVariant::Outline)
+                                .child("Print")
+                                .tooltip_rich(|_, _| {
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .items_center()
+                                        .gap(px(4.))
+                                        .child("Print Document")
+                                        .child(
+                                            KbdGroup::new()
+                                                .child(Kbd::new().in_tooltip().child("Ctrl"))
+                                                .child(Kbd::new().in_tooltip().child("P")),
+                                        )
+                                        .into_any_element()
+                                }),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Input Group",
+                    div()
+                        .w(px(320.))
+                        .child(
+                            InputGroup::new(self.kbd_input.clone())
+                                .leading(InputGroupAddon::new().child(
+                                    gpui::svg()
+                                        .path(crate::assets::ICON_SEARCH)
+                                        .size(px(16.))
+                                        .text_color(theme.muted_foreground),
+                                ))
+                                .trailing(
+                                    InputGroupAddon::new()
+                                        .child(Kbd::new().child("⌘"))
+                                        .child(Kbd::new().child("K")),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "RTL (mirrored)",
+                    // gpui has no direction context — mirror the demo composition manually
+                    div()
+                        .flex()
+                        .flex_col()
+                        .items_center()
+                        .gap(px(16.))
+                        .child(
+                            KbdGroup::new()
+                                .child(Kbd::new().child("⌃"))
+                                .child(Kbd::new().child("⌥"))
+                                .child(Kbd::new().child("⇧"))
+                                .child(Kbd::new().child("⌘")),
+                        )
+                        .child(
+                            KbdGroup::new()
+                                .child(Kbd::new().child("B"))
+                                .child("+")
+                                .child(Kbd::new().child("Ctrl")),
+                        )
+                        .into_any_element(),
+                ),
+            ],
             Story::Spinner => vec![(
                 "Sizes",
                 div()
@@ -3356,24 +3475,18 @@ impl Storybook {
     }
 
     fn kbd_preview() -> impl IntoElement + use<> {
+        // kbd-demo: ⌘⇧⌥⌃ group + Ctrl + B group
         div()
             .flex()
             .flex_col()
-            .gap(px(12.))
+            .items_center()
+            .gap(px(16.))
             .child(
                 KbdGroup::new()
                     .child(Kbd::new().child("⌘"))
-                    .child(Kbd::new().child("K")),
-            )
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(4.))
-                    .child(Kbd::new().child("Ctrl"))
                     .child(Kbd::new().child("⇧"))
-                    .child(Kbd::new().child("Alt")),
+                    .child(Kbd::new().child("⌥"))
+                    .child(Kbd::new().child("⌃")),
             )
             .child(
                 KbdGroup::new()
@@ -4085,13 +4198,35 @@ impl Storybook {
             )
     }
     fn tooltip_preview() -> impl IntoElement + use<> {
-        div().child(
-            Tooltip::new("tooltip-demo", "Add to library").child(
-                Button::new("tooltip-trigger")
-                    .variant(ButtonVariant::Outline)
-                    .child("Hover me"),
-            ),
-        )
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(px(12.))
+            .child(
+                Tooltip::new("tooltip-demo", "Add to library").child(
+                    Button::new("tooltip-trigger")
+                        .variant(ButtonVariant::Outline)
+                        .child("Hover me"),
+                ),
+            )
+            .child(
+                Tooltip::rich("tooltip-rich-demo", |_, _| {
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap(px(4.))
+                        .child("Save Changes")
+                        .child(Kbd::new().in_tooltip().child("S"))
+                        .into_any_element()
+                })
+                .child(
+                    Button::new("tooltip-rich-trigger")
+                        .variant(ButtonVariant::Outline)
+                        .child("Rich tooltip"),
+                ),
+            )
     }
     fn hover_card_preview() -> impl IntoElement + use<> {
         div().child(
