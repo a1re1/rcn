@@ -45,13 +45,13 @@ use crate::components::{
     PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
     Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
-    RadioGroupItem, ResizableDirection, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet,
-    SheetDescription, SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent,
-    SidebarFooter, SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger,
-    Skeleton, Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell,
-    TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger,
-    TabsVariant, Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
-    ToggleVariant, Tooltip,
+    RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
+    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
+    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
+    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
+    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
+    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
+    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, alpha, oklch};
 
@@ -742,8 +742,6 @@ pub struct Storybook {
     date_picker_open: bool,
     // Carousel story state
     carousel_index: usize,
-    // Resizable story state
-    resizable_fraction: f32,
     // Sidebar story state
     sidebar_open: bool,
     sidebar_active: usize,
@@ -959,7 +957,6 @@ impl Storybook {
             date_picker_month: (2026, 8),
             date_picker_open: false,
             carousel_index: 0,
-            resizable_fraction: 0.5,
             sidebar_open: true,
             sidebar_active: 0,
             data_table_desc: true,
@@ -4988,45 +4985,85 @@ impl Storybook {
     }
     fn resizable_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        let panel = |label: String| {
+        let panel = |label: &str| {
             div()
                 .flex()
                 .size_full()
                 .items_center()
                 .justify_center()
+                .p(px(24.))
                 .text_size(px(14.))
-                .font_weight(FontWeight::MEDIUM)
+                .font_weight(FontWeight::SEMIBOLD)
                 .text_color(theme.foreground)
-                .child(label)
+                .child(label.to_string())
+        };
+        let frame = |child: AnyElement| {
+            div()
+                .w(px(384.))
+                .h(px(200.))
+                .rounded(theme.radius_lg())
+                .border_1()
+                .border_color(theme.border)
+                .overflow_hidden()
+                .child(child)
         };
         div()
             .flex()
             .flex_col()
             .gap(px(16.))
-            .child(
-                div().w(px(420.)).h(px(160.)).child(
-                    ResizablePanelGroup::new("resizable-vertical")
-                        .direction(ResizableDirection::Vertical)
-                        .fraction(0.4)
-                        .first(panel("Header".into()))
-                        .second(panel("Content".into())),
-                ),
-            )
-            .child(
-                div().w(px(420.)).h(px(200.)).child(
-                    ResizablePanelGroup::new("resizable-demo")
-                        .fraction(self.resizable_fraction)
-                        .on_fraction_change(cx.listener(|this, fraction: &f32, _, cx| {
-                            this.resizable_fraction = *fraction;
-                            cx.notify();
-                        }))
-                        .first(panel(format!("{:.0}%", self.resizable_fraction * 100.)))
-                        .second(panel(format!(
-                            "{:.0}%",
-                            (1. - self.resizable_fraction) * 100.
-                        ))),
-                ),
-            )
+            // a. Demo (nested)
+            .child(frame(
+                ResizablePanelGroup::new("resizable-demo")
+                    .panel(ResizablePanel::new().default_size(0.5).child(panel("One")))
+                    .handle(ResizableHandle::new().with_handle(true))
+                    .panel(
+                        ResizablePanel::new().default_size(0.5).child(
+                            ResizablePanelGroup::new("resizable-demo-nested")
+                                .direction(ResizableDirection::Vertical)
+                                .panel(ResizablePanel::new().default_size(0.25).child(panel("Two")))
+                                .handle(ResizableHandle::new().with_handle(true))
+                                .panel(
+                                    ResizablePanel::new()
+                                        .default_size(0.75)
+                                        .child(panel("Three")),
+                                ),
+                        ),
+                    )
+                    .into_any_element(),
+            ))
+            // b. Vertical
+            .child(frame(
+                ResizablePanelGroup::new("resizable-vertical")
+                    .direction(ResizableDirection::Vertical)
+                    .panel(
+                        ResizablePanel::new()
+                            .default_size(0.25)
+                            .child(panel("Header")),
+                    )
+                    .handle(ResizableHandle::new())
+                    .panel(
+                        ResizablePanel::new()
+                            .default_size(0.75)
+                            .child(panel("Content")),
+                    )
+                    .into_any_element(),
+            ))
+            // c. Handle
+            .child(frame(
+                ResizablePanelGroup::new("resizable-handle")
+                    .panel(
+                        ResizablePanel::new()
+                            .default_size(0.25)
+                            .child(panel("Sidebar")),
+                    )
+                    .handle(ResizableHandle::new().with_handle(true))
+                    .panel(
+                        ResizablePanel::new()
+                            .default_size(0.75)
+                            .child(panel("Content")),
+                    )
+                    .into_any_element(),
+            ))
     }
     fn sidebar_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
