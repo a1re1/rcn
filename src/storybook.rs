@@ -10,7 +10,11 @@
 //! whole thing — and every other story picks the changes up live through the
 //! `Theme` global.
 
+use std::collections::HashMap;
+use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use serde::Deserialize;
 
 use gpui::{
     AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, Window, div,
@@ -767,6 +771,32 @@ pub struct Storybook {
     card_spacing: f32,
     card_spacing_email: gpui::Entity<Input>,
     card_spacing_password: gpui::Entity<Input>,
+    /// Component label -> verified date, loaded from verification.json at startup.
+    verified: HashMap<String, String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct VerificationEntry {
+    name: String,
+    verified: Option<String>,
+    #[allow(dead_code)]
+    by: Option<String>,
+}
+
+/// Load verification.json into a name -> date map. Missing or malformed files
+/// degrade to an empty map so startup never panics on tracker data.
+fn load_verification() -> HashMap<String, String> {
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/verification.json");
+    let Ok(raw) = fs::read_to_string(path) else {
+        return HashMap::new();
+    };
+    let Ok(entries) = serde_json::from_str::<Vec<VerificationEntry>>(&raw) else {
+        return HashMap::new();
+    };
+    entries
+        .into_iter()
+        .filter_map(|e| e.verified.map(|date| (e.name, date)))
+        .collect()
 }
 
 impl Storybook {
@@ -863,6 +893,7 @@ impl Storybook {
             .duration_since(UNIX_EPOCH)
             .map(|d| d.subsec_nanos() as u64 ^ d.as_secs())
             .unwrap_or(0x9e3779b9);
+        let verified = load_verification();
         Self {
             story: Story::Tokens,
             dark: false,
@@ -948,6 +979,7 @@ impl Storybook {
             card_spacing: 16.,
             card_spacing_email,
             card_spacing_password,
+            verified,
         }
     }
 
@@ -1083,13 +1115,24 @@ impl Storybook {
                     )
                     .child(SidebarGroup::new().label("Components").children(
                         components.into_iter().enumerate().map(|(index, story)| {
+                            let label = story.label();
+                            let verified = self.verified.contains_key(label);
                             SidebarMenuButton::new(("nav-component", index))
                                 .active(self.story == story)
                                 .on_click(cx.listener(move |this, _, _, cx| {
                                     this.story = story;
                                     cx.notify();
                                 }))
-                                .child(story.label())
+                                .child(label)
+                                .when(verified, |btn| {
+                                    btn.child(
+                                        div().ml_auto().child(
+                                            Icon::new(theme.icons.check())
+                                                .size(px(14.))
+                                                .text_color(theme.muted_foreground),
+                                        ),
+                                    )
+                                })
                         }),
                     )),
             )
@@ -1219,6 +1262,26 @@ impl Storybook {
                                     .line_height(px(20.))
                                     .text_color(theme.muted_foreground)
                                     .child(self.story.description()),
+                            )
+                            .when_some(
+                                self.verified.get(self.story.label()).cloned(),
+                                |el, date| {
+                                    el.child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap(px(6.))
+                                            .text_size(px(13.))
+                                            .text_color(theme.muted_foreground)
+                                            .child(
+                                                Icon::new(theme.icons.check())
+                                                    .size(px(14.))
+                                                    .text_color(theme.muted_foreground),
+                                            )
+                                            .child(format!("Verified {date}")),
+                                    )
+                                },
                             ),
                     )
                     // Primary example, in a frame that grows with content
