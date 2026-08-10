@@ -142,7 +142,6 @@ impl ResizablePanel {
     }
 
     /// Minimum fraction while expanded (default `0.10`).
-    #[allow(dead_code)]
     pub fn min_size(mut self, size: f32) -> Self {
         self.min_size = size;
         self
@@ -157,14 +156,12 @@ impl ResizablePanel {
 
     /// When true, dragging past the halfway threshold snaps to
     /// [`collapsed_size`](Self::collapsed_size).
-    #[allow(dead_code)]
     pub fn collapsible(mut self, collapsible: bool) -> Self {
         self.collapsible = collapsible;
         self
     }
 
     /// Size while collapsed (default `0.0`).
-    #[allow(dead_code)]
     pub fn collapsed_size(mut self, size: f32) -> Self {
         self.collapsed_size = size;
         self

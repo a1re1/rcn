@@ -1282,10 +1282,20 @@ impl Storybook {
                             ),
                     )
                     // Primary example, in a frame that grows with content
-                    .child(Self::example_frame(&theme, None, preview))
+                    .child(Self::example_frame(&theme, None, None, preview))
+                    // About blurb (the shadcn docs "About" section)
+                    .when_some(Self::story_about(self.story), |el, about| {
+                        el.child(Self::docs_heading(&theme, "About"))
+                            .child(Self::docs_paragraph(&theme, about))
+                    })
                     // Extra example flavors
                     .children(extra_examples.into_iter().map(|(title, example)| {
-                        Self::example_frame(&theme, Some(title), example)
+                        Self::example_frame(
+                            &theme,
+                            Some(title),
+                            Self::example_description(self.story, title),
+                            example,
+                        )
                     }))
                     // Installation
                     .when_some(docs, |el, docs| {
@@ -1310,6 +1320,7 @@ impl Storybook {
     fn example_frame(
         theme: &Theme,
         title: Option<&'static str>,
+        description: Option<&'static str>,
         example: AnyElement,
     ) -> impl IntoElement + use<> {
         div()
@@ -1318,6 +1329,9 @@ impl Storybook {
             .gap(px(8.))
             .when_some(title, |el, title| {
                 el.child(Self::docs_heading(theme, title))
+            })
+            .when_some(description, |el, description| {
+                el.child(Self::docs_paragraph(theme, description))
             })
             .child(
                 div()
@@ -1342,6 +1356,15 @@ impl Storybook {
             .font_weight(FontWeight::SEMIBOLD)
             .when_some(theme.heading_font(), |el, font| el.font_family(font))
             .child(title)
+    }
+
+    /// Prose under a docs heading (the shadcn section description).
+    fn docs_paragraph(theme: &Theme, text: &'static str) -> impl IntoElement + use<> {
+        div()
+            .text_size(px(14.))
+            .line_height(px(20.))
+            .text_color(theme.muted_foreground)
+            .child(text)
     }
 
     /// A monospace code block (line-per-row so formatting is preserved).
@@ -2445,9 +2468,109 @@ impl Storybook {
                     .disabled(true)
                     .into_any_element(),
             )],
+            Story::ResizableStory => vec![
+                (
+                    "Vertical",
+                    Self::resizable_frame(
+                        &theme,
+                        ResizablePanelGroup::new("resizable-vertical")
+                            .direction(ResizableDirection::Vertical)
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.25)
+                                    .child(Self::resizable_label(&theme, "Header")),
+                            )
+                            .handle(ResizableHandle::new())
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.75)
+                                    .child(Self::resizable_label(&theme, "Content")),
+                            )
+                            .into_any_element(),
+                    ),
+                ),
+                (
+                    "Handle",
+                    Self::resizable_frame(
+                        &theme,
+                        ResizablePanelGroup::new("resizable-handle")
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.25)
+                                    .child(Self::resizable_label(&theme, "Sidebar")),
+                            )
+                            .handle(ResizableHandle::new().with_handle(true))
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.75)
+                                    .child(Self::resizable_label(&theme, "Content")),
+                            )
+                            .into_any_element(),
+                    ),
+                ),
+                (
+                    "Collapsible",
+                    Self::resizable_frame(
+                        &theme,
+                        ResizablePanelGroup::new("resizable-collapsible")
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.3)
+                                    .min_size(0.2)
+                                    .collapsible(true)
+                                    .collapsed_size(0.05)
+                                    .child(Self::resizable_label(&theme, "Sidebar")),
+                            )
+                            .handle(ResizableHandle::new().with_handle(true))
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.7)
+                                    .child(Self::resizable_label(&theme, "Content")),
+                            )
+                            .into_any_element(),
+                    ),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
+
+    /// The docs "About" blurb shown under the primary example.
+    fn story_about(story: Story) -> Option<&'static str> {
+        match story {
+            Story::ResizableStory => Some(
+                "Resizable is a gpui port of shadcn/ui's Resizable, which is built on \
+                 react-resizable-panels: panel groups with draggable handles, nested groups, \
+                 min/max/collapsible panel sizes, and keyboard resize. Layout state is managed \
+                 internally, so groups are resizable with no wiring; pass .on_layout_change(..) \
+                 to observe sizes.",
+            ),
+            _ => None,
+        }
+    }
+
+    /// Prose under an extra example's heading, mirroring the shadcn docs
+    /// section descriptions.
+    fn example_description(story: Story, title: &'static str) -> Option<&'static str> {
+        match (story, title) {
+            (Story::ResizableStory, "Vertical") => {
+                Some("Use .direction(ResizableDirection::Vertical) for vertical resizing.")
+            }
+            (Story::ResizableStory, "Handle") => Some(
+                "Use .with_handle(true) on ResizableHandle to show a visible handle. \
+                 Handles are focusable: arrow keys resize in 10% steps, Home/End jump to the \
+                 size limits, and Enter toggles collapse.",
+            ),
+            (Story::ResizableStory, "Collapsible") => Some(
+                "Set .collapsible(true) on a ResizablePanel to let a drag past half its \
+                 .min_size(..) snap the panel closed to its .collapsed_size(..). Drag the \
+                 sidebar below its minimum to collapse it, or press Enter on the focused \
+                 handle.",
+            ),
+            _ => None,
+        }
+    }
+
     fn controls_panel(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let rows: Vec<AnyElement> = match self.story {
@@ -4983,87 +5106,57 @@ impl Storybook {
                 )
             }))
     }
-    fn resizable_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let theme = Theme::of(cx).clone();
-        let panel = |label: &str| {
-            div()
-                .flex()
-                .size_full()
-                .items_center()
-                .justify_center()
-                .p(px(24.))
-                .text_size(px(14.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(theme.foreground)
-                .child(label.to_string())
-        };
-        let frame = |child: AnyElement| {
-            div()
-                .w(px(384.))
-                .h(px(200.))
-                .rounded(theme.radius_lg())
-                .border_1()
-                .border_color(theme.border)
-                .overflow_hidden()
-                .child(child)
-        };
+    /// Panel content for the resizable demos (shadcn's centered semibold label).
+    fn resizable_label(theme: &Theme, label: &'static str) -> AnyElement {
         div()
             .flex()
-            .flex_col()
-            .gap(px(16.))
-            // a. Demo (nested)
-            .child(frame(
-                ResizablePanelGroup::new("resizable-demo")
-                    .panel(ResizablePanel::new().default_size(0.5).child(panel("One")))
-                    .handle(ResizableHandle::new().with_handle(true))
-                    .panel(
-                        ResizablePanel::new().default_size(0.5).child(
-                            ResizablePanelGroup::new("resizable-demo-nested")
-                                .direction(ResizableDirection::Vertical)
-                                .panel(ResizablePanel::new().default_size(0.25).child(panel("Two")))
-                                .handle(ResizableHandle::new().with_handle(true))
-                                .panel(
-                                    ResizablePanel::new()
-                                        .default_size(0.75)
-                                        .child(panel("Three")),
-                                ),
-                        ),
-                    )
-                    .into_any_element(),
-            ))
-            // b. Vertical
-            .child(frame(
-                ResizablePanelGroup::new("resizable-vertical")
-                    .direction(ResizableDirection::Vertical)
-                    .panel(
-                        ResizablePanel::new()
-                            .default_size(0.25)
-                            .child(panel("Header")),
-                    )
-                    .handle(ResizableHandle::new())
-                    .panel(
-                        ResizablePanel::new()
-                            .default_size(0.75)
-                            .child(panel("Content")),
-                    )
-                    .into_any_element(),
-            ))
-            // c. Handle
-            .child(frame(
-                ResizablePanelGroup::new("resizable-handle")
-                    .panel(
-                        ResizablePanel::new()
-                            .default_size(0.25)
-                            .child(panel("Sidebar")),
-                    )
-                    .handle(ResizableHandle::new().with_handle(true))
-                    .panel(
-                        ResizablePanel::new()
-                            .default_size(0.75)
-                            .child(panel("Content")),
-                    )
-                    .into_any_element(),
-            ))
+            .size_full()
+            .items_center()
+            .justify_center()
+            .p(px(24.))
+            .text_size(px(14.))
+            .font_weight(FontWeight::SEMIBOLD)
+            .text_color(theme.foreground)
+            .child(label)
+            .into_any_element()
+    }
+
+    /// Bordered demo frame around a panel group (shadcn's "rounded-lg border").
+    fn resizable_frame(theme: &Theme, group: AnyElement) -> AnyElement {
+        div()
+            .w(px(384.))
+            .h(px(200.))
+            .rounded(theme.radius_lg())
+            .border_1()
+            .border_color(theme.border)
+            .overflow_hidden()
+            .child(group)
+            .into_any_element()
+    }
+
+    fn resizable_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let panel = |label| Self::resizable_label(&theme, label);
+        Self::resizable_frame(
+            &theme,
+            ResizablePanelGroup::new("resizable-demo")
+                .panel(ResizablePanel::new().default_size(0.5).child(panel("One")))
+                .handle(ResizableHandle::new().with_handle(true))
+                .panel(
+                    ResizablePanel::new().default_size(0.5).child(
+                        ResizablePanelGroup::new("resizable-demo-nested")
+                            .direction(ResizableDirection::Vertical)
+                            .panel(ResizablePanel::new().default_size(0.25).child(panel("Two")))
+                            .handle(ResizableHandle::new().with_handle(true))
+                            .panel(
+                                ResizablePanel::new()
+                                    .default_size(0.75)
+                                    .child(panel("Three")),
+                            ),
+                    ),
+                )
+                .into_any_element(),
+        )
     }
     fn sidebar_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
