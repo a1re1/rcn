@@ -133,7 +133,7 @@ pub use questionnaire::{
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle,
 };
 pub use radio_group::{RadioGroup, RadioGroupItem};
-pub use resizable::{ResizableDirection, ResizablePanelGroup};
+pub use resizable::{ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup};
 pub use scroll_area::ScrollArea;
 pub use select::Select;
 pub use separator::Separator;
