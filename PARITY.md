@@ -58,7 +58,7 @@ solid before the molecules that compose them.
 - [x] card — base-nova parity (footer border/bg + pb-0 via mb(-spacing); header `.action()` slot; `.spacing()` override; `.flush_top()`/`.flush_bottom()`; no shadow; RTL and `[.border-b]`/`[.border-t]` utilities omitted)
 - [x] empty — (static presentation — matches source; dashed border approximated solid)
 - [x] item — (static presentation — matches source layout variants)
-- [x] field — (static presentation — matches source labeled-control layout)
+- [x] field — base-nova parity (all ten parts incl. FieldLabel/FieldContent/FieldTitle/FieldSeparator; vertical/horizontal orientations + responsive via measured container width (`container_query`, @md 448px); `.invalid()` destructive cascade; choice cards via `FieldLabel::choice_card(checked)` with dark-mode primary tints; `FieldError::errors()` dedup + bullet list; browser-measured legend/description spacing; RTL and aria semantics omitted)
 - [x] input-group — focus ring shadow on the shell
 - [x] input-otp — (slot presentation + click-to-focus; per-slot caret/paste keyboard TODO)
 - [x] button-group — (static presentation — layout wrapper; children own interaction)

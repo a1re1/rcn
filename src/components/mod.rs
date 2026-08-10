@@ -102,7 +102,10 @@ pub use dropdown_menu::{DropdownMenu, DropdownMenuItem};
 pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
-pub use field::{Field, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSet};
+pub use field::{
+    Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,
+    FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet, FieldTitle,
+};
 pub use hover_card::HoverCard;
 pub use icon::Icon;
 pub use input::Input;

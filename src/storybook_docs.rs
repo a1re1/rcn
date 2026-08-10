@@ -1009,6 +1009,65 @@ pub static FIELD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Field",
+        signature: "pub fn orientation(mut self, orientation: FieldOrientation) -> Self",
+        doc: "Vertical (default), Horizontal, or Responsive — Responsive turns \
+              horizontal once the measured container width crosses the breakpoint.",
+    },
+    ApiEntry {
+        type_name: "Field",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "data-invalid — paints inherited text (the label) destructive.",
+    },
+    ApiEntry {
+        type_name: "Field",
+        signature: "pub fn content(mut self, content: FieldContent) -> Self",
+        doc: "Adds a FieldContent child and start-aligns horizontal rows \
+              (the ported has-[>field-content]:items-start).",
+    },
+    ApiEntry {
+        type_name: "Field",
+        signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self",
+        doc: "Responsive switch width; defaults to 448px, shadcn's @md.",
+    },
+    ApiEntry {
+        type_name: "Field",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Keys the responsive width measurement; needed only for \
+              responsive siblings with differing widths.",
+    },
+    ApiEntry {
+        type_name: "FieldLabel",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "FieldLabel",
+        signature: "pub fn choice_card(mut self, checked: bool) -> Self",
+        doc: "Render as a selectable bordered card (the docs' choice card \
+              built by nesting a Field inside a FieldLabel).",
+    },
+    ApiEntry {
+        type_name: "FieldLabel",
+        signature: "pub fn font_normal(mut self) -> Self",
+        doc: "The docs' className=\"font-normal\" on checkbox/radio row labels.",
+    },
+    ApiEntry {
+        type_name: "FieldLabel",
+        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "FieldContent",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "FieldTitle",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
         type_name: "FieldDescription",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -1019,9 +1078,20 @@ pub static FIELD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "FieldError",
+        signature: "pub fn errors(mut self, errors: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
+        doc: "The TSX errors prop: duplicates drop, one message renders \
+              plain, several render as a bullet list.",
+    },
+    ApiEntry {
         type_name: "FieldGroup",
         signature: "pub fn new() -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "FieldGroup",
+        signature: "pub fn gap(mut self, gap: Pixels) -> Self",
+        doc: "Overrides the 20px stack gap (docs checkbox stacks use 12px).",
     },
     ApiEntry {
         type_name: "FieldSet",
@@ -1029,13 +1099,38 @@ pub static FIELD_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "FieldSet",
+        signature: "pub fn legend(mut self, legend: FieldLegend) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "FieldSet",
+        signature: "pub fn description(mut self, description: FieldDescription) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "FieldSet",
+        signature: "pub fn gap(mut self, gap: Pixels) -> Self",
+        doc: "Overrides the 16px gap (docs checkbox/radio fieldsets use 12px).",
+    },
+    ApiEntry {
         type_name: "FieldLegend",
         signature: "pub fn new() -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "FieldLegend",
+        signature: "pub fn variant(mut self, variant: FieldLegendVariant) -> Self",
+        doc: "Legend (text-base, default) or Label (text-sm) sizing.",
+    },
+    ApiEntry {
+        type_name: "FieldSeparator",
+        signature: "pub fn new() -> Self",
+        doc: "Children render centered over the rule (\"Or continue with\").",
+    },
 ];
 
-pub static FIELD_USAGE: &str = "div().w(px(320.)).child(\n    FieldSet::new()\n        .child(FieldLegend::new().child(\"Profile\"))\n        .child(\n            FieldGroup::new()\n                .child(\n                    Field::new()\n                        .child(Label::new().child(\"Email\"))\n                        .child(self.field_input.clone())\n                        .child(\n                            FieldDescription::new()\n                                .child(\"We'll use this to send you receipts.\"),\n                        ),\n                )\n                .child(\n                    Field::new()\n                        .child(Label::new().child(\"Username\"))\n                        .child(self.field_error_input.clone())\n                        .child(FieldError::new().child(\"This username is taken.\")),\n                ),\n        ),\n)\n    ";
+pub static FIELD_USAGE: &str = "div().w(px(384.)).child(\n    FieldSet::new()\n        .legend(FieldLegend::new().child(\"Profile\"))\n        .description(\n            FieldDescription::new().child(\"This appears on invoices and emails.\"),\n        )\n        .child(\n            FieldGroup::new()\n                .child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Full name\"))\n                        .child(self.field_name_input.clone())\n                        .child(\n                            FieldDescription::new()\n                                .child(\"This appears on invoices and emails.\"),\n                        ),\n                )\n                .child(\n                    Field::new()\n                        .invalid(true)\n                        .child(FieldLabel::new().child(\"Username\"))\n                        .child(self.field_username.clone())\n                        .child(FieldError::new().child(\"Choose another username.\")),\n                )\n                .child(\n                    // w-fit: a bare flex row shrinks the field to content.\n                    div().flex().flex_row().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(Switch::new(\"newsletter\").checked(true))\n                            .child(\n                                FieldLabel::new()\n                                    .child(\"Subscribe to the newsletter\"),\n                            ),\n                    ),\n                ),\n        ),\n)\n    ";
 
 pub static HOVER_CARD_API: &[ApiEntry] = &[
     ApiEntry {

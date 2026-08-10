@@ -35,8 +35,11 @@ use crate::components::{
     ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader,
     DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu,
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Field, FieldDescription, FieldError, FieldGroup, FieldLegend,
-    FieldSet, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
+    FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
+    FieldTitle, HoverCard, Icon, Input,
+    InputGroup,
+    InputGroupAddon, InputOtp, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
@@ -720,6 +723,44 @@ pub struct Storybook {
     // Field story state
     field_input: gpui::Entity<Input>,
     field_error_input: gpui::Entity<Input>,
+    // Field story — preview (Payment Method)
+    field_name_input: gpui::Entity<Input>,
+    field_card_number: gpui::Entity<Input>,
+    field_cvv: gpui::Entity<Input>,
+    field_comments: gpui::Entity<Input>,
+    field_month: Option<usize>,
+    field_month_open: bool,
+    field_year: Option<usize>,
+    field_year_open: bool,
+    field_same_shipping: bool,
+    // Field story — Input / Textarea / Select / Slider examples
+    field_username: gpui::Entity<Input>,
+    field_password: gpui::Entity<Input>,
+    field_feedback: gpui::Entity<Input>,
+    field_department: Option<usize>,
+    field_department_open: bool,
+    field_slider: f32,
+    // Field story — Fieldset example
+    field_street: gpui::Entity<Input>,
+    field_city: gpui::Entity<Input>,
+    field_zip: gpui::Entity<Input>,
+    // Field story — Checkbox example
+    field_hard_disks: bool,
+    field_external_disks: bool,
+    field_cds: bool,
+    field_connected_servers: bool,
+    field_sync_folders: bool,
+    // Field story — Radio / Switch / Choice Card
+    field_plan: usize,
+    field_switch_2fa: bool,
+    field_compute_env: usize,
+    // Field story — Field Group example
+    field_push_responses: bool,
+    field_push_tasks: bool,
+    field_email_tasks: bool,
+    // Field story — Responsive example
+    field_responsive_name: gpui::Entity<Input>,
+    field_responsive_width: f32,
     // Input group story state
     input_group_search: gpui::Entity<Input>,
     input_group_url: gpui::Entity<Input>,
@@ -821,6 +862,63 @@ impl Storybook {
         let field_error_input = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("evil_rabbit");
+            input
+        });
+        let field_name_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Evil Rabbit");
+            input
+        });
+        let field_card_number = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("1234 5678 9012 3456");
+            input
+        });
+        let field_cvv = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("123");
+            input
+        });
+        let field_comments = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Add any additional comments");
+            input.set_bare(true);
+            input
+        });
+        let field_username = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Max Leiter");
+            input
+        });
+        let field_password = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("••••••••");
+            input
+        });
+        let field_feedback = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Your feedback helps us improve...");
+            input.set_bare(true);
+            input
+        });
+        let field_street = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("123 Main St");
+            input
+        });
+        let field_city = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("New York");
+            input
+        });
+        let field_zip = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("90502");
+            input
+        });
+        let field_responsive_name = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Evil Rabbit");
             input
         });
         let input_group_search = cx.new(|cx| {
@@ -945,6 +1043,37 @@ impl Storybook {
             textarea_input,
             field_input,
             field_error_input,
+            field_name_input,
+            field_card_number,
+            field_cvv,
+            field_comments,
+            field_month: None,
+            field_month_open: false,
+            field_year: None,
+            field_year_open: false,
+            field_same_shipping: true,
+            field_username,
+            field_password,
+            field_feedback,
+            field_department: None,
+            field_department_open: false,
+            field_slider: 200.,
+            field_street,
+            field_city,
+            field_zip,
+            field_hard_disks: true,
+            field_external_disks: false,
+            field_cds: false,
+            field_connected_servers: false,
+            field_sync_folders: true,
+            field_plan: 0,
+            field_switch_2fa: false,
+            field_compute_env: 0,
+            field_push_responses: true,
+            field_push_tasks: false,
+            field_email_tasks: false,
+            field_responsive_name,
+            field_responsive_width: 360.,
             input_group_search,
             input_group_url,
             kbd_input,
@@ -2448,6 +2577,56 @@ impl Storybook {
                     .disabled(true)
                     .into_any_element(),
             )],
+            Story::FieldStory => vec![
+                (
+                    "Input",
+                    self.field_example_input(cx).into_any_element(),
+                ),
+                (
+                    "Textarea",
+                    self.field_example_textarea(cx).into_any_element(),
+                ),
+                (
+                    "Select",
+                    self.field_example_select(cx).into_any_element(),
+                ),
+                (
+                    "Slider",
+                    self.field_example_slider(cx).into_any_element(),
+                ),
+                (
+                    "Fieldset",
+                    self.field_example_fieldset(cx).into_any_element(),
+                ),
+                (
+                    "Checkbox",
+                    self.field_example_checkbox(cx).into_any_element(),
+                ),
+                (
+                    "Radio",
+                    self.field_example_radio(cx).into_any_element(),
+                ),
+                (
+                    "Switch",
+                    self.field_example_switch(cx).into_any_element(),
+                ),
+                (
+                    "Choice Card",
+                    self.field_example_choice_card(cx).into_any_element(),
+                ),
+                (
+                    "Field Group",
+                    self.field_example_field_group(cx).into_any_element(),
+                ),
+                (
+                    "Responsive",
+                    self.field_example_responsive(cx).into_any_element(),
+                ),
+                (
+                    "Validation",
+                    self.field_example_validation(cx).into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -4819,30 +4998,750 @@ impl Storybook {
             .w(px(288.))
             .child(Textarea::new(self.textarea_input.clone()).rows(4))
     }
-    fn field_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        div().w(px(320.)).child(
-            FieldSet::new()
-                .child(FieldLegend::new().child("Profile"))
+    fn field_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of field-demo.tsx — Payment Method checkout form.
+        div().w(px(448.)).child(
+            FieldGroup::new()
                 .child(
-                    FieldGroup::new()
-                        .child(
-                            Field::new()
-                                .child(Label::new().child("Email"))
-                                .child(self.field_input.clone())
-                                .child(
-                                    FieldDescription::new()
-                                        .child("We'll use this to send you receipts."),
-                                ),
+                    FieldSet::new()
+                        .legend(FieldLegend::new().child("Payment Method"))
+                        .description(
+                            FieldDescription::new()
+                                .child("All transactions are secure and encrypted"),
                         )
                         .child(
+                            FieldGroup::new()
+                                .child(
+                                    Field::new()
+                                        .child(
+                                            FieldLabel::new().child("Name on Card"),
+                                        )
+                                        .child(self.field_name_input.clone()),
+                                )
+                                .child(
+                                    Field::new()
+                                        .child(
+                                            FieldLabel::new().child("Card Number"),
+                                        )
+                                        .child(self.field_card_number.clone())
+                                        .child(
+                                            FieldDescription::new()
+                                                .child("Enter your 16-digit card number"),
+                                        ),
+                                )
+                                .child(
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .gap(px(16.))
+                                        .w_full()
+                                        .child(
+                                            div().flex_1().child(
+                                                Field::new()
+                                                    .child(
+                                                        FieldLabel::new().child("Month"),
+                                                    )
+                                                    .child(
+                                                        Select::new("field-month")
+                                                            .placeholder("MM")
+                                                            .options([
+                                                                "01", "02", "03", "04", "05",
+                                                                "06", "07", "08", "09", "10",
+                                                                "11", "12",
+                                                            ])
+                                                            .value(self.field_month)
+                                                            .open(self.field_month_open)
+                                                            .on_change(cx.listener(
+                                                                |this, value: &usize, _, cx| {
+                                                                    this.field_month = Some(*value);
+                                                                    cx.notify();
+                                                                },
+                                                            ))
+                                                            .on_open_change(cx.listener(
+                                                                |this, open: &bool, _, cx| {
+                                                                    this.field_month_open = *open;
+                                                                    cx.notify();
+                                                                },
+                                                            )),
+                                                    ),
+                                            ),
+                                        )
+                                        .child(
+                                            div().flex_1().child(
+                                                Field::new()
+                                                    .child(
+                                                        FieldLabel::new().child("Year"),
+                                                    )
+                                                    .child(
+                                                        Select::new("field-year")
+                                                            .placeholder("YYYY")
+                                                            .options([
+                                                                "2024", "2025", "2026", "2027",
+                                                                "2028", "2029",
+                                                            ])
+                                                            .value(self.field_year)
+                                                            .open(self.field_year_open)
+                                                            .on_change(cx.listener(
+                                                                |this, value: &usize, _, cx| {
+                                                                    this.field_year = Some(*value);
+                                                                    cx.notify();
+                                                                },
+                                                            ))
+                                                            .on_open_change(cx.listener(
+                                                                |this, open: &bool, _, cx| {
+                                                                    this.field_year_open = *open;
+                                                                    cx.notify();
+                                                                },
+                                                            )),
+                                                    ),
+                                            ),
+                                        )
+                                        .child(
+                                            div().flex_1().child(
+                                                Field::new()
+                                                    .child(FieldLabel::new().child("CVV"))
+                                                    .child(self.field_cvv.clone()),
+                                            ),
+                                        ),
+                                ),
+                        ),
+                )
+                .child(FieldSeparator::new())
+                .child(
+                    FieldSet::new()
+                        .legend(FieldLegend::new().child("Billing Address"))
+                        .description(FieldDescription::new().child(
+                            "The billing address associated with your payment method",
+                        ))
+                        .child(
+                            FieldGroup::new().child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(
+                                        Checkbox::new("field-same-shipping")
+                                            .checked(self.field_same_shipping)
+                                            .on_change(cx.listener(
+                                                |this, checked: &bool, _, cx| {
+                                                    this.field_same_shipping = *checked;
+                                                    cx.notify();
+                                                },
+                                            )),
+                                    )
+                                    .child(
+                                        FieldLabel::new()
+                                            .font_normal()
+                                            .child("Same as shipping address"),
+                                    ),
+                            ),
+                        ),
+                )
+                .child(
+                    FieldSet::new().child(
+                        FieldGroup::new().child(
                             Field::new()
-                                .child(Label::new().child("Username"))
-                                .child(self.field_error_input.clone())
-                                .child(FieldError::new().child("This username is taken.")),
+                                .child(FieldLabel::new().child("Comments"))
+                                .child(
+                                    Textarea::new(self.field_comments.clone()).rows(3),
+                                ),
+                        ),
+                    ),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(
+                            Button::new("field-submit")
+                                .variant(ButtonVariant::Default)
+                                .child("Submit"),
+                        )
+                        .child(
+                            Button::new("field-cancel")
+                                .variant(ButtonVariant::Outline)
+                                .child("Cancel"),
                         ),
                 ),
         )
     }
+
+    /// Port of field-input.tsx — Username + Password fields.
+    fn field_example_input(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldSet::new().child(
+                FieldGroup::new()
+                    .child(
+                        Field::new()
+                            .child(FieldLabel::new().child("Username"))
+                            .child(self.field_username.clone())
+                            .child(
+                                FieldDescription::new()
+                                    .child("Choose a unique username for your account."),
+                            ),
+                    )
+                    .child(
+                        Field::new()
+                            .child(FieldLabel::new().child("Password"))
+                            .child(
+                                FieldDescription::new()
+                                    .child("Must be at least 8 characters long."),
+                            )
+                            .child(self.field_password.clone()),
+                    ),
+            ),
+        )
+    }
+
+    /// Port of field-textarea.tsx — Feedback textarea.
+    fn field_example_textarea(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldSet::new().child(
+                FieldGroup::new().child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Feedback"))
+                        .child(Textarea::new(self.field_feedback.clone()).rows(4))
+                        .child(
+                            FieldDescription::new()
+                                .child("Share your thoughts about our service."),
+                        ),
+                ),
+            ),
+        )
+    }
+
+    /// Port of field-select.tsx — Department select.
+    fn field_example_select(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldLabel::new().child("Department"))
+                .child(
+                    Select::new("field-department")
+                        .placeholder("Choose department")
+                        .options([
+                            "Engineering",
+                            "Design",
+                            "Marketing",
+                            "Sales",
+                            "Customer Support",
+                            "Human Resources",
+                            "Finance",
+                            "Operations",
+                        ])
+                        .value(self.field_department)
+                        .open(self.field_department_open)
+                        .on_change(cx.listener(|this, value: &usize, _, cx| {
+                            this.field_department = Some(*value);
+                            cx.notify();
+                        }))
+                        .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                            this.field_department_open = *open;
+                            cx.notify();
+                        })),
+                )
+                .child(
+                    FieldDescription::new()
+                        .child("Select your department or area of work."),
+                ),
+        )
+    }
+
+    /// Port of field-slider.tsx — Price Range (single-thumb adapted).
+    fn field_example_slider(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldTitle::new().child("Price Range"))
+                .child(
+                    FieldDescription::new().child(format!(
+                        "Set your budget range (${:.0}).",
+                        self.field_slider
+                    )),
+                )
+                .child(
+                    Slider::new("field-slider")
+                        .min(0.)
+                        .max(1000.)
+                        .step(10.)
+                        .value(self.field_slider)
+                        .on_change(cx.listener(|this, value: &f32, _, cx| {
+                            this.field_slider = *value;
+                            cx.notify();
+                        })),
+                ),
+        )
+    }
+
+    /// Port of field-fieldset.tsx — Address Information.
+    fn field_example_fieldset(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(384.)).child(
+            FieldSet::new()
+                .legend(FieldLegend::new().child("Address Information"))
+                .description(
+                    FieldDescription::new()
+                        .child("We need your address to deliver your order."),
+                )
+                .child(
+                    FieldGroup::new()
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Street Address"))
+                                .child(self.field_street.clone()),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_row()
+                                .gap(px(16.))
+                                .child(
+                                    div().flex_1().child(
+                                        Field::new()
+                                            .child(FieldLabel::new().child("City"))
+                                            .child(self.field_city.clone()),
+                                    ),
+                                )
+                                .child(
+                                    div().flex_1().child(
+                                        Field::new()
+                                            .child(FieldLabel::new().child("Postal Code"))
+                                            .child(self.field_zip.clone()),
+                                    ),
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    /// Port of field-checkbox.tsx — desktop item checkboxes + sync toggle.
+    fn field_example_checkbox(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldGroup::new()
+                .child(
+                    FieldSet::new()
+                        .legend(
+                            FieldLegend::new()
+                                .variant(FieldLegendVariant::Label)
+                                .child("Show these items on the desktop"),
+                        )
+                        .description(
+                            FieldDescription::new()
+                                .child("Select the items you want to show on the desktop."),
+                        )
+                        .child(
+                            FieldGroup::new().gap(px(12.))
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(
+                                            Checkbox::new("field-hard-disks")
+                                                .checked(self.field_hard_disks)
+                                                .on_change(cx.listener(
+                                                    |this, checked: &bool, _, cx| {
+                                                        this.field_hard_disks = *checked;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            FieldLabel::new()
+                                                .font_normal()
+                                                .child("Hard disks"),
+                                        ),
+                                )
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(
+                                            Checkbox::new("field-external-disks")
+                                                .checked(self.field_external_disks)
+                                                .on_change(cx.listener(
+                                                    |this, checked: &bool, _, cx| {
+                                                        this.field_external_disks = *checked;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            FieldLabel::new()
+                                                .font_normal()
+                                                .child("External disks"),
+                                        ),
+                                )
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(
+                                            Checkbox::new("field-cds")
+                                                .checked(self.field_cds)
+                                                .on_change(cx.listener(
+                                                    |this, checked: &bool, _, cx| {
+                                                        this.field_cds = *checked;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            FieldLabel::new()
+                                                .font_normal()
+                                                .child("CDs, DVDs, and iPods"),
+                                        ),
+                                )
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(
+                                            Checkbox::new("field-connected-servers")
+                                                .checked(self.field_connected_servers)
+                                                .on_change(cx.listener(
+                                                    |this, checked: &bool, _, cx| {
+                                                        this.field_connected_servers = *checked;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            FieldLabel::new()
+                                                .font_normal()
+                                                .child("Connected servers"),
+                                        ),
+                                ),
+                        ),
+                )
+                .child(FieldSeparator::new())
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(
+                            Checkbox::new("field-sync-folders")
+                                .checked(self.field_sync_folders)
+                                .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                                    this.field_sync_folders = *checked;
+                                    cx.notify();
+                                })),
+                        )
+                        .content(
+                            FieldContent::new()
+                                .child(
+                                    FieldLabel::new()
+                                        .child("Sync Desktop & Documents folders"),
+                                )
+                                .child(
+                                    FieldDescription::new().child(
+                                        "Your Desktop & Documents folders are being synced with iCloud Drive. You can access them from other devices.",
+                                    ),
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    /// Port of field-radio.tsx — Subscription Plan radio group.
+    fn field_example_radio(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let plans = [
+            ("plan-monthly", "Monthly ($9.99/month)"),
+            ("plan-yearly", "Yearly ($99.99/year)"),
+            ("plan-lifetime", "Lifetime ($299.99)"),
+        ];
+        div().w(px(320.)).child(
+            FieldSet::new()
+                .legend(
+                    FieldLegend::new()
+                        .variant(FieldLegendVariant::Label)
+                        .child("Subscription Plan"),
+                )
+                .description(
+                    FieldDescription::new()
+                        .child("Yearly and lifetime plans offer significant savings."),
+                )
+                .gap(px(12.))
+                .child(
+                    RadioGroup::new().children(plans.into_iter().enumerate().map(
+                        |(index, (id, label))| {
+                            Field::new()
+                                .orientation(FieldOrientation::Horizontal)
+                                .child(
+                                    RadioGroupItem::new(id)
+                                        .checked(self.field_plan == index)
+                                        .on_select(cx.listener(move |this, _, _, cx| {
+                                            this.field_plan = index;
+                                            cx.notify();
+                                        })),
+                                )
+                                .child(FieldLabel::new().font_normal().child(label))
+                        },
+                    )),
+                ),
+        )
+    }
+
+    /// Port of field-switch.tsx — MFA switch (w-fit via flex-row wrap).
+    fn field_example_switch(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().flex().flex_row().child(
+            Field::new()
+                .orientation(FieldOrientation::Horizontal)
+                .child(FieldLabel::new().child("Multi-factor authentication"))
+                .child(
+                    Switch::new("field-2fa")
+                        .checked(self.field_switch_2fa)
+                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.field_switch_2fa = *checked;
+                            cx.notify();
+                        })),
+                ),
+        )
+    }
+
+    /// Port of field-choice-card.tsx — Compute Environment choice cards.
+    fn field_example_choice_card(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let envs = [
+            (
+                "kubernetes-r2h",
+                "Kubernetes",
+                "Run GPU workloads on a K8s cluster.",
+            ),
+            (
+                "vm-z4k",
+                "Virtual Machine",
+                "Access a cluster to run GPU workloads.",
+            ),
+        ];
+        div().w(px(320.)).child(
+            FieldGroup::new().child(
+                FieldSet::new()
+                    .legend(
+                        FieldLegend::new()
+                            .variant(FieldLegendVariant::Label)
+                            .child("Compute Environment"),
+                    )
+                    .description(
+                        FieldDescription::new()
+                            .child("Select the compute environment for your cluster."),
+                    )
+                    .gap(px(12.))
+                    .child(
+                        RadioGroup::new().children(envs.into_iter().enumerate().map(
+                            |(index, (id, title, description))| {
+                                FieldLabel::new()
+                                    .choice_card(self.field_compute_env == index)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(FieldTitle::new().child(title))
+                                                    .child(
+                                                        FieldDescription::new().child(description),
+                                                    ),
+                                            )
+                                            .child(
+                                                RadioGroupItem::new(id)
+                                                    .checked(self.field_compute_env == index)
+                                                    .on_select(cx.listener(
+                                                        move |this, _, _, cx| {
+                                                            this.field_compute_env = index;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    )
+                            },
+                        )),
+                    ),
+            ),
+        )
+    }
+
+    /// Port of field-group.tsx — Responses + Tasks notification groups.
+    fn field_example_field_group(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldGroup::new()
+                .child(
+                    FieldSet::new()
+                        // has-[>[data-slot=checkbox-group]]:gap-3
+                        .gap(px(12.))
+                        .child(FieldLabel::new().child("Responses"))
+                        .child(
+                            FieldDescription::new().child(
+                                "Get notified when ChatGPT responds to requests that take time, like research or image generation.",
+                            ),
+                        )
+                        .child(
+                            FieldGroup::new().gap(px(12.)).child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(
+                                        Checkbox::new("field-push-responses")
+                                            .checked(self.field_push_responses)
+                                            .disabled(true),
+                                    )
+                                    .child(
+                                        FieldLabel::new()
+                                            .font_normal()
+                                            .child("Push notifications"),
+                                    ),
+                            ),
+                        ),
+                )
+                .child(FieldSeparator::new())
+                .child(
+                    FieldSet::new()
+                        .gap(px(12.))
+                        .child(FieldLabel::new().child("Tasks"))
+                        .child(
+                            FieldDescription::new().child(
+                                "Get notified when tasks you've created have updates.",
+                            ),
+                        )
+                        .child(
+                            FieldGroup::new()
+                                .gap(px(12.))
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(
+                                            Checkbox::new("field-push-tasks")
+                                                .checked(self.field_push_tasks)
+                                                .on_change(cx.listener(
+                                                    |this, checked: &bool, _, cx| {
+                                                        this.field_push_tasks = *checked;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            FieldLabel::new()
+                                                .font_normal()
+                                                .child("Push notifications"),
+                                        ),
+                                )
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(
+                                            Checkbox::new("field-email-tasks")
+                                                .checked(self.field_email_tasks)
+                                                .on_change(cx.listener(
+                                                    |this, checked: &bool, _, cx| {
+                                                        this.field_email_tasks = *checked;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        )
+                                        .child(
+                                            FieldLabel::new()
+                                                .font_normal()
+                                                .child("Email notifications"),
+                                        ),
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    /// Port of field-responsive.tsx — Profile form with width toggle (360/560)
+    /// so Responsive orientation actually switches.
+    fn field_example_responsive(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let width = self.field_responsive_width;
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                div().flex().justify_center().child(
+                    ToggleGroup::new()
+                        .variant(ToggleVariant::Outline)
+                        .size(ToggleSize::Sm)
+                        .item(
+                            ToggleGroupItem::new("field-resp-360")
+                                .pressed(width == 360.)
+                                .on_change(cx.listener(|this, pressed: &bool, _, cx| {
+                                    if *pressed {
+                                        this.field_responsive_width = 360.;
+                                        cx.notify();
+                                    }
+                                }))
+                                .child("360px"),
+                        )
+                        .item(
+                            ToggleGroupItem::new("field-resp-560")
+                                .pressed(width == 560.)
+                                .on_change(cx.listener(|this, pressed: &bool, _, cx| {
+                                    if *pressed {
+                                        this.field_responsive_width = 560.;
+                                        cx.notify();
+                                    }
+                                }))
+                                .child("560px"),
+                        ),
+                ),
+            )
+            .child(
+                div().w(px(width)).child(
+                    FieldSet::new()
+                        .legend(FieldLegend::new().child("Profile"))
+                        .description(
+                            FieldDescription::new().child("Fill in your profile information."),
+                        )
+                        .child(
+                            FieldGroup::new()
+                                .child(
+                                    Field::new()
+                                        .id("field-responsive-name")
+                                        .orientation(FieldOrientation::Responsive)
+                                        .content(
+                                            FieldContent::new()
+                                                .child(
+                                                    FieldLabel::new().child("Name"),
+                                                )
+                                                .child(
+                                                    FieldDescription::new().child(
+                                                        "Provide your full name for identification",
+                                                    ),
+                                                ),
+                                        )
+                                        .child(self.field_responsive_name.clone()),
+                                )
+                                .child(
+                                    Field::new()
+                                        .id("field-responsive-actions")
+                                        .orientation(FieldOrientation::Responsive)
+                                        .child(
+                                            Button::new("field-resp-submit")
+                                                .variant(ButtonVariant::Default)
+                                                .child("Submit"),
+                                        )
+                                        .child(
+                                            Button::new("field-resp-cancel")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Cancel"),
+                                        ),
+                                ),
+                        ),
+                ),
+            )
+    }
+
+    /// Port of the docs "Validation and Errors" section — `data-invalid`
+    /// fields with a single FieldError and an errors-array bullet list.
+    fn field_example_validation(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldGroup::new()
+                .child(
+                    Field::new()
+                        .invalid(true)
+                        .child(FieldLabel::new().child("Email"))
+                        .child(self.field_input.clone())
+                        .child(FieldError::new().child("Enter a valid email address.")),
+                )
+                .child(
+                    Field::new()
+                        .invalid(true)
+                        .child(FieldLabel::new().child("Username"))
+                        .child(self.field_error_input.clone())
+                        .child(FieldError::new().errors([
+                            "Username must be at least 3 characters.",
+                            "This username is already taken.",
+                        ])),
+                ),
+        )
+    }
+
     fn input_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         div()
