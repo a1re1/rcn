@@ -1010,9 +1010,18 @@ pub static FIELD_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Field",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Distinguishes this field's measured width state from siblings'. Only responsive fields with different widths under one parent need it.",
+    },
+    ApiEntry {
+        type_name: "Field",
         signature: "pub fn orientation(mut self, orientation: FieldOrientation) -> Self",
-        doc: "Vertical (default), Horizontal, or Responsive — Responsive turns \
-              horizontal once the measured container width crosses the breakpoint.",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Field",
+        signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self",
+        doc: "",
     },
     ApiEntry {
         type_name: "Field",
@@ -1022,19 +1031,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Field",
         signature: "pub fn content(mut self, content: FieldContent) -> Self",
-        doc: "Adds a FieldContent child and start-aligns horizontal rows \
-              (the ported has-[>field-content]:items-start).",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self",
-        doc: "Responsive switch width; defaults to 448px, shadcn's @md.",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
-        doc: "Keys the responsive width measurement; needed only for \
-              responsive siblings with differing widths.",
+        doc: "Add a [`FieldContent`] child. In horizontal/responsive-horizontal layouts this also start-aligns the row, the ported `has-[>[data-slot=field-content]]:items-start`.",
     },
     ApiEntry {
         type_name: "FieldLabel",
@@ -1044,13 +1041,12 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldLabel",
         signature: "pub fn choice_card(mut self, checked: bool) -> Self",
-        doc: "Render as a selectable bordered card (the docs' choice card \
-              built by nesting a Field inside a FieldLabel).",
+        doc: "has-[>[data-slot=field]] — render as a selectable choice card: bordered, rounded-lg, padded, tinted primary while checked.",
     },
     ApiEntry {
         type_name: "FieldLabel",
         signature: "pub fn font_normal(mut self) -> Self",
-        doc: "The docs' className=\"font-normal\" on checkbox/radio row labels.",
+        doc: "The docs' `className=\"font-normal\"` on checkbox/radio row labels.",
     },
     ApiEntry {
         type_name: "FieldLabel",
@@ -1080,8 +1076,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldError",
         signature: "pub fn errors(mut self, errors: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
-        doc: "The TSX errors prop: duplicates drop, one message renders \
-              plain, several render as a bullet list.",
+        doc: "The TSX `errors={...}` prop: explicit children win over it, one unique message renders plain, several render as a bullet list.",
     },
     ApiEntry {
         type_name: "FieldGroup",
@@ -1091,7 +1086,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldGroup",
         signature: "pub fn gap(mut self, gap: Pixels) -> Self",
-        doc: "Overrides the 20px stack gap (docs checkbox stacks use 12px).",
+        doc: "Overrides the 20px stack gap (the docs use 12px — `data-[slot=checkbox-group]:gap-3` — for checkbox stacks).",
     },
     ApiEntry {
         type_name: "FieldSet",
@@ -1106,12 +1101,12 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldSet",
         signature: "pub fn description(mut self, description: FieldDescription) -> Self",
-        doc: "",
+        doc: "The description line under the legend.",
     },
     ApiEntry {
         type_name: "FieldSet",
         signature: "pub fn gap(mut self, gap: Pixels) -> Self",
-        doc: "Overrides the 16px gap (docs checkbox/radio fieldsets use 12px).",
+        doc: "Overrides the 16px gap (the docs' checkbox/radio fieldsets tighten to 12px — `has-[>[data-slot=radio-group]]:gap-3`).",
     },
     ApiEntry {
         type_name: "FieldLegend",
@@ -1121,16 +1116,16 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldLegend",
         signature: "pub fn variant(mut self, variant: FieldLegendVariant) -> Self",
-        doc: "Legend (text-base, default) or Label (text-sm) sizing.",
+        doc: "",
     },
     ApiEntry {
         type_name: "FieldSeparator",
         signature: "pub fn new() -> Self",
-        doc: "Children render centered over the rule (\"Or continue with\").",
+        doc: "",
     },
 ];
 
-pub static FIELD_USAGE: &str = "div().w(px(384.)).child(\n    FieldSet::new()\n        .legend(FieldLegend::new().child(\"Profile\"))\n        .description(\n            FieldDescription::new().child(\"This appears on invoices and emails.\"),\n        )\n        .child(\n            FieldGroup::new()\n                .child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Full name\"))\n                        .child(self.field_name_input.clone())\n                        .child(\n                            FieldDescription::new()\n                                .child(\"This appears on invoices and emails.\"),\n                        ),\n                )\n                .child(\n                    Field::new()\n                        .invalid(true)\n                        .child(FieldLabel::new().child(\"Username\"))\n                        .child(self.field_username.clone())\n                        .child(FieldError::new().child(\"Choose another username.\")),\n                )\n                .child(\n                    // w-fit: a bare flex row shrinks the field to content.\n                    div().flex().flex_row().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(Switch::new(\"newsletter\").checked(true))\n                            .child(\n                                FieldLabel::new()\n                                    .child(\"Subscribe to the newsletter\"),\n                            ),\n                    ),\n                ),\n        ),\n)\n    ";
+pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Name on Card\"))\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Card Number\"))\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Month\"))\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\", \"06\",\n                                                        \"07\", \"08\", \"09\", \"10\", \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Year\"))\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"The billing address associated with your payment method\"),\n                )\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(Textarea::new(self.field_comments.clone()).rows(3)),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
 
 pub static HOVER_CARD_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1765,12 +1760,12 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn default_size(mut self, size: f32) -> Self",
-        doc: "",
+        doc: "Initial fraction of the group (e.g. `0.25`). Panels without a default split the remainder equally.",
     },
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn min_size(mut self, size: f32) -> Self",
-        doc: "",
+        doc: "Minimum fraction while expanded (default `0.10`).",
     },
     ApiEntry {
         type_name: "ResizablePanel",
@@ -1780,17 +1775,17 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn collapsible(mut self, collapsible: bool) -> Self",
-        doc: "",
+        doc: "When true, dragging past the halfway threshold snaps to [`collapsed_size`](Self::collapsed_size).",
     },
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn collapsed_size(mut self, size: f32) -> Self",
-        doc: "",
+        doc: "Size while collapsed (default `0.0`).",
     },
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
-        doc: "",
+        doc: "Append panel content. May be called multiple times.",
     },
     ApiEntry {
         type_name: "ResizableHandle",
@@ -1800,11 +1795,11 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "ResizableHandle",
         signature: "pub fn with_handle(mut self, with_handle: bool) -> Self",
-        doc: "",
+        doc: "Show the centered grip pill (shadcn `withHandle`).",
     },
 ];
 
-pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label: &'static str| {\n    div()\n        .flex()\n        .size_full()\n        .items_center()\n        .justify_center()\n        .p(px(24.))\n        .text_size(px(14.))\n        .font_weight(FontWeight::SEMIBOLD)\n        .text_color(theme.foreground)\n        .child(label)\n};\n// Compose in shadcn order: Panel, Handle, Panel, \u{2026} Layout state is\n// managed internally \u{2014} drag just works, no wiring needed.\ndiv()\n    .w(px(384.))\n    .h(px(200.))\n    .rounded(theme.radius_lg())\n    .border_1()\n    .border_color(theme.border)\n    .overflow_hidden()\n    .child(\n        ResizablePanelGroup::new(\"resizable\")\n            .panel(ResizablePanel::new().child(panel(\"One\")))\n            .handle(ResizableHandle::new())\n            .panel(ResizablePanel::new().child(panel(\"Two\"))),\n    )\n    ";
+pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label| Self::resizable_label(&theme, label);\nSelf::resizable_frame(\n    &theme,\n    ResizablePanelGroup::new(\"resizable-demo\")\n        .panel(ResizablePanel::new().default_size(0.5).child(panel(\"One\")))\n        .handle(ResizableHandle::new().with_handle(true))\n        .panel(\n            ResizablePanel::new().default_size(0.5).child(\n                ResizablePanelGroup::new(\"resizable-demo-nested\")\n                    .direction(ResizableDirection::Vertical)\n                    .panel(ResizablePanel::new().default_size(0.25).child(panel(\"Two\")))\n                    .handle(ResizableHandle::new().with_handle(true))\n                    .panel(\n                        ResizablePanel::new()\n                            .default_size(0.75)\n                            .child(panel(\"Three\")),\n                    ),\n            ),\n        )\n        .into_any_element(),\n)\n    ";
 
 pub static SCROLL_AREA_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2260,12 +2255,21 @@ pub static TEXTAREA_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Textarea",
         signature: "pub fn rows(mut self, rows: u32) -> Self",
-        doc: "Minimum visible rows (drives the shell's min-height).",
+        doc: "Minimum visible rows (drives the shell's min-height).  When unset, the shell uses shadcn's `min-h-16` (64px). When set, min height is `20 * rows + 16` px.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
+        doc: "Disabled shell styling (opacity 0.5 + muted input background).  shadcn's `cursor-not-allowed` is omitted (no gpui equivalent worth faking). The caller is responsible for also calling [`Input::set_disabled`]`(true)` on the wrapped entity so the field is unfocusable/uneditable.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "Invalid shell styling (destructive border + always-on destructive ring).  Wins over the focused ring/border: when invalid, the destructive chrome is shown whether focused or not.",
     },
 ];
 
-pub static TEXTAREA_USAGE: &str =
-    "div()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()).rows(4))\n    ";
+pub static TEXTAREA_USAGE: &str = "// Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.\ndiv()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()))\n    ";
 
 pub static TOAST_API: &[ApiEntry] = &[
     ApiEntry {

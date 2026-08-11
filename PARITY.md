@@ -47,7 +47,7 @@ solid before the molecules that compose them.
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
 - [x] input — full focus ring shadow (was border-only)
-- [x] textarea — focus ring shadow
+- [x] textarea — base-nova parity (rounded-lg px-2.5 no-shadow shell; disabled + invalid states with destructive ring; min-h-16 default; all docs examples; RTL, field-sizing-content auto-grow, and multi-line editing omitted/TODO)
 
 ### Tier 2 — molecules on the atoms
 

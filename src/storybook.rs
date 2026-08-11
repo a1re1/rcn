@@ -37,9 +37,7 @@ use crate::components::{
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input,
-    InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions,
+    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
@@ -720,6 +718,10 @@ pub struct Storybook {
     input_disabled: gpui::Entity<Input>,
     // Textarea story state
     textarea_input: gpui::Entity<Input>,
+    textarea_field_input: gpui::Entity<Input>,
+    textarea_disabled_input: gpui::Entity<Input>,
+    textarea_invalid_input: gpui::Entity<Input>,
+    textarea_button_input: gpui::Entity<Input>,
     // Field story state
     field_input: gpui::Entity<Input>,
     field_error_input: gpui::Entity<Input>,
@@ -847,6 +849,31 @@ impl Storybook {
             input
         });
         let textarea_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_field_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_disabled_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input.set_disabled(true);
+            input
+        });
+        let textarea_invalid_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_button_input = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Type your message here.");
             input.set_bare(true);
@@ -1039,6 +1066,10 @@ impl Storybook {
             input_demo,
             input_disabled,
             textarea_input,
+            textarea_field_input,
+            textarea_disabled_input,
+            textarea_invalid_input,
+            textarea_button_input,
             field_input,
             field_error_input,
             field_name_input,
@@ -2710,6 +2741,70 @@ impl Storybook {
                     ),
                 ),
             ],
+            // RTL docs example intentionally omitted (repo-wide out of scope).
+            Story::TextareaStory => vec![
+                (
+                    "Field",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Enter your message below."),
+                                )
+                                .child(Textarea::new(self.textarea_field_input.clone())),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().disabled(true).child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_disabled_input.clone())
+                                        .disabled(true),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .invalid(true)
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_invalid_input.clone())
+                                        .invalid(true),
+                                )
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Please enter a valid message."),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Button",
+                    div()
+                        .w(px(288.))
+                        .flex()
+                        .flex_col()
+                        .gap(px(8.))
+                        .child(Textarea::new(self.textarea_button_input.clone()))
+                        // Direct flex-col child so the button stretches full
+                        // width, like the docs' `grid w-full gap-2`.
+                        .child(Button::new("textarea-send").child("Send message"))
+                        .into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -2746,6 +2841,22 @@ impl Storybook {
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
             ),
+            (Story::TextareaStory, "Field") => Some(
+                "Use Field, FieldLabel, and FieldDescription to create a textarea with a \
+                 label and description.",
+            ),
+            (Story::TextareaStory, "Disabled") => Some(
+                "Use .disabled(true) to disable the textarea shell (plus Input::set_disabled \
+                 on the wrapped entity). FieldLabel::disabled(true) mirrors the Field \
+                 data-disabled styling.",
+            ),
+            (Story::TextareaStory, "Invalid") => Some(
+                "Use .invalid(true) to mark the textarea as invalid. Field::invalid(true) \
+                 paints the label destructive.",
+            ),
+            (Story::TextareaStory, "Button") => {
+                Some("Pair with Button to create a textarea with a submit button.")
+            }
             _ => None,
         }
     }
@@ -5114,9 +5225,10 @@ impl Storybook {
             )
     }
     fn textarea_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.
         div()
             .w(px(288.))
-            .child(Textarea::new(self.textarea_input.clone()).rows(4))
+            .child(Textarea::new(self.textarea_input.clone()))
     }
     fn field_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         // Port of field-demo.tsx — Payment Method checkout form.
@@ -5133,16 +5245,12 @@ impl Storybook {
                             FieldGroup::new()
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Name on Card"),
-                                        )
+                                        .child(FieldLabel::new().child("Name on Card"))
                                         .child(self.field_name_input.clone()),
                                 )
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Card Number"),
-                                        )
+                                        .child(FieldLabel::new().child("Card Number"))
                                         .child(self.field_card_number.clone())
                                         .child(
                                             FieldDescription::new()
@@ -5158,16 +5266,13 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Month"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Month"))
                                                     .child(
                                                         Select::new("field-month")
                                                             .placeholder("MM")
                                                             .options([
-                                                                "01", "02", "03", "04", "05",
-                                                                "06", "07", "08", "09", "10",
-                                                                "11", "12",
+                                                                "01", "02", "03", "04", "05", "06",
+                                                                "07", "08", "09", "10", "11", "12",
                                                             ])
                                                             .value(self.field_month)
                                                             .open(self.field_month_open)
@@ -5189,9 +5294,7 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Year"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Year"))
                                                     .child(
                                                         Select::new("field-year")
                                                             .placeholder("YYYY")
@@ -5230,9 +5333,10 @@ impl Storybook {
                 .child(
                     FieldSet::new()
                         .legend(FieldLegend::new().child("Billing Address"))
-                        .description(FieldDescription::new().child(
-                            "The billing address associated with your payment method",
-                        ))
+                        .description(
+                            FieldDescription::new()
+                                .child("The billing address associated with your payment method"),
+                        )
                         .child(
                             FieldGroup::new().child(
                                 Field::new()
@@ -5260,9 +5364,7 @@ impl Storybook {
                         FieldGroup::new().child(
                             Field::new()
                                 .child(FieldLabel::new().child("Comments"))
-                                .child(
-                                    Textarea::new(self.field_comments.clone()).rows(3),
-                                ),
+                                .child(Textarea::new(self.field_comments.clone()).rows(3)),
                         ),
                     ),
                 )
@@ -5319,8 +5421,7 @@ impl Storybook {
                         .child(FieldLabel::new().child("Feedback"))
                         .child(Textarea::new(self.field_feedback.clone()).rows(4))
                         .child(
-                            FieldDescription::new()
-                                .child("Share your thoughts about our service."),
+                            FieldDescription::new().child("Share your thoughts about our service."),
                         ),
                 ),
             ),
@@ -5356,10 +5457,7 @@ impl Storybook {
                             cx.notify();
                         })),
                 )
-                .child(
-                    FieldDescription::new()
-                        .child("Select your department or area of work."),
-                ),
+                .child(FieldDescription::new().child("Select your department or area of work.")),
         )
     }
 
@@ -5368,12 +5466,10 @@ impl Storybook {
         div().w(px(320.)).child(
             Field::new()
                 .child(FieldTitle::new().child("Price Range"))
-                .child(
-                    FieldDescription::new().child(format!(
-                        "Set your budget range (${:.0}).",
-                        self.field_slider
-                    )),
-                )
+                .child(FieldDescription::new().child(format!(
+                    "Set your budget range (${:.0}).",
+                    self.field_slider
+                )))
                 .child(
                     Slider::new("field-slider")
                         .min(0.)
@@ -5394,8 +5490,7 @@ impl Storybook {
             FieldSet::new()
                 .legend(FieldLegend::new().child("Address Information"))
                 .description(
-                    FieldDescription::new()
-                        .child("We need your address to deliver your order."),
+                    FieldDescription::new().child("We need your address to deliver your order."),
                 )
                 .child(
                     FieldGroup::new()
@@ -5634,35 +5729,29 @@ impl Storybook {
                             .child("Select the compute environment for your cluster."),
                     )
                     .gap(px(12.))
-                    .child(
-                        RadioGroup::new().children(envs.into_iter().enumerate().map(
-                            |(index, (id, title, description))| {
-                                FieldLabel::new()
-                                    .choice_card(self.field_compute_env == index)
-                                    .child(
-                                        Field::new()
-                                            .orientation(FieldOrientation::Horizontal)
-                                            .content(
-                                                FieldContent::new()
-                                                    .child(FieldTitle::new().child(title))
-                                                    .child(
-                                                        FieldDescription::new().child(description),
-                                                    ),
-                                            )
-                                            .child(
-                                                RadioGroupItem::new(id)
-                                                    .checked(self.field_compute_env == index)
-                                                    .on_select(cx.listener(
-                                                        move |this, _, _, cx| {
-                                                            this.field_compute_env = index;
-                                                            cx.notify();
-                                                        },
-                                                    )),
-                                            ),
-                                    )
-                            },
-                        )),
-                    ),
+                    .child(RadioGroup::new().children(envs.into_iter().enumerate().map(
+                        |(index, (id, title, description))| {
+                            FieldLabel::new()
+                                .choice_card(self.field_compute_env == index)
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .content(
+                                            FieldContent::new()
+                                                .child(FieldTitle::new().child(title))
+                                                .child(FieldDescription::new().child(description)),
+                                        )
+                                        .child(
+                                            RadioGroupItem::new(id)
+                                                .checked(self.field_compute_env == index)
+                                                .on_select(cx.listener(move |this, _, _, cx| {
+                                                    this.field_compute_env = index;
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                )
+                        },
+                    ))),
             ),
         )
     }
@@ -5806,14 +5895,10 @@ impl Storybook {
                                         .orientation(FieldOrientation::Responsive)
                                         .content(
                                             FieldContent::new()
-                                                .child(
-                                                    FieldLabel::new().child("Name"),
-                                                )
-                                                .child(
-                                                    FieldDescription::new().child(
-                                                        "Provide your full name for identification",
-                                                    ),
-                                                ),
+                                                .child(FieldLabel::new().child("Name"))
+                                                .child(FieldDescription::new().child(
+                                                    "Provide your full name for identification",
+                                                )),
                                         )
                                         .child(self.field_responsive_name.clone()),
                                 )
