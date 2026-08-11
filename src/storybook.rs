@@ -2710,6 +2710,105 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::Skeleton => vec![
+                (
+                    "Avatar",
+                    div()
+                        .flex()
+                        .w_auto()
+                        .items_center()
+                        .gap(px(16.))
+                        .child(
+                            Skeleton::new()
+                                .w(px(40.))
+                                .h(px(40.))
+                                .flex_shrink_0()
+                                .rounded_full(),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(8.))
+                                .child(Skeleton::new().h(px(16.)).w(px(150.)))
+                                .child(Skeleton::new().h(px(16.)).w(px(100.))),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Card",
+                    div()
+                        .w(px(320.))
+                        .child(
+                            Card::new()
+                                .child(
+                                    CardHeader::new()
+                                        .child(Skeleton::new().h(px(16.)).w(relative(2. / 3.)))
+                                        .child(Skeleton::new().h(px(16.)).w(relative(0.5))),
+                                )
+                                .child(
+                                    CardContent::new()
+                                        .child(Skeleton::new().w_full().aspect_ratio(16. / 9.)),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Text",
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(320.))
+                        .gap(px(8.))
+                        .child(Skeleton::new().h(px(16.)).w_full())
+                        .child(Skeleton::new().h(px(16.)).w_full())
+                        .child(Skeleton::new().h(px(16.)).w(relative(0.75)))
+                        .into_any_element(),
+                ),
+                (
+                    "Form",
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(320.))
+                        .gap(px(28.))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(12.))
+                                .child(Skeleton::new().h(px(16.)).w(px(80.)))
+                                .child(Skeleton::new().h(px(32.)).w_full()),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(12.))
+                                .child(Skeleton::new().h(px(16.)).w(px(96.)))
+                                .child(Skeleton::new().h(px(32.)).w_full()),
+                        )
+                        .child(Skeleton::new().h(px(32.)).w(px(96.)))
+                        .into_any_element(),
+                ),
+                (
+                    "Table",
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(384.))
+                        .gap(px(8.))
+                        .children((0..5).map(|_| {
+                            div()
+                                .flex()
+                                .gap(px(16.))
+                                .child(Skeleton::new().h(px(16.)).flex_1())
+                                .child(Skeleton::new().h(px(16.)).w(px(96.)))
+                                .child(Skeleton::new().h(px(16.)).w(px(80.)))
+                        }))
+                        .into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -3792,35 +3891,19 @@ impl Storybook {
     }
 
     fn skeleton_preview() -> impl IntoElement + use<> {
-        // Mirrors the shadcn docs example: avatar row + card-shaped block.
+        // skeleton-demo: avatar circle + two text lines.
         div()
             .flex()
-            .flex_col()
-            .gap(px(24.))
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(16.))
-                    .child(Skeleton::new().w(px(48.)).h(px(48.)).rounded_full())
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap(px(8.))
-                            .child(Skeleton::new().w(px(200.)).h(px(16.)))
-                            .child(Skeleton::new().w(px(160.)).h(px(16.))),
-                    ),
-            )
+            .items_center()
+            .gap(px(16.))
+            .child(Skeleton::new().h(px(48.)).w(px(48.)).rounded_full())
             .child(
                 div()
                     .flex()
                     .flex_col()
                     .gap(px(8.))
-                    .child(Skeleton::new().w(px(200.)).h(px(100.)))
-                    .child(Skeleton::new().w(px(200.)).h(px(16.)))
-                    .child(Skeleton::new().w(px(160.)).h(px(16.))),
+                    .child(Skeleton::new().h(px(16.)).w(px(250.)))
+                    .child(Skeleton::new().h(px(16.)).w(px(200.))),
             )
     }
 
