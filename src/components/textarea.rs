@@ -1,18 +1,36 @@
 //! Textarea — port of shadcn base-nova `ui/textarea.tsx`.
 //!
 //! The shadcn textarea shell (`min-h-16 w-full rounded-lg border px-2.5 py-2`)
-//! around the [`Input`](crate::components::Input) editing machinery. Editing
+//! around the [`Input`](crate::components::Input) editing machinery, with the
+//! native textarea's corner resize grip (CSS `resize`, on by default; opt out
+//! with [`Textarea::resizable`]`(false)` — Tailwind `resize-none`). Editing
 //! is currently single-line — TODO(rcn): wrapped multi-line shaping and
 //! cursor movement; Enter inserts no newline yet. shadcn's
 //! `field-sizing-content` auto-grow is also TODO(rcn).
 
 use gpui::{
-    App, Entity, Focusable as _, IntoElement, ParentElement, RenderOnce, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    App, AppContext as _, Context, CursorStyle, DragMoveEvent, Entity, EntityId, Focusable as _,
+    InteractiveElement as _, IntoElement, ParentElement, Pixels, Render, RenderOnce, Size,
+    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px, size,
 };
 
+use crate::components::Icon;
 use crate::components::input::Input;
 use crate::theme::{Theme, alpha};
+
+/// Drag payload for the corner resize grip; the entity id scopes the
+/// group-level `on_drag_move` to the textarea that started the drag.
+struct ResizeDrag {
+    textarea: EntityId,
+}
+
+struct ResizeDragPreview;
+
+impl Render for ResizeDragPreview {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        gpui::Empty
+    }
+}
 
 #[derive(IntoElement)]
 pub struct Textarea {
@@ -20,6 +38,7 @@ pub struct Textarea {
     rows: Option<u32>,
     disabled: bool,
     invalid: bool,
+    resizable: bool,
 }
 
 impl Textarea {
@@ -30,6 +49,7 @@ impl Textarea {
             rows: None,
             disabled: false,
             invalid: false,
+            resizable: true,
         }
     }
 
@@ -61,6 +81,16 @@ impl Textarea {
         self.invalid = invalid;
         self
     }
+
+    /// The corner drag-to-resize grip (the native textarea's CSS `resize`,
+    /// which shadcn leaves enabled). On by default; pass `false` for
+    /// Tailwind's `resize-none`.
+    // Not yet exercised by the storybook (every docs example keeps the grip).
+    #[allow(dead_code)]
+    pub fn resizable(mut self, resizable: bool) -> Self {
+        self.resizable = resizable;
+        self
+    }
 }
 
 impl RenderOnce for Textarea {
@@ -74,9 +104,18 @@ impl RenderOnce for Textarea {
         // Focus chrome is suppressed while disabled; invalid wins over focus.
         let show_focus = focused && !self.disabled && !self.invalid;
 
+        // Like the native resizer, a drag fixes the shell's size; keyed off
+        // the wrapped entity so each textarea keeps its own dragged size.
+        let entity_id = self.input.entity_id();
+        let resize_state: Entity<Option<Size<Pixels>>> =
+            window.use_keyed_state(("textarea-size", entity_id), cx, |_, _| None);
+        let dragged_size = *resize_state.read(cx);
+
         div()
-            .w_full()
-            .min_h(px(min_height))
+            .map(|el| match dragged_size {
+                Some(s) => el.w(s.width).h(s.height),
+                None => el.w_full().min_h(px(min_height)),
+            })
             .rounded(theme.radius_lg())
             .border_1()
             .border_color(if self.invalid {
@@ -89,12 +128,6 @@ impl RenderOnce for Textarea {
                 theme.ring
             } else {
                 theme.input
-            })
-            .when(self.invalid, |el| {
-                el.shadow(crate::motion::focus_ring_destructive(&theme))
-            })
-            .when(show_focus, |el| {
-                el.shadow(crate::motion::focus_ring(&theme))
             })
             .map(|el| {
                 if self.disabled {
@@ -116,5 +149,54 @@ impl RenderOnce for Textarea {
             .line_height(px(20.))
             .text_color(theme.foreground)
             .child(self.input)
+            // Rings are border overlays, not box shadows: gpui paints shadows
+            // behind the quad, so they'd show through the transparent bg as a
+            // fill (see motion::focus_ring_overlay).
+            .when(self.invalid, |el| {
+                el.child(crate::motion::focus_ring_overlay_destructive(
+                    &theme,
+                    theme.radius_lg(),
+                ))
+            })
+            .when(show_focus, |el| {
+                el.child(crate::motion::focus_ring_overlay(&theme, theme.radius_lg()))
+            })
+            .when(self.resizable, |el| {
+                let state = resize_state.clone();
+                el.on_drag_move(move |event: &DragMoveEvent<ResizeDrag>, _window, cx| {
+                    if event.drag(cx).textarea != entity_id {
+                        return;
+                    }
+                    // The dragged corner tracks the pointer, clamped to the
+                    // configured minimum (native min-width/min-height).
+                    let origin = event.bounds.origin;
+                    let w = f32::from(event.event.position.x - origin.x).max(64.);
+                    let h = f32::from(event.event.position.y - origin.y).max(min_height);
+                    state.update(cx, |s, cx| {
+                        *s = Some(size(px(w), px(h)));
+                        cx.notify();
+                    });
+                })
+                .child(
+                    div()
+                        .id(("textarea-resize", entity_id))
+                        .absolute()
+                        .bottom(px(0.))
+                        .right(px(0.))
+                        .size(px(12.))
+                        .cursor(CursorStyle::ResizeUpLeftDownRight)
+                        .child(
+                            Icon::new(crate::assets::ICON_RESIZE_GRIP)
+                                .size(px(12.))
+                                .text_color(theme.muted_foreground),
+                        )
+                        .on_drag(
+                            ResizeDrag {
+                                textarea: entity_id,
+                            },
+                            |_, _, _, cx| cx.new(|_| ResizeDragPreview),
+                        ),
+                )
+            })
     }
 }

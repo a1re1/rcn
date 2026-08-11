@@ -2305,6 +2305,11 @@ pub static TEXTAREA_API: &[ApiEntry] = &[
         signature: "pub fn invalid(mut self, invalid: bool) -> Self",
         doc: "Invalid shell styling (destructive border + always-on destructive ring).  Wins over the focused ring/border: when invalid, the destructive chrome is shown whether focused or not.",
     },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn resizable(mut self, resizable: bool) -> Self",
+        doc: "",
+    },
 ];
 
 pub static TEXTAREA_USAGE: &str = "// Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.\ndiv()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()))\n    ";
