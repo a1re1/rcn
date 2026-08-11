@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString, Window, div,
-    hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
+    SharedString, Window, div, hsla, img, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -37,25 +37,23 @@ use crate::components::{
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input,
-    InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions,
+    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
     MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
     NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis,
     PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
-    QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
-    RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
-    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
-    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
-    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, Questionnaire, QuestionnaireActions,
+    QuestionnaireChoice, QuestionnaireChoices, QuestionnaireDescription, QuestionnaireProgress,
+    QuestionnaireTitle, RadioGroup, RadioGroupItem, ResizableDirection, ResizableHandle,
+    ResizablePanel, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent, SidebarFooter,
+    SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton,
+    Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter,
+    TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant,
+    Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
+    ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, alpha, oklch};
 
@@ -5193,36 +5191,114 @@ impl Storybook {
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // shadcn docs demos: vertical Tags list, then horizontal artwork row.
         div()
-            .rounded(theme.radius_md())
-            .border_1()
-            .border_color(theme.border)
+            .flex()
+            .flex_col()
+            .items_start()
+            .gap(px(24.))
             .child(
-                ScrollArea::new("scroll-area-tags")
-                    .h(px(200.))
-                    .w(px(192.))
+                // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288
+                // total, so the ScrollArea inside the 1px border is 190×286).
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
                     .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .p(px(16.))
+                        ScrollArea::new("scroll-area-tags")
+                            .h(px(286.))
+                            .w(px(190.))
                             .child(
                                 div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .pb(px(8.))
-                                    .child("Tags"),
-                            )
-                            .children((1..=20).flat_map(|version| {
-                                [
-                                    div()
-                                        .py(px(6.))
-                                        .text_size(px(13.))
-                                        .child(format!("v1.2.0-beta.{version}"))
-                                        .into_any_element(),
-                                    Separator::new().into_any_element(),
-                                ]
-                            })),
+                                    .p(px(16.))
+                                    .child(
+                                        div()
+                                            .text_size(px(14.))
+                                            .font_weight(FontWeight::MEDIUM)
+                                            .mb(px(16.))
+                                            .child("Tags"),
+                                    )
+                                    .children((1..=50).rev().flat_map(|version| {
+                                        [
+                                            div()
+                                                .text_size(px(14.))
+                                                .child(format!("v1.2.0-beta.{version}"))
+                                                .into_any_element(),
+                                            div()
+                                                .my(px(8.))
+                                                .child(Separator::new())
+                                                .into_any_element(),
+                                        ]
+                                    })),
+                            ),
+                    ),
+            )
+            .child(
+                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal"),
+                // with the docs page's three Unsplash photos embedded as assets.
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
+                    .child(
+                        // Height fits the square figure + caption + 16px padding
+                        // (no explicit h in shadcn; gpui viewport is size_full so
+                        // the root needs a definite height for the track to paint).
+                        ScrollArea::new("scroll-area-artwork")
+                            .w(px(382.))
+                            .h(px(358.))
+                            .horizontal()
+                            .child(
+                                div().flex().flex_row().gap(px(16.)).p(px(16.)).children(
+                                    [
+                                        ("Ornella Binni", crate::assets::PHOTO_ORNELLA_BINNI),
+                                        ("Tom Byrom", crate::assets::PHOTO_TOM_BYROM),
+                                        (
+                                            "Vladimir Malyavko",
+                                            crate::assets::PHOTO_VLADIMIR_MALYAVKO,
+                                        ),
+                                    ]
+                                    .into_iter()
+                                    .map(|(artist, photo)| {
+                                        let theme = theme.clone();
+                                        div()
+                                            .id(photo)
+                                            .flex()
+                                            .flex_col()
+                                            .flex_none()
+                                            .child(
+                                                // Square center-crop, like the
+                                                // docs page's visible framing.
+                                                img(photo)
+                                                    .w(px(300.))
+                                                    .h(px(300.))
+                                                    .rounded(theme.radius_md())
+                                                    .object_fit(ObjectFit::Cover),
+                                            )
+                                            .child(
+                                                div()
+                                                    .pt(px(8.))
+                                                    .text_size(px(12.))
+                                                    .text_color(theme.muted_foreground)
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .child("Photo by ")
+                                                            .child(
+                                                                div()
+                                                                    .font_weight(
+                                                                        FontWeight::SEMIBOLD,
+                                                                    )
+                                                                    .text_color(theme.foreground)
+                                                                    .child(artist),
+                                                            ),
+                                                    ),
+                                            )
+                                            .into_any_element()
+                                    }),
+                                ),
+                            ),
                     ),
             )
     }
@@ -5979,16 +6055,12 @@ impl Storybook {
                             FieldGroup::new()
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Name on Card"),
-                                        )
+                                        .child(FieldLabel::new().child("Name on Card"))
                                         .child(self.field_name_input.clone()),
                                 )
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Card Number"),
-                                        )
+                                        .child(FieldLabel::new().child("Card Number"))
                                         .child(self.field_card_number.clone())
                                         .child(
                                             FieldDescription::new()
@@ -6004,16 +6076,13 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Month"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Month"))
                                                     .child(
                                                         Select::new("field-month")
                                                             .placeholder("MM")
                                                             .options([
-                                                                "01", "02", "03", "04", "05",
-                                                                "06", "07", "08", "09", "10",
-                                                                "11", "12",
+                                                                "01", "02", "03", "04", "05", "06",
+                                                                "07", "08", "09", "10", "11", "12",
                                                             ])
                                                             .value(self.field_month)
                                                             .open(self.field_month_open)
@@ -6035,9 +6104,7 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Year"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Year"))
                                                     .child(
                                                         Select::new("field-year")
                                                             .placeholder("YYYY")
@@ -6076,9 +6143,10 @@ impl Storybook {
                 .child(
                     FieldSet::new()
                         .legend(FieldLegend::new().child("Billing Address"))
-                        .description(FieldDescription::new().child(
-                            "The billing address associated with your payment method",
-                        ))
+                        .description(
+                            FieldDescription::new()
+                                .child("The billing address associated with your payment method"),
+                        )
                         .child(
                             FieldGroup::new().child(
                                 Field::new()
@@ -6106,9 +6174,7 @@ impl Storybook {
                         FieldGroup::new().child(
                             Field::new()
                                 .child(FieldLabel::new().child("Comments"))
-                                .child(
-                                    Textarea::new(self.field_comments.clone()).rows(3),
-                                ),
+                                .child(Textarea::new(self.field_comments.clone()).rows(3)),
                         ),
                     ),
                 )
@@ -6165,8 +6231,7 @@ impl Storybook {
                         .child(FieldLabel::new().child("Feedback"))
                         .child(Textarea::new(self.field_feedback.clone()).rows(4))
                         .child(
-                            FieldDescription::new()
-                                .child("Share your thoughts about our service."),
+                            FieldDescription::new().child("Share your thoughts about our service."),
                         ),
                 ),
             ),
@@ -6202,10 +6267,7 @@ impl Storybook {
                             cx.notify();
                         })),
                 )
-                .child(
-                    FieldDescription::new()
-                        .child("Select your department or area of work."),
-                ),
+                .child(FieldDescription::new().child("Select your department or area of work.")),
         )
     }
 
@@ -6214,12 +6276,10 @@ impl Storybook {
         div().w(px(320.)).child(
             Field::new()
                 .child(FieldTitle::new().child("Price Range"))
-                .child(
-                    FieldDescription::new().child(format!(
-                        "Set your budget range (${:.0}).",
-                        self.field_slider
-                    )),
-                )
+                .child(FieldDescription::new().child(format!(
+                    "Set your budget range (${:.0}).",
+                    self.field_slider
+                )))
                 .child(
                     Slider::new("field-slider")
                         .min(0.)
@@ -6240,8 +6300,7 @@ impl Storybook {
             FieldSet::new()
                 .legend(FieldLegend::new().child("Address Information"))
                 .description(
-                    FieldDescription::new()
-                        .child("We need your address to deliver your order."),
+                    FieldDescription::new().child("We need your address to deliver your order."),
                 )
                 .child(
                     FieldGroup::new()
@@ -6480,35 +6539,29 @@ impl Storybook {
                             .child("Select the compute environment for your cluster."),
                     )
                     .gap(px(12.))
-                    .child(
-                        RadioGroup::new().children(envs.into_iter().enumerate().map(
-                            |(index, (id, title, description))| {
-                                FieldLabel::new()
-                                    .choice_card(self.field_compute_env == index)
-                                    .child(
-                                        Field::new()
-                                            .orientation(FieldOrientation::Horizontal)
-                                            .content(
-                                                FieldContent::new()
-                                                    .child(FieldTitle::new().child(title))
-                                                    .child(
-                                                        FieldDescription::new().child(description),
-                                                    ),
-                                            )
-                                            .child(
-                                                RadioGroupItem::new(id)
-                                                    .checked(self.field_compute_env == index)
-                                                    .on_select(cx.listener(
-                                                        move |this, _, _, cx| {
-                                                            this.field_compute_env = index;
-                                                            cx.notify();
-                                                        },
-                                                    )),
-                                            ),
-                                    )
-                            },
-                        )),
-                    ),
+                    .child(RadioGroup::new().children(envs.into_iter().enumerate().map(
+                        |(index, (id, title, description))| {
+                            FieldLabel::new()
+                                .choice_card(self.field_compute_env == index)
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .content(
+                                            FieldContent::new()
+                                                .child(FieldTitle::new().child(title))
+                                                .child(FieldDescription::new().child(description)),
+                                        )
+                                        .child(
+                                            RadioGroupItem::new(id)
+                                                .checked(self.field_compute_env == index)
+                                                .on_select(cx.listener(move |this, _, _, cx| {
+                                                    this.field_compute_env = index;
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                )
+                        },
+                    ))),
             ),
         )
     }
@@ -6652,14 +6705,10 @@ impl Storybook {
                                         .orientation(FieldOrientation::Responsive)
                                         .content(
                                             FieldContent::new()
-                                                .child(
-                                                    FieldLabel::new().child("Name"),
-                                                )
-                                                .child(
-                                                    FieldDescription::new().child(
-                                                        "Provide your full name for identification",
-                                                    ),
-                                                ),
+                                                .child(FieldLabel::new().child("Name"))
+                                                .child(FieldDescription::new().child(
+                                                    "Provide your full name for identification",
+                                                )),
                                         )
                                         .child(self.field_responsive_name.clone()),
                                 )
