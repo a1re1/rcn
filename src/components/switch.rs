@@ -215,13 +215,16 @@ impl RenderOnce for Switch {
             theme.background
         };
 
-        // translate-x-[calc(100%-2px)] from a content box inset by a 1px border:
-        // thumb rests 1px from either end of the track's outer edge.
-        let thumb_x = if checked { track_w - thumb - 1. } else { 1. };
+        // translate-x-[calc(100%-2px)]: thumb rests 1px (outer) from either
+        // track end. Taffy resolves absolute insets from the padding box —
+        // inside the 1px border — so every offset here is 1 less than its
+        // outer-edge distance.
+        let thumb_x = if checked { track_w - thumb - 2. } else { 0. };
         // Opposite rest — animation start when toggling.
-        let from_x = if checked { 1. } else { track_w - thumb - 1. };
-        // Sm: 1.0px top; Default 18.4 with 16px thumb → 1.2px top.
-        let thumb_top = (track_h - thumb) / 2.;
+        let from_x = if checked { 0. } else { track_w - thumb - 2. };
+        // Centered: Sm 14px track/12px thumb → 1px outer; Default 18.4/16 →
+        // 1.2px outer.
+        let thumb_top = (track_h - thumb) / 2. - 1.;
 
         let thumb_el = div()
             .absolute()
@@ -308,15 +311,16 @@ impl RenderOnce for Switch {
             })
             // Extended pointer target mirroring `after:absolute
             // after:-inset-x-3 after:-inset-y-2`: 12px/8px beyond the track
-            // (gpui hit-tests children painted outside parent bounds).
+            // (gpui hit-tests children painted outside parent bounds; insets
+            // are padding-box-relative, hence the extra 1px for the border).
             .child(
                 div()
                     .id((root_id, "hit"))
                     .absolute()
-                    .left(px(-12.))
-                    .right(px(-12.))
-                    .top(px(-8.))
-                    .bottom(px(-8.))
+                    .left(px(-13.))
+                    .right(px(-13.))
+                    .top(px(-9.))
+                    .bottom(px(-9.))
                     .when_some(toggle, |s, toggle| {
                         s.on_click(move |_, window, cx| toggle(window, cx))
                     }),

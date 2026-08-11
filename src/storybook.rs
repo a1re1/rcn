@@ -2194,11 +2194,7 @@ impl Storybook {
                     "Disabled",
                     Field::new()
                         .orientation(FieldOrientation::Horizontal)
-                        .child(
-                            Switch::new("ex-switch-disabled-demo")
-                                .disabled(true)
-                                .checked(false),
-                        )
+                        .child(Switch::new("ex-switch-disabled-demo").disabled(true))
                         .child(
                             FieldLabel::new()
                                 .disabled(true)
@@ -2223,11 +2219,9 @@ impl Storybook {
                                     ),
                                 ),
                         )
-                        .child(
-                            Switch::new("ex-switch-invalid-demo")
-                                .invalid(true)
-                                .checked(false),
-                        )
+                        // Uncontrolled, like the docs' `<Switch aria-invalid />` —
+                        // an invalid switch still toggles.
+                        .child(Switch::new("ex-switch-invalid-demo").invalid(true))
                         .into_any_element(),
                 ),
                 (
