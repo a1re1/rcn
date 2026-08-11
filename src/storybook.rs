@@ -2655,6 +2655,25 @@ impl Storybook {
                     self.field_example_validation(cx).into_any_element(),
                 ),
             ],
+            // Docs "Label in Field" section: the usage snippet, then the
+            // embedded field-demo (the same Payment Method form as the
+            // Field story's main preview).
+            Story::Label => vec![(
+                "Label in Field",
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(24.))
+                    .child(
+                        div().w(px(448.)).child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Your email address"))
+                                .child(self.label_email_input.clone()),
+                        ),
+                    )
+                    .child(self.field_preview(cx))
+                    .into_any_element(),
+            )],
             Story::ResizableStory => vec![
                 (
                     "Vertical",
@@ -3844,38 +3863,25 @@ impl Storybook {
     }
 
     fn label_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        // label-demo + Label-in-Field (shadcn base-nova docs)
+        // Port of label-demo.tsx — Checkbox + Label.
         div()
             .flex()
-            .flex_col()
-            .gap(px(24.))
+            .flex_row()
+            .items_center()
+            .gap(px(8.))
             .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Checkbox::new("label-terms")
-                            .checked(self.label_terms_checked)
-                            .disabled(self.label_disabled)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
-                                this.label_terms_checked = *checked;
-                                cx.notify();
-                            })),
-                    )
-                    .child(
-                        Label::new()
-                            .disabled(self.label_disabled)
-                            .child("Accept terms and conditions"),
-                    ),
+                Checkbox::new("label-terms")
+                    .checked(self.label_terms_checked)
+                    .disabled(self.label_disabled)
+                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        this.label_terms_checked = *checked;
+                        cx.notify();
+                    })),
             )
             .child(
-                div().w(px(448.)).child(
-                    Field::new()
-                        .child(FieldLabel::new().child("Your email address"))
-                        .child(self.label_email_input.clone()),
-                ),
+                Label::new()
+                    .disabled(self.label_disabled)
+                    .child("Accept terms and conditions"),
             )
     }
 
