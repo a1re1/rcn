@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, Window, div,
-    hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
+    SharedString, Window, div, hsla, img, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -662,6 +662,12 @@ pub struct Storybook {
     switch_checked: bool,
     switch_size: SwitchSize,
     switch_disabled: bool,
+    switch_invalid: bool,
+    switch_read_only: bool,
+    /// Choice-card example: "Share across devices"
+    switch_ex_share: bool,
+    /// Choice-card example: "Enable notifications" (starts checked)
+    switch_ex_notifications: bool,
     // Progress controls
     progress_value: f32,
     // Item controls
@@ -697,6 +703,12 @@ pub struct Storybook {
     pagination_rows_open: bool,
     // Dialog story state
     dialog_open: bool,
+    dialog_share_open: bool,
+    dialog_sticky_open: bool,
+    dialog_scroll_open: bool,
+    dialog_name_input: gpui::Entity<Input>,
+    dialog_username_input: gpui::Entity<Input>,
+    dialog_share_input: gpui::Entity<Input>,
     // Alert dialog story state
     alert_dialog_open: bool,
     // Sheet story state
@@ -875,6 +887,23 @@ impl Storybook {
             input.placeholder("Evil Rabbit");
             input
         });
+        let dialog_name_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_text("Pedro Duarte", cx);
+            input
+        });
+        let dialog_username_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_text("@peduarte", cx);
+            input
+        });
+        let dialog_share_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            // shadcn renders this readOnly; Input has no read-only mode yet,
+            // and disabled would dim it to 50% — leave it editable.
+            input.set_text("https://ui.shadcn.com/docs/installation", cx);
+            input
+        });
         let field_card_number = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("1234 5678 9012 3456");
@@ -1015,6 +1044,10 @@ impl Storybook {
             switch_checked: true,
             switch_size: SwitchSize::Default,
             switch_disabled: false,
+            switch_invalid: false,
+            switch_read_only: false,
+            switch_ex_share: false,
+            switch_ex_notifications: true,
             progress_value: 60.,
             item_variant: ItemVariant::Outline,
             item_size: ItemSize::Default,
@@ -1037,6 +1070,12 @@ impl Storybook {
             pagination_rows_value: Some(1), // "25"
             pagination_rows_open: false,
             dialog_open: false,
+            dialog_share_open: false,
+            dialog_sticky_open: false,
+            dialog_scroll_open: false,
+            dialog_name_input,
+            dialog_username_input,
+            dialog_share_input,
             alert_dialog_open: false,
             sheet_open: false,
             sheet_side: SheetSide::Right,
@@ -2088,23 +2127,159 @@ impl Storybook {
                     },
                 ),
             ],
-            Story::Switch => vec![(
-                "Sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Switch::new("ex-switch-sm")
-                            .size(SwitchSize::Sm)
-                            .checked(true),
+            Story::Switch => vec![
+                (
+                    "Demo",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Switch::new("ex-switch-demo"))
+                        .child(Label::new().child("Airplane Mode"))
+                        .into_any_element(),
+                ),
+                (
+                    "Description",
+                    div().w(px(384.)).child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .content(
+                                FieldContent::new()
+                                    .child(
+                                        FieldLabel::new().child("Share across devices"),
+                                    )
+                                    .child(
+                                        FieldDescription::new().child(
+                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                        ),
+                                    ),
+                            )
+                            .child(Switch::new("ex-switch-description")),
                     )
-                    .child(Switch::new("ex-switch-default").checked(true))
-                    .child(Switch::new("ex-switch-disabled").disabled(true))
                     .into_any_element(),
-            )],
+                ),
+                (
+                    "Choice Card",
+                    div().w(px(384.)).child(
+                        FieldGroup::new()
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_share)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Share across devices"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-share")
+                                                    .checked(self.switch_ex_share)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_share = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            )
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_notifications)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Enable notifications"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Receive notifications when focus mode is enabled or disabled.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-notify")
+                                                    .checked(self.switch_ex_notifications)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_notifications = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Switch::new("ex-switch-disabled-demo").disabled(true))
+                        .child(
+                            FieldLabel::new()
+                                .disabled(true)
+                                .child("Disabled"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .invalid(true)
+                        .content(
+                            FieldContent::new()
+                                .child(
+                                    FieldLabel::new()
+                                        .child("Accept terms and conditions"),
+                                )
+                                .child(
+                                    FieldDescription::new().child(
+                                        "You must accept the terms and conditions to continue.",
+                                    ),
+                                ),
+                        )
+                        // Uncontrolled, like the docs' `<Switch aria-invalid />` —
+                        // an invalid switch still toggles.
+                        .child(Switch::new("ex-switch-invalid-demo").invalid(true))
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div().w(px(160.)).child(
+                        FieldGroup::new()
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-sm").size(SwitchSize::Sm))
+                                    .child(FieldLabel::new().child("Small")),
+                            )
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-default"))
+                                    .child(FieldLabel::new().child("Default")),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+            ],
             Story::Checkbox => vec![(
                 "States",
                 div()
@@ -3282,7 +3457,7 @@ impl Storybook {
                     Switch::new("button-disabled")
                         .checked(self.button_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.button_disabled = *checked;
                             cx.notify();
                         }))
@@ -3324,7 +3499,7 @@ impl Storybook {
                     Switch::new("ctl-switch-checked")
                         .checked(self.switch_checked)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_checked = *checked;
                             cx.notify();
                         }))
@@ -3350,8 +3525,32 @@ impl Storybook {
                     Switch::new("ctl-switch-disabled")
                         .checked(self.switch_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_disabled = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "invalid",
+                    Switch::new("ctl-switch-invalid")
+                        .checked(self.switch_invalid)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_invalid = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "read_only",
+                    Switch::new("ctl-switch-read-only")
+                        .checked(self.switch_read_only)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_read_only = *checked;
                             cx.notify();
                         }))
                         .into_any_element(),
@@ -3364,7 +3563,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-multiple")
                         .checked(self.accordion_multiple)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_multiple = *on;
                             cx.notify();
                         }))
@@ -3376,7 +3575,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-root-disabled")
                         .checked(self.accordion_root_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_root_disabled = *on;
                             cx.notify();
                         }))
@@ -3388,7 +3587,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-disabled")
                         .checked(self.accordion_disable_third)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_disable_third = *on;
                             cx.notify();
                         }))
@@ -3457,7 +3656,7 @@ impl Storybook {
                 Switch::new("ctl-checkbox-checked")
                     .checked(self.checkbox_checked)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.checkbox_checked = *checked;
                         cx.notify();
                     }))
@@ -3473,7 +3672,7 @@ impl Storybook {
                 Switch::new("ctl-collapsible-open")
                     .checked(self.collapsible_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.collapsible_open = *open;
                         cx.notify();
                     }))
@@ -3520,7 +3719,7 @@ impl Storybook {
                 Switch::new("ctl-dialog-open")
                     .checked(self.dialog_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.dialog_open = *open;
                         cx.notify();
                     }))
@@ -3619,7 +3818,7 @@ impl Storybook {
                 Switch::new("ctl-label-disabled")
                     .checked(self.label_disabled)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.label_disabled = *checked;
                         cx.notify();
                     }))
@@ -3646,7 +3845,7 @@ impl Storybook {
                 Switch::new("ctl-popover-open")
                     .checked(self.popover_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.popover_open = *open;
                         cx.notify();
                     }))
@@ -4170,7 +4369,7 @@ impl Storybook {
                     .child(
                         Switch::new("tokens-switch")
                             .checked(self.switch_checked)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                                 this.switch_checked = *checked;
                                 cx.notify();
                             })),
@@ -4222,7 +4421,9 @@ impl Storybook {
             .checked(self.switch_checked)
             .size(self.switch_size)
             .disabled(self.switch_disabled)
-            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+            .invalid(self.switch_invalid)
+            .read_only(self.switch_read_only)
+            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                 this.switch_checked = *checked;
                 cx.notify();
             }))
@@ -5545,36 +5746,114 @@ impl Storybook {
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // shadcn docs demos: vertical Tags list, then horizontal artwork row.
         div()
-            .rounded(theme.radius_md())
-            .border_1()
-            .border_color(theme.border)
+            .flex()
+            .flex_col()
+            .items_start()
+            .gap(px(24.))
             .child(
-                ScrollArea::new("scroll-area-tags")
-                    .h(px(200.))
-                    .w(px(192.))
+                // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288
+                // total, so the ScrollArea inside the 1px border is 190×286).
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
                     .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .p(px(16.))
+                        ScrollArea::new("scroll-area-tags")
+                            .h(px(286.))
+                            .w(px(190.))
                             .child(
                                 div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .pb(px(8.))
-                                    .child("Tags"),
-                            )
-                            .children((1..=20).flat_map(|version| {
-                                [
-                                    div()
-                                        .py(px(6.))
-                                        .text_size(px(13.))
-                                        .child(format!("v1.2.0-beta.{version}"))
-                                        .into_any_element(),
-                                    Separator::new().into_any_element(),
-                                ]
-                            })),
+                                    .p(px(16.))
+                                    .child(
+                                        div()
+                                            .text_size(px(14.))
+                                            .font_weight(FontWeight::MEDIUM)
+                                            .mb(px(16.))
+                                            .child("Tags"),
+                                    )
+                                    .children((1..=50).rev().flat_map(|version| {
+                                        [
+                                            div()
+                                                .text_size(px(14.))
+                                                .child(format!("v1.2.0-beta.{version}"))
+                                                .into_any_element(),
+                                            div()
+                                                .my(px(8.))
+                                                .child(Separator::new())
+                                                .into_any_element(),
+                                        ]
+                                    })),
+                            ),
+                    ),
+            )
+            .child(
+                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal"),
+                // with the docs page's three Unsplash photos embedded as assets.
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
+                    .child(
+                        // Height fits the square figure + caption + 16px padding
+                        // (no explicit h in shadcn; gpui viewport is size_full so
+                        // the root needs a definite height for the track to paint).
+                        ScrollArea::new("scroll-area-artwork")
+                            .w(px(382.))
+                            .h(px(358.))
+                            .horizontal()
+                            .child(
+                                div().flex().flex_row().gap(px(16.)).p(px(16.)).children(
+                                    [
+                                        ("Ornella Binni", crate::assets::PHOTO_ORNELLA_BINNI),
+                                        ("Tom Byrom", crate::assets::PHOTO_TOM_BYROM),
+                                        (
+                                            "Vladimir Malyavko",
+                                            crate::assets::PHOTO_VLADIMIR_MALYAVKO,
+                                        ),
+                                    ]
+                                    .into_iter()
+                                    .map(|(artist, photo)| {
+                                        let theme = theme.clone();
+                                        div()
+                                            .id(photo)
+                                            .flex()
+                                            .flex_col()
+                                            .flex_none()
+                                            .child(
+                                                // Square center-crop, like the
+                                                // docs page's visible framing.
+                                                img(photo)
+                                                    .w(px(300.))
+                                                    .h(px(300.))
+                                                    .rounded(theme.radius_md())
+                                                    .object_fit(ObjectFit::Cover),
+                                            )
+                                            .child(
+                                                div()
+                                                    .pt(px(8.))
+                                                    .text_size(px(12.))
+                                                    .text_color(theme.muted_foreground)
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .child("Photo by ")
+                                                            .child(
+                                                                div()
+                                                                    .font_weight(
+                                                                        FontWeight::SEMIBOLD,
+                                                                    )
+                                                                    .text_color(theme.foreground)
+                                                                    .child(artist),
+                                                            ),
+                                                    ),
+                                            )
+                                            .into_any_element()
+                                    }),
+                                ),
+                            ),
                     ),
             )
     }
@@ -5650,60 +5929,244 @@ impl Storybook {
         )
     }
     fn dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let theme = Theme::of(cx).clone();
+        const LOREM: &str = concat!(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do ",
+            "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut ",
+            "enim ad minim veniam, quis nostrud exercitation ullamco laboris ",
+            "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in ",
+            "reprehenderit in voluptate velit esse cillum dolore eu fugiat ",
+            "nulla pariatur. Excepteur sint occaecat cupidatat non proident, ",
+            "sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        );
+
+        let scroll_body = |id: SharedString| {
+            div()
+                .id(id.clone())
+                .max_h(px(320.))
+                .overflow_y_scroll()
+                .children((0..10).map(move |i| {
+                    div()
+                        .id(ElementId::Name(format!("{id}-p-{i}").into()))
+                        .mb(px(16.))
+                        .line_height(px(21.))
+                        .child(LOREM)
+                }))
+        };
+
+        let sticky_entity = cx.entity();
+
         div()
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            // a. Edit profile (demo) — controlled; controls-panel "open" switch
             .child(
-                Button::new("dialog-trigger")
-                    .variant(ButtonVariant::Outline)
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.dialog_open = true;
-                        cx.notify();
-                    }))
-                    .child("Edit Profile"),
-            )
-            .child(
-                Dialog::new("dialog-demo")
-                    .open(self.dialog_open)
-                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {
-                        this.dialog_open = *open;
-                        cx.notify();
-                    }))
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
                     .child(
-                        DialogHeader::new()
-                            .child(DialogTitle::new().child("Edit profile"))
-                            .child(DialogDescription::new().child(
-                                "Make changes to your profile here. Click save when you're done.",
-                            )),
+                        Button::new("dialog-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_open = true;
+                                cx.notify();
+                            }))
+                            .child("Open Dialog"),
                     )
                     .child(
-                        div()
-                            .h(px(80.))
-                            .w_full()
-                            .rounded(theme.radius_md())
-                            .bg(theme.muted),
-                    )
-                    .child(
-                        DialogFooter::new()
+                        Dialog::new("dialog-demo")
+                            .open(self.dialog_open)
+                            .max_w(px(384.))
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_open = *open;
+                                cx.notify();
+                            }))
                             .child(
-                                Button::new("dialog-cancel")
-                                    .variant(ButtonVariant::Outline)
-                                    .on_click(cx.listener(|this, _, _, cx| {
-                                        this.dialog_open = false;
-                                        cx.notify();
-                                    }))
-                                    .child("Cancel"),
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Edit profile"))
+                                    .child(DialogDescription::new().child(
+                                        "Make changes to your profile here. Click save when you're done.",
+                                    )),
                             )
                             .child(
-                                Button::new("dialog-save")
-                                    .on_click(cx.listener(|this, _, _, cx| {
-                                        this.dialog_open = false;
-                                        cx.notify();
-                                    }))
-                                    .child("Save changes"),
+                                FieldGroup::new()
+                                    .child(
+                                        Field::new()
+                                            .child(Label::new().child("Name"))
+                                            .child(self.dialog_name_input.clone()),
+                                    )
+                                    .child(
+                                        Field::new()
+                                            .child(Label::new().child("Username"))
+                                            .child(self.dialog_username_input.clone()),
+                                    ),
+                            )
+                            .child(
+                                DialogFooter::new()
+                                    .child(
+                                        Button::new("dialog-cancel")
+                                            .variant(ButtonVariant::Outline)
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Cancel"),
+                                    )
+                                    .child(
+                                        Button::new("dialog-save")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Save changes"),
+                                    ),
                             ),
                     ),
             )
+            // b. Share link — custom close / justify_start footer
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-share-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_share_open = true;
+                                cx.notify();
+                            }))
+                            .child("Share"),
+                    )
+                    .child(
+                        Dialog::new("dialog-share")
+                            .open(self.dialog_share_open)
+                            .max_w(px(448.))
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_share_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Share link"))
+                                    .child(DialogDescription::new().child(
+                                        "Anyone who has this link will be able to view this.",
+                                    )),
+                            )
+                            .child(self.dialog_share_input.clone())
+                            .child(
+                                DialogFooter::new()
+                                    .justify_start()
+                                    .child(
+                                        Button::new("dialog-share-close")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_share_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Close"),
+                                    ),
+                            ),
+                    ),
+            )
+            // c. No close button — fully uncontrolled: built-in .trigger()
+            // + default_open, no external open flag (backdrop/Escape close).
+            .child(
+                Dialog::new("dialog-no-close")
+                    .default_open(false)
+                    .show_close_button(false)
+                    .trigger(
+                        Button::new("dialog-no-close-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .child("No Close Button"),
+                    )
+                    .child(
+                        DialogHeader::new()
+                            .child(DialogTitle::new().child("No Close Button"))
+                            .child(DialogDescription::new().child(
+                                "This dialog doesn't have a close button in the top-right corner.",
+                            )),
+                    ),
+            )
+            // d. Sticky footer — DialogFooter::show_close_button
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-sticky-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_sticky_open = true;
+                                cx.notify();
+                            }))
+                            .child("Sticky Footer"),
+                    )
+                    .child(
+                        Dialog::new("dialog-sticky")
+                            .open(self.dialog_sticky_open)
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_sticky_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Sticky Footer"))
+                                    .child(DialogDescription::new().child(
+                                        "This dialog has a sticky footer that stays visible while the content scrolls.",
+                                    )),
+                            )
+                            .child(scroll_body("dialog-sticky-scroll".into()))
+                            .child(
+                                DialogFooter::new()
+                                    .show_close_button(true)
+                                    .on_close({
+                                        let entity = sticky_entity.clone();
+                                        move |_window, cx| {
+                                            entity.update(cx, |this, cx| {
+                                                this.dialog_sticky_open = false;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }),
+                            ),
+                    ),
+            )
+            // e. Scrollable content — same body, no footer
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-scroll-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_scroll_open = true;
+                                cx.notify();
+                            }))
+                            .child("Scrollable Content"),
+                    )
+                    .child(
+                        Dialog::new("dialog-scroll")
+                            .open(self.dialog_scroll_open)
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_scroll_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Scrollable Content"))
+                                    .child(DialogDescription::new().child(
+                                        "This is a dialog with scrollable content.",
+                                    )),
+                            )
+                            .child(scroll_body("dialog-scroll-scroll".into())),
+                    ),
+            )
     }
+
     fn alert_dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div()
             .child(
@@ -6147,16 +6610,12 @@ impl Storybook {
                             FieldGroup::new()
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Name on Card"),
-                                        )
+                                        .child(FieldLabel::new().child("Name on Card"))
                                         .child(self.field_name_input.clone()),
                                 )
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Card Number"),
-                                        )
+                                        .child(FieldLabel::new().child("Card Number"))
                                         .child(self.field_card_number.clone())
                                         .child(
                                             FieldDescription::new()
@@ -6172,16 +6631,13 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Month"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Month"))
                                                     .child(
                                                         Select::new("field-month")
                                                             .placeholder("MM")
                                                             .options([
-                                                                "01", "02", "03", "04", "05",
-                                                                "06", "07", "08", "09", "10",
-                                                                "11", "12",
+                                                                "01", "02", "03", "04", "05", "06",
+                                                                "07", "08", "09", "10", "11", "12",
                                                             ])
                                                             .value(self.field_month)
                                                             .open(self.field_month_open)
@@ -6203,9 +6659,7 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Year"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Year"))
                                                     .child(
                                                         Select::new("field-year")
                                                             .placeholder("YYYY")
@@ -6244,9 +6698,10 @@ impl Storybook {
                 .child(
                     FieldSet::new()
                         .legend(FieldLegend::new().child("Billing Address"))
-                        .description(FieldDescription::new().child(
-                            "The billing address associated with your payment method",
-                        ))
+                        .description(
+                            FieldDescription::new()
+                                .child("The billing address associated with your payment method"),
+                        )
                         .child(
                             FieldGroup::new().child(
                                 Field::new()
@@ -6274,9 +6729,7 @@ impl Storybook {
                         FieldGroup::new().child(
                             Field::new()
                                 .child(FieldLabel::new().child("Comments"))
-                                .child(
-                                    Textarea::new(self.field_comments.clone()).rows(3),
-                                ),
+                                .child(Textarea::new(self.field_comments.clone()).rows(3)),
                         ),
                     ),
                 )
@@ -6333,8 +6786,7 @@ impl Storybook {
                         .child(FieldLabel::new().child("Feedback"))
                         .child(Textarea::new(self.field_feedback.clone()).rows(4))
                         .child(
-                            FieldDescription::new()
-                                .child("Share your thoughts about our service."),
+                            FieldDescription::new().child("Share your thoughts about our service."),
                         ),
                 ),
             ),
@@ -6370,10 +6822,7 @@ impl Storybook {
                             cx.notify();
                         })),
                 )
-                .child(
-                    FieldDescription::new()
-                        .child("Select your department or area of work."),
-                ),
+                .child(FieldDescription::new().child("Select your department or area of work.")),
         )
     }
 
@@ -6382,12 +6831,10 @@ impl Storybook {
         div().w(px(320.)).child(
             Field::new()
                 .child(FieldTitle::new().child("Price Range"))
-                .child(
-                    FieldDescription::new().child(format!(
-                        "Set your budget range (${:.0}).",
-                        self.field_slider
-                    )),
-                )
+                .child(FieldDescription::new().child(format!(
+                    "Set your budget range (${:.0}).",
+                    self.field_slider
+                )))
                 .child(
                     Slider::new("field-slider")
                         .min(0.)
@@ -6408,8 +6855,7 @@ impl Storybook {
             FieldSet::new()
                 .legend(FieldLegend::new().child("Address Information"))
                 .description(
-                    FieldDescription::new()
-                        .child("We need your address to deliver your order."),
+                    FieldDescription::new().child("We need your address to deliver your order."),
                 )
                 .child(
                     FieldGroup::new()
@@ -6613,7 +7059,7 @@ impl Storybook {
                 .child(
                     Switch::new("field-2fa")
                         .checked(self.field_switch_2fa)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.field_switch_2fa = *checked;
                             cx.notify();
                         })),
@@ -6648,35 +7094,29 @@ impl Storybook {
                             .child("Select the compute environment for your cluster."),
                     )
                     .gap(px(12.))
-                    .child(
-                        RadioGroup::new().children(envs.into_iter().enumerate().map(
-                            |(index, (id, title, description))| {
-                                FieldLabel::new()
-                                    .choice_card(self.field_compute_env == index)
-                                    .child(
-                                        Field::new()
-                                            .orientation(FieldOrientation::Horizontal)
-                                            .content(
-                                                FieldContent::new()
-                                                    .child(FieldTitle::new().child(title))
-                                                    .child(
-                                                        FieldDescription::new().child(description),
-                                                    ),
-                                            )
-                                            .child(
-                                                RadioGroupItem::new(id)
-                                                    .checked(self.field_compute_env == index)
-                                                    .on_select(cx.listener(
-                                                        move |this, _, _, cx| {
-                                                            this.field_compute_env = index;
-                                                            cx.notify();
-                                                        },
-                                                    )),
-                                            ),
-                                    )
-                            },
-                        )),
-                    ),
+                    .child(RadioGroup::new().children(envs.into_iter().enumerate().map(
+                        |(index, (id, title, description))| {
+                            FieldLabel::new()
+                                .choice_card(self.field_compute_env == index)
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .content(
+                                            FieldContent::new()
+                                                .child(FieldTitle::new().child(title))
+                                                .child(FieldDescription::new().child(description)),
+                                        )
+                                        .child(
+                                            RadioGroupItem::new(id)
+                                                .checked(self.field_compute_env == index)
+                                                .on_select(cx.listener(move |this, _, _, cx| {
+                                                    this.field_compute_env = index;
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                )
+                        },
+                    ))),
             ),
         )
     }
@@ -6820,14 +7260,10 @@ impl Storybook {
                                         .orientation(FieldOrientation::Responsive)
                                         .content(
                                             FieldContent::new()
-                                                .child(
-                                                    FieldLabel::new().child("Name"),
-                                                )
-                                                .child(
-                                                    FieldDescription::new().child(
-                                                        "Provide your full name for identification",
-                                                    ),
-                                                ),
+                                                .child(FieldLabel::new().child("Name"))
+                                                .child(FieldDescription::new().child(
+                                                    "Provide your full name for identification",
+                                                )),
                                         )
                                         .child(self.field_responsive_name.clone()),
                                 )
@@ -7589,7 +8025,6 @@ impl Render for Storybook {
                 // close on Escape; component-level focus traps are a TODO,
                 // so the demo handles it at the root).
                 if event.keystroke.key == "escape" {
-                    this.dialog_open = false;
                     this.alert_dialog_open = false;
                     this.sheet_open = false;
                     this.drawer_open = false;

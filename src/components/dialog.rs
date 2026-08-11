@@ -1,30 +1,47 @@
-//! Dialog — port of shadcn base-vega `ui/dialog.tsx`.
+//! Dialog — port of shadcn base-nova `ui/dialog.tsx`.
 //!
 //! A modal window over a dimmed backdrop, centered in the viewport.
-//! Controlled: the caller owns `open` and receives changes via
-//! `on_open_change` (backdrop click and the close button both close).
-//! Open/close animations are omitted.
+//! Controlled via `open` + `on_open_change`, or uncontrolled via
+//! `default_open` + keyed state and an optional `trigger`. Backdrop click,
+//! Escape, and the close button all share the same close path.
+//!
+//! # Omitted / TODO(rcn)
+//! - Exit animations (unportable on unmount in gpui)
+//! - Overlay `supports-backdrop-filter:backdrop-blur-xs` (unportable in gpui)
+//! - Focus trap (Base UI keeps Tab inside the popup; initial focus IS ported —
+//!   the panel is focused on open so Escape works immediately)
+//! - RTL layout
+//! - Description link styles (`*:[a]:underline`)
 
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div, point,
-    prelude::FluentBuilder as _, px, svg,
+    AnimationExt as _, AnyElement, App, ElementId, Entity, FontWeight, InteractiveElement as _,
+    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window,
+    anchored, deferred, div, point, prelude::FluentBuilder as _, px, svg,
 };
 
+use crate::components::button::{Button, ButtonSize, ButtonVariant};
 use crate::motion;
 use crate::theme::{Theme, alpha};
 
 pub type OpenChangeHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 
-/// The modal root: renders nothing until `open`; then a dimmed backdrop
-/// with the content panel centered.
+/// The modal root: optional inline trigger + centered content panel over a
+/// dimmed backdrop when open.
 #[derive(IntoElement)]
 pub struct Dialog {
     id: ElementId,
-    open: bool,
+    /// `None` = uncontrolled (resolve via keyed state); `Some` = controlled.
+    open: Option<bool>,
+    default_open: bool,
     on_open_change: Option<OpenChangeHandler>,
+    /// Top-right close button (shadcn `showCloseButton`, default true).
+    show_close_button: bool,
+    /// Override content max width (default `sm:max-w-md` = 448px).
+    max_w: Option<gpui::Pixels>,
+    /// Optional inline trigger element (uncontrolled open pattern).
+    trigger: Option<AnyElement>,
     children: Vec<AnyElement>,
 }
 
@@ -32,14 +49,33 @@ impl Dialog {
     pub fn new(id: impl Into<ElementId>) -> Self {
         Self {
             id: id.into(),
-            open: false,
+            open: None,
+            default_open: false,
             on_open_change: None,
+            show_close_button: true,
+            max_w: None,
+            trigger: None,
             children: Vec::new(),
         }
     }
 
+    /// Controlled open state. Distinguishes "never set" (`None`) from
+    /// `open(false)` so uncontrolled keyed state can take over.
     pub fn open(mut self, open: bool) -> Self {
-        self.open = open;
+        self.open = Some(open);
+        self
+    }
+
+    /// Initial open state when uncontrolled (default `false`).
+    pub fn default_open(mut self, open: bool) -> Self {
+        self.default_open = open;
+        self
+    }
+
+    /// Inline trigger element. Clicking it toggles open in uncontrolled
+    /// mode (and notifies `on_open_change` when set).
+    pub fn trigger(mut self, trigger: impl IntoElement) -> Self {
+        self.trigger = Some(trigger.into_any_element());
         self
     }
 
@@ -48,6 +84,18 @@ impl Dialog {
         handler: impl Fn(&bool, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_open_change = Some(Rc::new(handler));
+        self
+    }
+
+    /// Show the top-right close button (default `true`, matching shadcn).
+    pub fn show_close_button(mut self, show: bool) -> Self {
+        self.show_close_button = show;
+        self
+    }
+
+    /// Override the content panel max width (default 448px / `sm:max-w-md`).
+    pub fn max_w(mut self, width: gpui::Pixels) -> Self {
+        self.max_w = Some(width);
         self
     }
 }
@@ -60,79 +108,161 @@ impl ParentElement for Dialog {
 
 impl RenderOnce for Dialog {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        if !self.open {
-            return div().into_any_element();
-        }
         let theme = Theme::of(cx).clone();
         let viewport = window.viewport_size();
-        let close = self.on_open_change.clone();
-        let close_button = self.on_open_change;
+        let show_close_button = self.show_close_button;
+        let content_w = self
+            .max_w
+            .unwrap_or(px(448.))
+            .min(viewport.width - px(32.));
 
-        deferred(
-            anchored().position(point(px(0.), px(0.))).child(
+        // Controlled snapshot vs keyed-state (accordion pattern).
+        let (is_open, uncontrolled_state): (bool, Option<Entity<bool>>) =
+            if let Some(open) = self.open {
+                (open, None)
+            } else {
+                let default_open = self.default_open;
+                let state_key: ElementId = (self.id.clone(), "open").into();
+                let state = window.use_keyed_state(state_key, cx, move |_, _| default_open);
+                (*state.read(cx), Some(state))
+            };
+
+        let on_open_change = self.on_open_change;
+
+        // Shared close path: set uncontrolled state false + notify handler.
+        let notify_open = {
+            let on_open_change = on_open_change.clone();
+            let uncontrolled_state = uncontrolled_state.clone();
+            Rc::new(move |open: bool, window: &mut Window, cx: &mut App| {
+                if let Some(state) = uncontrolled_state.as_ref() {
+                    state.update(cx, |v, cx| {
+                        *v = open;
+                        cx.notify();
+                    });
+                }
+                if let Some(handler) = on_open_change.as_ref() {
+                    handler(&open, window, cx);
+                }
+            }) as Rc<dyn Fn(bool, &mut Window, &mut App)>
+        };
+
+        let root = div().id(self.id.clone()).relative();
+
+        let root = if let Some(trigger) = self.trigger {
+            let notify = notify_open.clone();
+            let next = !is_open;
+            root.child(
                 div()
-                    .id(self.id)
+                    .id("dialog-trigger")
+                    .on_click(move |_, window, cx| notify(next, window, cx))
+                    .child(trigger),
+            )
+        } else {
+            root
+        };
+
+        // Open-transition tracker, so focus moves into the panel once per open.
+        let was_open_key: ElementId = (self.id.clone(), "was-open").into();
+        let was_open = window.use_keyed_state(was_open_key, cx, |_, _| false);
+
+        if !is_open {
+            if *was_open.read(cx) {
+                was_open.update(cx, |v, _| *v = false);
+            }
+            return root.into_any_element();
+        }
+
+        // Initial focus (Base UI default): focus the panel when it opens so
+        // Escape lands on its key surface immediately.
+        let focus_key: ElementId = (self.id.clone(), "focus").into();
+        let focus_state = window.use_keyed_state(focus_key, cx, |_, cx| cx.focus_handle());
+        let focus_handle = focus_state.read(cx).clone();
+        if !*was_open.read(cx) {
+            was_open.update(cx, |v, _| *v = true);
+            let handle = focus_handle.clone();
+            window.defer(cx, move |window, cx| window.focus(&handle, cx));
+        }
+
+        let close_backdrop = notify_open.clone();
+        let close_button = notify_open.clone();
+        let close_escape = notify_open.clone();
+
+        // Overlay: bg-black/10 duration-100 fade-in (backdrop-blur omitted — see module TODO)
+        let overlay = div()
+            .id("dialog-overlay")
+            .occlude()
+            .w(viewport.width)
+            .h(viewport.height)
+            .flex()
+            .items_center()
+            .justify_center()
+            .bg(gpui::hsla(0., 0., 0., 0.10))
+            .on_click(move |_, window, cx| close_backdrop(false, window, cx))
+            .with_animation("dialog-overlay-in", motion::enter_fast(), |el, delta| {
+                el.opacity(delta)
+            })
+            .child({
+                // Content: popover surface, radius-xl, ring-foreground/10, gap-6,
+                // max-w-[calc(100%-2rem)] sm:max-w-md; duration-100 fade+zoom-in-95
+                // (zoom approximated as opacity + small settle — see dialog_in).
+                // Escape closes in-component (focus trap / initial focus = TODO).
+                let content = div()
+                    .id("dialog-content")
                     .occlude()
-                    .w(viewport.width)
-                    .h(viewport.height)
+                    .track_focus(&focus_handle)
+                    .tab_index(0)
+                    .relative()
                     .flex()
-                    .items_center()
-                    .justify_center()
-                    // Overlay: bg-black/50
-                    .bg(gpui::hsla(0., 0., 0., 0.5))
-                    .when_some(close, |el, close| {
-                        el.on_click(move |_, window, cx| close(&false, window, cx))
+                    .flex_col()
+                    .gap(px(24.))
+                    .w(content_w)
+                    .rounded(theme.radius_xl())
+                    .border_1()
+                    .border_color(alpha(theme.foreground, 0.10))
+                    .bg(theme.popover)
+                    .p(px(24.))
+                    .text_size(px(14.))
+                    .line_height(px(20.))
+                    .text_color(theme.popover_foreground)
+                    .on_key_down(move |event, window, cx| {
+                        if event.keystroke.key == "escape" {
+                            close_escape(false, window, cx);
+                        }
                     })
-                    .child(crate::motion::dialog_in(
-                        "dialog-in",
-                        // Content: bg-background rounded-lg border p-6 shadow-lg,
-                        // w-full max-w-[calc(100%-2rem)] sm:max-w-lg
-                        div()
-                            .id("dialog-content")
-                            .occlude()
-                            .relative()
-                            .flex()
-                            .flex_col()
-                            .gap(px(16.))
-                            .w(px(512.).min(viewport.width - px(32.)))
-                            .rounded(theme.radius_lg())
-                            .border_1()
-                            .border_color(theme.border)
-                            .bg(theme.background)
-                            .p(px(24.))
-                            .shadow_lg()
-                            .text_size(px(14.))
-                            .line_height(px(20.))
-                            .text_color(theme.foreground)
-                            .children(self.children)
-                            // Close: absolute top-4 right-4, muted x
-                            .when_some(close_button, |el, close| {
-                                el.child({
-                                    let ring = motion::focus_ring(&theme);
-                                    div()
-                                        .id("dialog-close")
-                                        .absolute()
-                                        .top(px(16.))
-                                        .right(px(16.))
-                                        .rounded(theme.radius_sm())
-                                        .p(px(2.))
-                                        .tab_index(0)
-                                        .focus_visible(move |s| {
-                                            s.border_color(theme.ring).shadow(ring.clone())
+                    .children(self.children)
+                    // Close: ghost icon-sm Button, absolute top-4 right-4
+                    .when(show_close_button, |el| {
+                        el.child(
+                            div()
+                                .absolute()
+                                .top(px(16.))
+                                .right(px(16.))
+                                .child(
+                                    Button::new("dialog-close")
+                                        .variant(ButtonVariant::Ghost)
+                                        .size(ButtonSize::IconSm)
+                                        .on_click(move |_, window, cx| {
+                                            close_button(false, window, cx)
                                         })
-                                        .hover(|s| s.bg(alpha(theme.muted, 0.8)))
-                                        .on_click(move |_, window, cx| close(&false, window, cx))
                                         .child(
+                                            // base-nova ghost has no own text color —
+                                            // the X inherits the content's foreground.
                                             svg()
                                                 .path(theme.icons.x())
                                                 .size(px(16.))
-                                                .text_color(theme.muted_foreground),
-                                        )
-                                })
-                            }),
-                    )),
-            ),
-        )
+                                                .text_color(theme.popover_foreground),
+                                        ),
+                                ),
+                        )
+                    });
+                content.with_animation("dialog-in", motion::enter_fast(), |el, delta| {
+                    el.opacity(delta).mt(px(8. * (1. - delta)))
+                })
+            });
+
+        root.child(deferred(
+            anchored().position(point(px(0.), px(0.))).child(overlay),
+        ))
         .into_any_element()
     }
 }
@@ -169,7 +299,7 @@ impl RenderOnce for DialogHeader {
     }
 }
 
-/// text-lg leading-none font-semibold (heading font).
+/// leading-none font-medium — inherits content's 14px text size.
 #[derive(IntoElement)]
 pub struct DialogTitle {
     children: Vec<AnyElement>,
@@ -196,13 +326,11 @@ impl ParentElement for DialogTitle {
 }
 
 impl RenderOnce for DialogTitle {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let theme = Theme::of(cx);
+    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         div()
-            .text_size(px(18.))
-            .line_height(px(22.))
-            .font_weight(FontWeight::SEMIBOLD)
-            .when_some(theme.heading_font(), |el, font| el.font_family(font))
+            .text_size(px(14.))
+            .line_height(px(14.))
+            .font_weight(FontWeight::MEDIUM)
             .children(self.children)
     }
 }
@@ -244,17 +372,48 @@ impl RenderOnce for DialogDescription {
     }
 }
 
-/// flex justify-end gap-2 (row on desktop).
+/// flex flex-row justify-end gap-2 (desktop). Optional outline Close via
+/// `show_close_button` (default false, matching shadcn DialogFooter).
 #[derive(IntoElement)]
 pub struct DialogFooter {
     children: Vec<AnyElement>,
+    /// Append outline "Close" button (shadcn `showCloseButton`, default false).
+    show_close_button: bool,
+    /// Close action for the optional footer Close button.
+    on_close: Option<Rc<dyn Fn(&mut Window, &mut App) + 'static>>,
+    /// `sm:justify-start` override (default is `justify-end`).
+    justify_start: bool,
 }
 
 impl DialogFooter {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            show_close_button: false,
+            on_close: None,
+            justify_start: false,
         }
+    }
+
+    /// Append an outline "Close" button after children (default false).
+    pub fn show_close_button(mut self, show: bool) -> Self {
+        self.show_close_button = show;
+        self
+    }
+
+    /// Handler invoked when the footer's Close button is clicked.
+    pub fn on_close(
+        mut self,
+        handler: impl Fn(&mut Window, &mut App) + 'static,
+    ) -> Self {
+        self.on_close = Some(Rc::new(handler));
+        self
+    }
+
+    /// Use `justify-start` instead of the default `justify-end`.
+    pub fn justify_start(mut self) -> Self {
+        self.justify_start = true;
+        self
     }
 }
 
@@ -272,11 +431,26 @@ impl ParentElement for DialogFooter {
 
 impl RenderOnce for DialogFooter {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        let justify_start = self.justify_start;
+        let show_close = self.show_close_button;
+        let on_close = self.on_close;
         div()
             .flex()
             .flex_row()
-            .justify_end()
+            .when(justify_start, |el| el.justify_start())
+            .when(!justify_start, |el| el.justify_end())
             .gap(px(8.))
             .children(self.children)
+            .when(show_close, |el| {
+                let handler = on_close.clone();
+                el.child(
+                    Button::new("dialog-footer-close")
+                        .variant(ButtonVariant::Outline)
+                        .child("Close")
+                        .when_some(handler, |btn, cb| {
+                            btn.on_click(move |_, window, cx| cb(window, cx))
+                        }),
+                )
+            })
     }
 }

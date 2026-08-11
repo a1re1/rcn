@@ -295,6 +295,11 @@ impl RenderOnce for FieldContent {
             .flex()
             .flex_col()
             .flex_1()
+            // CSS flex items shrink to their longest word and wrap text; gpui
+            // text reports its full unwrapped line as min-content, so without
+            // an explicit floor a long description pushes the row's control
+            // out of the card instead of wrapping.
+            .min_w(px(0.))
             .gap(px(2.))
             .children(self.children)
     }
