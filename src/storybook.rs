@@ -4531,36 +4531,108 @@ impl Storybook {
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // shadcn docs demos: vertical Tags list, then horizontal artwork row.
         div()
-            .rounded(theme.radius_md())
-            .border_1()
-            .border_color(theme.border)
+            .flex()
+            .flex_col()
+            .gap(px(24.))
             .child(
-                ScrollArea::new("scroll-area-tags")
-                    .h(px(200.))
-                    .w(px(192.))
+                // Vertical tags demo (shadcn h-72 w-48).
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
                     .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .p(px(16.))
+                        ScrollArea::new("scroll-area-tags")
+                            .h(px(288.))
+                            .w(px(192.))
                             .child(
                                 div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .pb(px(8.))
-                                    .child("Tags"),
-                            )
-                            .children((1..=20).flat_map(|version| {
-                                [
-                                    div()
-                                        .py(px(6.))
-                                        .text_size(px(13.))
-                                        .child(format!("v1.2.0-beta.{version}"))
-                                        .into_any_element(),
-                                    Separator::new().into_any_element(),
-                                ]
-                            })),
+                                    .p(px(16.))
+                                    .child(
+                                        div()
+                                            .text_size(px(14.))
+                                            .font_weight(FontWeight::MEDIUM)
+                                            .mb(px(16.))
+                                            .child("Tags"),
+                                    )
+                                    .children((1..=50).rev().flat_map(|version| {
+                                        [
+                                            div()
+                                                .text_size(px(14.))
+                                                .child(format!("v1.2.0-beta.{version}"))
+                                                .into_any_element(),
+                                            div()
+                                                .my(px(8.))
+                                                .child(Separator::new())
+                                                .into_any_element(),
+                                        ]
+                                    })),
+                            ),
+                    ),
+            )
+            .child(
+                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal").
+                // Unsplash photos are stand-ins: muted placeholder blocks.
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
+                    .child(
+                        // Height fits 400px figure + caption + 16px padding (no
+                        // explicit h in shadcn; gpui viewport is size_full so the
+                        // root needs a definite height for the track to paint).
+                        ScrollArea::new("scroll-area-artwork")
+                            .w(px(384.))
+                            .h(px(460.))
+                            .horizontal()
+                            .child(
+                                div().flex().flex_row().gap(px(16.)).p(px(16.)).children(
+                                    [
+                                        ("Ornella Binni", "photo-ornella"),
+                                        ("Tom Byrom", "photo-tom"),
+                                        ("Vladimir Malyavko", "photo-vladimir"),
+                                    ]
+                                    .into_iter()
+                                    .map(|(artist, id)| {
+                                        let theme = theme.clone();
+                                        div()
+                                            .id(id)
+                                            .flex()
+                                            .flex_col()
+                                            .flex_none()
+                                            .child(
+                                                div()
+                                                    .w(px(300.))
+                                                    .h(px(400.))
+                                                    .rounded(theme.radius_md())
+                                                    .overflow_hidden()
+                                                    .bg(theme.muted),
+                                            )
+                                            .child(
+                                                div()
+                                                    .pt(px(8.))
+                                                    .text_size(px(12.))
+                                                    .text_color(theme.muted_foreground)
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .child("Photo by ")
+                                                            .child(
+                                                                div()
+                                                                    .font_weight(
+                                                                        FontWeight::SEMIBOLD,
+                                                                    )
+                                                                    .text_color(theme.foreground)
+                                                                    .child(artist),
+                                                            ),
+                                                    ),
+                                            )
+                                            .into_any_element()
+                                    }),
+                                ),
+                            ),
                     ),
             )
     }

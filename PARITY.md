@@ -68,7 +68,7 @@ solid before the molecules that compose them.
 - [x] breadcrumb — (link focus rings)
 - [x] pagination — (Button-based links inherit focus rings)
 - [x] table — (static presentation — matches source table parts)
-- [x] scroll-area — (vertical overflow scroll; custom scrollbar + horizontal TODO)
+- [x] scroll-area — (custom painted scrollbar w/ proportional thumb, drag + track-click, horizontal orientation, focus ring; RTL + hover-fade states omitted)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] marker — (static presentation — matches source divider variants)
 
