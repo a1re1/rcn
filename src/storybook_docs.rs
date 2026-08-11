@@ -2173,6 +2173,11 @@ pub static SWITCH_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Switch",
         signature: "pub fn checked(mut self, checked: bool) -> Self",
+        doc: "Controlled checked override. When set, wins over keyed uncontrolled state.",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn default_checked(mut self, default_checked: bool) -> Self",
         doc: "",
     },
     ApiEntry {
@@ -2187,12 +2192,22 @@ pub static SWITCH_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Switch",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
+        signature: "pub fn read_only(mut self, read_only: bool) -> Self",
+        doc: "Focusable with the focus ring, but activation (click/Enter/Space) is a no-op. Distinct from [`Self::disabled`] (unfocusable, 50% opacity, no pointer events).",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "`aria-invalid`: destructive border + always-visible destructive ring.",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn on_checked_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Base UI `onCheckedChange` — called with the next checked value.",
     },
 ];
 
-pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .on_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
+pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .invalid(self.switch_invalid)\n    .read_only(self.switch_read_only)\n    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
 
 pub static TABLE_API: &[ApiEntry] = &[
     ApiEntry {

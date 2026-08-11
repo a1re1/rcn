@@ -664,6 +664,12 @@ pub struct Storybook {
     switch_checked: bool,
     switch_size: SwitchSize,
     switch_disabled: bool,
+    switch_invalid: bool,
+    switch_read_only: bool,
+    /// Choice-card example: "Share across devices"
+    switch_ex_share: bool,
+    /// Choice-card example: "Enable notifications" (starts checked)
+    switch_ex_notifications: bool,
     // Progress controls
     progress_value: f32,
     // Item controls
@@ -1038,6 +1044,10 @@ impl Storybook {
             switch_checked: true,
             switch_size: SwitchSize::Default,
             switch_disabled: false,
+            switch_invalid: false,
+            switch_read_only: false,
+            switch_ex_share: false,
+            switch_ex_notifications: true,
             progress_value: 60.,
             item_variant: ItemVariant::Outline,
             item_size: ItemSize::Default,
@@ -2116,23 +2126,159 @@ impl Storybook {
                     },
                 ),
             ],
-            Story::Switch => vec![(
-                "Sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Switch::new("ex-switch-sm")
-                            .size(SwitchSize::Sm)
-                            .checked(true),
+            Story::Switch => vec![
+                (
+                    "Demo",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Switch::new("ex-switch-demo"))
+                        .child(Label::new().child("Airplane Mode"))
+                        .into_any_element(),
+                ),
+                (
+                    "Description",
+                    div().w(px(384.)).child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .content(
+                                FieldContent::new()
+                                    .child(
+                                        FieldLabel::new().child("Share across devices"),
+                                    )
+                                    .child(
+                                        FieldDescription::new().child(
+                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                        ),
+                                    ),
+                            )
+                            .child(Switch::new("ex-switch-description")),
                     )
-                    .child(Switch::new("ex-switch-default").checked(true))
-                    .child(Switch::new("ex-switch-disabled").disabled(true))
                     .into_any_element(),
-            )],
+                ),
+                (
+                    "Choice Card",
+                    div().w(px(384.)).child(
+                        FieldGroup::new()
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_share)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Share across devices"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-share")
+                                                    .checked(self.switch_ex_share)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_share = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            )
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_notifications)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Enable notifications"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Receive notifications when focus mode is enabled or disabled.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-notify")
+                                                    .checked(self.switch_ex_notifications)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_notifications = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Switch::new("ex-switch-disabled-demo").disabled(true))
+                        .child(
+                            FieldLabel::new()
+                                .disabled(true)
+                                .child("Disabled"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .invalid(true)
+                        .content(
+                            FieldContent::new()
+                                .child(
+                                    FieldLabel::new()
+                                        .child("Accept terms and conditions"),
+                                )
+                                .child(
+                                    FieldDescription::new().child(
+                                        "You must accept the terms and conditions to continue.",
+                                    ),
+                                ),
+                        )
+                        // Uncontrolled, like the docs' `<Switch aria-invalid />` —
+                        // an invalid switch still toggles.
+                        .child(Switch::new("ex-switch-invalid-demo").invalid(true))
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div().w(px(160.)).child(
+                        FieldGroup::new()
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-sm").size(SwitchSize::Sm))
+                                    .child(FieldLabel::new().child("Small")),
+                            )
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-default"))
+                                    .child(FieldLabel::new().child("Default")),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+            ],
             Story::Checkbox => vec![(
                 "States",
                 div()
@@ -3272,7 +3418,7 @@ impl Storybook {
                     Switch::new("button-disabled")
                         .checked(self.button_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.button_disabled = *checked;
                             cx.notify();
                         }))
@@ -3314,7 +3460,7 @@ impl Storybook {
                     Switch::new("ctl-switch-checked")
                         .checked(self.switch_checked)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_checked = *checked;
                             cx.notify();
                         }))
@@ -3340,8 +3486,32 @@ impl Storybook {
                     Switch::new("ctl-switch-disabled")
                         .checked(self.switch_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_disabled = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "invalid",
+                    Switch::new("ctl-switch-invalid")
+                        .checked(self.switch_invalid)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_invalid = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "read_only",
+                    Switch::new("ctl-switch-read-only")
+                        .checked(self.switch_read_only)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_read_only = *checked;
                             cx.notify();
                         }))
                         .into_any_element(),
@@ -3354,7 +3524,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-multiple")
                         .checked(self.accordion_multiple)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_multiple = *on;
                             cx.notify();
                         }))
@@ -3366,7 +3536,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-root-disabled")
                         .checked(self.accordion_root_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_root_disabled = *on;
                             cx.notify();
                         }))
@@ -3378,7 +3548,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-disabled")
                         .checked(self.accordion_disable_third)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_disable_third = *on;
                             cx.notify();
                         }))
@@ -3447,7 +3617,7 @@ impl Storybook {
                 Switch::new("ctl-checkbox-checked")
                     .checked(self.checkbox_checked)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.checkbox_checked = *checked;
                         cx.notify();
                     }))
@@ -3463,7 +3633,7 @@ impl Storybook {
                 Switch::new("ctl-collapsible-open")
                     .checked(self.collapsible_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.collapsible_open = *open;
                         cx.notify();
                     }))
@@ -3510,7 +3680,7 @@ impl Storybook {
                 Switch::new("ctl-dialog-open")
                     .checked(self.dialog_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.dialog_open = *open;
                         cx.notify();
                     }))
@@ -3636,7 +3806,7 @@ impl Storybook {
                 Switch::new("ctl-popover-open")
                     .checked(self.popover_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.popover_open = *open;
                         cx.notify();
                     }))
@@ -4160,7 +4330,7 @@ impl Storybook {
                     .child(
                         Switch::new("tokens-switch")
                             .checked(self.switch_checked)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                                 this.switch_checked = *checked;
                                 cx.notify();
                             })),
@@ -4212,7 +4382,9 @@ impl Storybook {
             .checked(self.switch_checked)
             .size(self.switch_size)
             .disabled(self.switch_disabled)
-            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+            .invalid(self.switch_invalid)
+            .read_only(self.switch_read_only)
+            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                 this.switch_checked = *checked;
                 cx.notify();
             }))
@@ -6273,7 +6445,7 @@ impl Storybook {
                 .child(
                     Switch::new("field-2fa")
                         .checked(self.field_switch_2fa)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.field_switch_2fa = *checked;
                             cx.notify();
                         })),
