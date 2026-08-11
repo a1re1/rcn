@@ -11,12 +11,12 @@
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, AppContext as _, ClickEvent, ElementId, FontWeight, InteractiveElement as _,
-    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
+    AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
+    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
     prelude::FluentBuilder as _, px,
 };
 
-use crate::components::tooltip::TooltipView;
+use crate::components::tooltip::attach_tooltip;
 use crate::motion;
 use crate::theme::{Theme, alpha};
 
@@ -161,6 +161,7 @@ impl ParentElement for Button {
 impl RenderOnce for Button {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
+        let tooltip_id = (self.id.clone(), "tt");
 
         // Base: inline-flex items-center justify-center rounded-md border
         // border-transparent text-sm font-medium whitespace-nowrap select-none
@@ -313,8 +314,8 @@ impl RenderOnce for Button {
         };
 
         // active:translate-y-px; disabled:opacity-50 + no pointer events.
-        // Optional rich tooltip via gpui's .tooltip() (needs AnyView).
-        styled
+        // Optional rich tooltip via anchored attach_tooltip (side Top, instant).
+        let button = styled
             .when(self.disabled, |s| s.opacity(0.5))
             .when(!self.disabled, |s| {
                 s.tab_index(0)
@@ -322,13 +323,14 @@ impl RenderOnce for Button {
                     .active(|s| s.top(px(1.)))
                     .when_some(self.on_click, |s, on_click| s.on_click(on_click))
             })
-            .when_some(self.tooltip, |s, content| {
-                s.tooltip(move |_window, cx| {
-                    let content = Rc::clone(&content);
-                    cx.new(move |_| TooltipView::rich(move |window, app| content(window, app)))
-                        .into()
-                })
-            })
-            .children(self.children)
+            .children(self.children);
+
+        match self.tooltip {
+            Some(content) => {
+                attach_tooltip(tooltip_id, button, move |window, cx| content(window, cx))
+                    .into_any_element()
+            }
+            None => button.into_any_element(),
+        }
     }
 }

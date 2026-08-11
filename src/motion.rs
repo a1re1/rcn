@@ -48,8 +48,6 @@ pub fn transition() -> Animation {
 }
 
 /// `animate-in` (tw-animate-css enter keyframes): 150ms `ease`.
-// Part of the motion primitive set; no component uses it yet.
-#[allow(dead_code)]
 pub fn enter() -> Animation {
     Animation::new(Duration::from_millis(150)).with_easing(ease())
 }
@@ -77,6 +75,43 @@ pub fn pop_in<E: IntoElement + Styled + 'static>(
 ) -> AnimationElement<E> {
     panel.with_animation(id, enter_fast(), |el, delta| {
         el.opacity(delta).mt(px(-8. * (1. - delta)))
+    })
+}
+
+/// Side a tooltip (or similar) panel sits on relative to its trigger.
+/// Drives the enter slide axis — shadcn's `data-[side=…]:slide-in-from-…-2`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum OverlaySide {
+    #[default]
+    Top,
+    Right,
+    Bottom,
+    Left,
+}
+
+/// Tooltip enter animation — default tw-animate 150ms `ease` fade + 8px slide
+/// from the trigger outward (shadcn `data-[side=top]:slide-in-from-bottom-2`
+/// etc.). `zoom-in-95` is approximated by the fade+slide pair (see module doc).
+///
+/// TODO(rcn): exit animation — gpui only animates on mount.
+pub fn tooltip_in<E: IntoElement + Styled + 'static>(
+    id: impl Into<ElementId>,
+    side: OverlaySide,
+    panel: E,
+) -> AnimationElement<E> {
+    panel.with_animation(id, enter(), move |el, delta| {
+        let slide = 8. * (1. - delta);
+        let el = el.opacity(delta);
+        match side {
+            // Panel above trigger: slide up from below (positive Y → 0).
+            OverlaySide::Top => el.mt(px(slide)),
+            // Panel below trigger: slide down from above (negative Y → 0).
+            OverlaySide::Bottom => el.mt(px(-slide)),
+            // Panel left of trigger: slide left from the right (positive X → 0).
+            OverlaySide::Left => el.ml(px(slide)),
+            // Panel right of trigger: slide right from the left (negative X → 0).
+            OverlaySide::Right => el.ml(px(-slide)),
+        }
     })
 }
 

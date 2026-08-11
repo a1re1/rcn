@@ -2586,28 +2586,73 @@ pub static TOGGLE_GROUP_USAGE: &str = "let labels = [\"Bold\", \"Italic\", \"Und
 
 pub static TOOLTIP_API: &[ApiEntry] = &[
     ApiEntry {
-        type_name: "TooltipView",
-        signature: "pub fn new(text: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TooltipView",
-        signature: "pub fn rich(content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self",
-        doc: "Rich element content built on each render (shadcn's `TooltipContent` accepts arbitrary children).",
-    },
-    ApiEntry {
         type_name: "Tooltip",
         signature: "pub fn new(id: impl Into<ElementId>, text: impl Into<SharedString>) -> Self",
-        doc: "",
+        doc: "Text-only tooltip content.",
     },
     ApiEntry {
         type_name: "Tooltip",
         signature: "pub fn rich( id: impl Into<ElementId>, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self",
-        doc: "Rich counterpart of [`Tooltip::new`]: the closure builds the bubble body on each render (arbitrary elements, not just a string).",
+        doc: "Arbitrary element content (label + kbd chips, etc.).",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn side(mut self, side: TooltipSide) -> Self",
+        doc: "Side relative to the trigger. Default [`TooltipSide::Top`].",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn side_offset(mut self, offset: f32) -> Self",
+        doc: "Gap between trigger and panel edge in px. Default `4.0`.",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn align(mut self, align: TooltipAlign) -> Self",
+        doc: "Alignment along the side axis. Default [`TooltipAlign::Center`].",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn align_offset(mut self, offset: f32) -> Self",
+        doc: "Offset along the align axis in px. Default `0.0`.",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn delay(mut self, delay: Duration) -> Self",
+        doc: "Open delay. Default `Duration::ZERO` (shadcn `TooltipProvider delay={0}`; **not** Base UI's own 600ms `OPEN_DELAY`).",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
+        doc: "When true the tooltip never opens.",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn default_open(mut self, open: bool) -> Self",
+        doc: "Uncontrolled initial open state.",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn open(mut self, open: bool) -> Self",
+        doc: "Controlled open snapshot. Pair with [`Self::on_open_change`].",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Fires whenever the tooltip wants to open or close.",
+    },
+    ApiEntry {
+        type_name: "Tooltip",
+        signature: "pub fn has_kbd(mut self) -> Self",
+        doc: "Content includes a Kbd chip — drops right padding 12→6px (explicit stand-in for shadcn's `:has([data-slot=kbd])` selector).",
+    },
+    ApiEntry {
+        type_name: "RenderOnce",
+        signature: "pub fn attach_tooltip<E: IntoElement>( id: impl Into<ElementId>, trigger: E, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> impl IntoElement",
+        doc: "Attach an anchored tooltip to an arbitrary styled element (used by [`crate::components::Button::tooltip_rich`]). Defaults: side Top, align Center, instant open, hoverable panel.  Returns a relative wrapper around `trigger` that owns hover/Escape state and paints the bubble — the trigger's own focus/click/hover is unchanged.",
     },
 ];
 
-pub static TOOLTIP_USAGE: &str = "div()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(12.))\n    .child(\n        Tooltip::new(\"tooltip-demo\", \"Add to library\").child(\n            Button::new(\"tooltip-trigger\")\n                .variant(ButtonVariant::Outline)\n                .child(\"Hover me\"),\n        ),\n    )\n    .child(\n        Tooltip::rich(\"tooltip-rich-demo\", |_, _| {\n            div()\n                .flex()\n                .flex_row()\n                .items_center()\n                .gap(px(4.))\n                .child(\"Save Changes\")\n                .child(Kbd::new().in_tooltip().child(\"S\"))\n                .into_any_element()\n        })\n        .child(\n            Button::new(\"tooltip-rich-trigger\")\n                .variant(ButtonVariant::Outline)\n                .child(\"Rich tooltip\"),\n        ),\n    )\n    ";
+pub static TOOLTIP_USAGE: &str = "// Docs main demo: one outline \"Hover\" button → \"Add to library\",\n// wired to the side/align/disabled controls.\nTooltip::new(\"tooltip-demo\", \"Add to library\")\n    .side(self.tooltip_side)\n    .align(self.tooltip_align)\n    .disabled(self.tooltip_disabled)\n    .child(\n        Button::new(\"tooltip-trigger\")\n            .variant(ButtonVariant::Outline)\n            .child(\"Hover\"),\n    )\n    ";
 
 /// Docs lookup by component module name.
 pub static COMPONENT_DOCS: &[ComponentDocs] = &[
