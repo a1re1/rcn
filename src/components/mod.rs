@@ -131,7 +131,8 @@ pub use message_scroller::MessageScroller;
 pub use native_select::NativeSelect;
 pub use navigation_menu::{NavigationMenu, NavigationMenuEntry, NavigationMenuLink};
 pub use pagination::{
-    Pagination, PaginationEllipsis, PaginationLink, PaginationNext, PaginationPrevious,
+    Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink,
+    PaginationNext, PaginationPrevious,
 };
 pub use popover::{Popover, PopoverDescription, PopoverHeader, PopoverTitle};
 pub use progress::Progress;
