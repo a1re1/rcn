@@ -4796,8 +4796,12 @@ impl Storybook {
                             .variant(ItemMediaVariant::Image)
                             .top_align(true)
                             .child(
+                                // Rounding must sit on the img itself:
+                                // overflow_hidden clips to a rect in gpui,
+                                // so the media shell's radius can't crop it.
                                 gpui::img(tile)
                                     .size_full()
+                                    .rounded(theme.radius_sm())
                                     .object_fit(gpui::ObjectFit::Cover)
                                     .grayscale(true),
                             ),
