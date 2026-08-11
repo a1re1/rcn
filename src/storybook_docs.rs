@@ -190,13 +190,18 @@ pub static AVATAR_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Avatar",
+        signature: "pub fn grayscale(mut self, grayscale: bool) -> Self",
+        doc: "Render the image desaturated — shadcn `<AvatarImage className=\"grayscale\">`.",
+    },
+    ApiEntry {
+        type_name: "Avatar",
         signature: "pub fn size(mut self, size: AvatarSize) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "Avatar",
         signature: "pub fn image(mut self, source: impl Into<ImageSource>) -> Self",
-        doc: "",
+        doc: "Image source. Embedded asset paths (e.g. `images/avatar.png`) work; remote URLs would need an http client, which gpui's plain Application does not have.",
     },
     ApiEntry {
         type_name: "AvatarGroup",
@@ -1354,6 +1359,21 @@ pub static ITEM_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Item",
+        signature: "pub fn flush(mut self, flush: bool) -> Self",
+        doc: "Zero out padding — source class `in-data-[slot=dropdown-menu-content]:p-0`. Used by the dropdown storybook example where the item sits inside a menu.",
+    },
+    ApiEntry {
+        type_name: "Item",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Make the item interactive (focusable + clickable). Source: shadcn `render={<a/>}` / `[a]:hover:bg-muted` + focus-visible ring.",
+    },
+    ApiEntry {
+        type_name: "Item",
+        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "",
+    },
+    ApiEntry {
         type_name: "ItemMedia",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -1364,9 +1384,29 @@ pub static ITEM_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "ItemMedia",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Image-tile size from the parent item size. Source: `size-10 ... group-data-[size=sm]/item:size-8 group-data-[size=xs]/item:size-6`. Only affects [`ItemMediaVariant::Image`]; default is [`ItemSize::Default`].",
+    },
+    ApiEntry {
+        type_name: "ItemMedia",
+        signature: "pub fn top_align(mut self, top_align: bool) -> Self",
+        doc: "Top-align media when the item has a description. Source: `group-has-data-[slot=item-description]/item:self-start` + `translate-y-0.5` — applied as `.self_start().mt(px(2.))`. shadcn does this automatically; storybook sets it wherever a description is present.",
+    },
+    ApiEntry {
         type_name: "ItemContent",
         signature: "pub fn new() -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "ItemContent",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Parent item size. Source: `group-data-[size=xs]/item:gap-0` (Xs → gap 0, else gap 4px / `gap-1`).",
+    },
+    ApiEntry {
+        type_name: "ItemContent",
+        signature: "pub fn flex_none(mut self, flex_none: bool) -> Self",
+        doc: "Replace `flex-1` with `flex-none` for trailing content columns. Source: `[&+[data-slot=item-content]]:flex-none`.",
     },
     ApiEntry {
         type_name: "ItemTitle",
@@ -1377,6 +1417,11 @@ pub static ITEM_API: &[ApiEntry] = &[
         type_name: "ItemDescription",
         signature: "pub fn new() -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "ItemDescription",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Parent item size. Source: `group-data-[size=xs]/item:text-xs` (Xs → 12px/16px line-height; else 14px/21px).",
     },
     ApiEntry {
         type_name: "ItemActions",
@@ -1399,13 +1444,18 @@ pub static ITEM_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "ItemGroup",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Inter-item gap from child item size. Source: `gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2` (Default 16px, Sm 10px, Xs 8px). shadcn derives this from child sizes automatically; set explicitly here.",
+    },
+    ApiEntry {
         type_name: "ItemSeparator",
         signature: "pub fn new() -> Self",
         doc: "",
     },
 ];
 
-pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv().w(px(420.)).child(\n    ItemGroup::new()\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .size(self.item_size)\n                .child(\n                    ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                        gpui::svg()\n                            .path(theme.icons.chevron_right())\n                            .size(px(16.))\n                            .text_color(theme.foreground),\n                    ),\n                )\n                .child(\n                    ItemContent::new()\n                        .child(ItemTitle::new().child(\"Basic Item\"))\n                        .child(\n                            ItemDescription::new()\n                                .child(\"A simple item with title and description.\"),\n                        ),\n                )\n                .child(\n                    ItemActions::new().child(\n                        Button::new(\"item-action\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::Sm)\n                            .child(\"Action\"),\n                    ),\n                ),\n        )\n        .child(ItemSeparator::new())\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .child(ItemMedia::new().child(Avatar::new(\"CN\")))\n                .child(\n                    ItemContent::new()\n                        .child(ItemTitle::new().child(\"Evil Rabbit\"))\n                        .child(ItemDescription::new().child(\"Last seen 5 months ago\")),\n                )\n                .child(\n                    ItemActions::new().child(\n                        Button::new(\"item-add\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::IconSm)\n                            .child(\n                                gpui::svg()\n                                    .path(theme.icons.chevron_right())\n                                    .size(px(16.))\n                                    .text_color(theme.foreground),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .size(self.item_size)\n                .child(\n                    ItemHeader::new()\n                        .child(ItemTitle::new().child(\"Deployment\"))\n                        .child(Badge::new().variant(BadgeVariant::Secondary).child(\"Live\")),\n                )\n                .child(ItemContent::new().child(\n                    ItemDescription::new().child(\"Deployed 2 hours ago by evil rabbit.\"),\n                ))\n                .child(\n                    ItemFooter::new()\n                        .child(\n                            div()\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"main / a1b2c3d\"),\n                        )\n                        .child(\n                            Button::new(\"item-rollback\")\n                                .variant(ButtonVariant::Ghost)\n                                .size(ButtonSize::Xs)\n                                .child(\"Rollback\"),\n                        ),\n                ),\n        ),\n)\n    ";
+pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\n// Docs Demo: outline basic item (controls-wired) + interactive verified profile row.\ndiv()\n    .w(px(448.))\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        Item::new()\n            .variant(self.item_variant)\n            .size(self.item_size)\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Basic Item\"))\n                    .child(\n                        ItemDescription::new()\n                            .child(\"A simple item with title and description.\"),\n                    ),\n            )\n            .child(\n                ItemActions::new().child(\n                    Button::new(\"item-demo-action\")\n                        .variant(ButtonVariant::Outline)\n                        .size(ButtonSize::Sm)\n                        .child(\"Action\"),\n                ),\n            ),\n    )\n    .child(\n        Item::new()\n            .variant(ItemVariant::Outline)\n            .size(ItemSize::Sm)\n            .id(\"item-demo-link\")\n            .on_click(|_e, _w, _cx| {})\n            .child(\n                ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                    Icon::new(crate::assets::ICON_BADGE_CHECK)\n                        .size(px(20.))\n                        .text_color(theme.foreground),\n                ),\n            )\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Your profile has been verified.\")),\n            )\n            .child(\n                ItemActions::new().child(\n                    Icon::new(theme.icons.chevron_right())\n                        .size(px(16.))\n                        .text_color(theme.muted_foreground),\n                ),\n            ),\n    )\n    ";
 
 pub static KBD_API: &[ApiEntry] = &[
     ApiEntry {
