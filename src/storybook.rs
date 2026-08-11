@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString, Window, div,
-    hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString,
+    Window, div, hsla, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -44,16 +44,16 @@ use crate::components::{
     MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
     NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis,
     PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
-    QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
-    RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
-    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
-    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
-    ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
+    PopoverDescription, PopoverHeader, PopoverTitle, Progress, Questionnaire, QuestionnaireActions,
+    QuestionnaireChoice, QuestionnaireChoices, QuestionnaireDescription, QuestionnaireProgress,
+    QuestionnaireTitle, RadioGroup, RadioGroupItem, ResizableDirection, ResizableHandle,
+    ResizablePanel, ResizablePanelGroup, ScrollArea, Select, Separator, Sheet, SheetDescription,
+    SheetFooter, SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent, SidebarFooter,
+    SidebarGroup, SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton,
+    Slider, Spinner, Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter,
+    TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant,
+    Textarea, Toast, ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize,
+    ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, alpha, oklch};
 
