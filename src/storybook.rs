@@ -37,16 +37,14 @@ use crate::components::{
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input,
-    InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions,
-    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
-    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
-    Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
-    MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
-    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
+    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
+    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
+    MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
+    NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink, PaginationNext,
+    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
+    Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
     ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
@@ -2710,6 +2708,44 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::Item => vec![
+                (
+                    "Variant",
+                    self.item_example_variant(cx).into_any_element(),
+                ),
+                (
+                    "Size",
+                    self.item_example_size(cx).into_any_element(),
+                ),
+                (
+                    "Icon",
+                    self.item_example_icon(cx).into_any_element(),
+                ),
+                (
+                    "Avatar",
+                    self.item_example_avatar(cx).into_any_element(),
+                ),
+                (
+                    "Image",
+                    self.item_example_image(cx).into_any_element(),
+                ),
+                (
+                    "Group",
+                    self.item_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Header",
+                    self.item_example_header(cx).into_any_element(),
+                ),
+                (
+                    "Link",
+                    self.item_example_link(cx).into_any_element(),
+                ),
+                (
+                    "Dropdown",
+                    self.item_example_dropdown(cx).into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -3969,90 +4005,507 @@ impl Storybook {
 
     fn item_preview(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // Docs Demo: outline basic item (controls-wired) + interactive verified profile row.
+        div()
+            .w(px(420.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(self.item_variant)
+                    .size(self.item_size)
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Basic Item"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("A simple item with title and description."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new("item-demo-action")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Sm)
+                                .child("Action"),
+                        ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .size(ItemSize::Sm)
+                    .id("item-demo-link")
+                    .on_click(|_e, _w, _cx| {})
+                    .child(
+                        ItemMedia::new().variant(ItemMediaVariant::Icon).child(
+                            Icon::new(crate::assets::ICON_BADGE_CHECK)
+                                .size(px(20.))
+                                .text_color(theme.foreground),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Your profile has been verified.")),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Icon::new(theme.icons.chevron_right())
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of item-variant.tsx — default / outline / muted rows with inbox media.
+    fn item_example_variant(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let inbox = |theme: &Theme| {
+            ItemMedia::new()
+                .variant(ItemMediaVariant::Icon)
+                .top_align(true)
+                .child(
+                    Icon::new(crate::assets::ICON_INBOX)
+                        .size(px(16.))
+                        .text_color(theme.foreground),
+                )
+        };
+        div()
+            .w(px(420.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Default)
+                    .child(inbox(&theme))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Default Variant"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Transparent background with no border."),
+                            ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(inbox(&theme))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Outline Variant"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Outlined style with a visible border."),
+                            ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Muted)
+                    .child(inbox(&theme))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Muted Variant"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Muted background for secondary content."),
+                            ),
+                    ),
+            )
+    }
+
+    /// Port of item-size.tsx — default / sm / xs with size propagation.
+    fn item_example_size(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let row = |theme: &Theme, size: ItemSize, title: &str, desc: &str| {
+            Item::new()
+                .variant(ItemVariant::Outline)
+                .size(size)
+                .child(
+                    ItemMedia::new()
+                        .variant(ItemMediaVariant::Icon)
+                        .size(size)
+                        .top_align(true)
+                        .child(
+                            Icon::new(crate::assets::ICON_INBOX)
+                                .size(px(16.))
+                                .text_color(theme.foreground),
+                        ),
+                )
+                .child(
+                    ItemContent::new()
+                        .size(size)
+                        .child(ItemTitle::new().child(title.to_string()))
+                        .child(ItemDescription::new().size(size).child(desc.to_string())),
+                )
+        };
+        div()
+            .w(px(420.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(row(
+                &theme,
+                ItemSize::Default,
+                "Default Size",
+                "The standard size for most use cases.",
+            ))
+            .child(row(
+                &theme,
+                ItemSize::Sm,
+                "Small Size",
+                "A compact size for dense layouts.",
+            ))
+            .child(row(
+                &theme,
+                ItemSize::Xs,
+                "Extra Small Size",
+                "The most compact size available.",
+            ))
+    }
+
+    /// Port of item-icon.tsx — security alert with review action.
+    fn item_example_icon(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
         div().w(px(420.)).child(
-            ItemGroup::new()
+            Item::new()
+                .variant(ItemVariant::Outline)
                 .child(
-                    Item::new()
-                        .variant(self.item_variant)
-                        .size(self.item_size)
+                    ItemMedia::new()
+                        .variant(ItemMediaVariant::Icon)
+                        .top_align(true)
                         .child(
-                            ItemMedia::new().variant(ItemMediaVariant::Icon).child(
-                                gpui::svg()
-                                    .path(theme.icons.chevron_right())
-                                    .size(px(16.))
-                                    .text_color(theme.foreground),
-                            ),
-                        )
-                        .child(
-                            ItemContent::new()
-                                .child(ItemTitle::new().child("Basic Item"))
-                                .child(
-                                    ItemDescription::new()
-                                        .child("A simple item with title and description."),
-                                ),
-                        )
-                        .child(
-                            ItemActions::new().child(
-                                Button::new("item-action")
-                                    .variant(ButtonVariant::Outline)
-                                    .size(ButtonSize::Sm)
-                                    .child("Action"),
-                            ),
-                        ),
-                )
-                .child(ItemSeparator::new())
-                .child(
-                    Item::new()
-                        .variant(self.item_variant)
-                        .child(ItemMedia::new().child(Avatar::new("CN")))
-                        .child(
-                            ItemContent::new()
-                                .child(ItemTitle::new().child("Evil Rabbit"))
-                                .child(ItemDescription::new().child("Last seen 5 months ago")),
-                        )
-                        .child(
-                            ItemActions::new().child(
-                                Button::new("item-add")
-                                    .variant(ButtonVariant::Outline)
-                                    .size(ButtonSize::IconSm)
-                                    .child(
-                                        gpui::svg()
-                                            .path(theme.icons.chevron_right())
-                                            .size(px(16.))
-                                            .text_color(theme.foreground),
-                                    ),
-                            ),
+                            Icon::new(crate::assets::ICON_SHIELD_ALERT)
+                                .size(px(16.))
+                                .text_color(theme.foreground),
                         ),
                 )
                 .child(
-                    Item::new()
-                        .variant(self.item_variant)
-                        .size(self.item_size)
+                    ItemContent::new()
+                        .child(ItemTitle::new().child("Security Alert"))
                         .child(
-                            ItemHeader::new()
-                                .child(ItemTitle::new().child("Deployment"))
-                                .child(Badge::new().variant(BadgeVariant::Secondary).child("Live")),
-                        )
-                        .child(ItemContent::new().child(
-                            ItemDescription::new().child("Deployed 2 hours ago by evil rabbit."),
-                        ))
-                        .child(
-                            ItemFooter::new()
-                                .child(
-                                    div()
-                                        .text_size(px(12.))
-                                        .text_color(theme.muted_foreground)
-                                        .child("main / a1b2c3d"),
-                                )
-                                .child(
-                                    Button::new("item-rollback")
-                                        .variant(ButtonVariant::Ghost)
-                                        .size(ButtonSize::Xs)
-                                        .child("Rollback"),
-                                ),
+                            ItemDescription::new().child("New login detected from unknown device."),
                         ),
+                )
+                .child(
+                    ItemActions::new().child(
+                        Button::new("item-icon-review")
+                            .variant(ButtonVariant::Outline)
+                            .size(ButtonSize::Sm)
+                            .child("Review"),
+                    ),
                 ),
         )
+    }
+
+    /// Port of item-avatar.tsx — single avatar + avatar group invite rows.
+    fn item_example_avatar(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w(px(420.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(ItemMedia::new().top_align(true).child(Avatar::new("ER")))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Evil Rabbit"))
+                            .child(ItemDescription::new().child("Last seen 5 months ago")),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new("item-avatar-plus")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::IconSm)
+                                .rounded_full()
+                                .child(
+                                    Icon::new(crate::assets::ICON_PLUS)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                ),
+                        ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemMedia::new().top_align(true).child(
+                            AvatarGroup::new()
+                                .child(Avatar::new("CN"))
+                                .child(Avatar::new("LR"))
+                                .child(Avatar::new("ER")),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("No Team Members"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Invite your team to collaborate on this project."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new("item-avatar-invite")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Sm)
+                                .child("Invite"),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of item-image.tsx — music rows with image tiles + duration column.
+    fn item_example_image(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let songs = [
+            (
+                "item-song-1",
+                "Midnight City Lights",
+                "Neon Dreams",
+                "Electric Nights",
+                "3:45",
+            ),
+            (
+                "item-song-2",
+                "Coffee Shop Conversations",
+                "The Morning Brew",
+                "Urban Stories",
+                "4:05",
+            ),
+            (
+                "item-song-3",
+                "Digital Rain",
+                "Cyber Symphony",
+                "Binary Beats",
+                "3:30",
+            ),
+        ];
+        let mut group = ItemGroup::new().size(ItemSize::Default);
+        for (id, title, album, artist, duration) in songs {
+            let theme = theme.clone();
+            group = group.child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .id(id)
+                    .child(
+                        ItemMedia::new()
+                            .variant(ItemMediaVariant::Image)
+                            .top_align(true)
+                            .child(div().size_full().rounded(theme.radius_sm()).bg(theme.muted)),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(
+                                ItemTitle::new().child(
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .items_center()
+                                        .gap(px(4.))
+                                        .child(title.to_string())
+                                        .child(
+                                            div()
+                                                .text_color(theme.muted_foreground)
+                                                .child(format!("- {album}")),
+                                        ),
+                                ),
+                            )
+                            .child(ItemDescription::new().child(artist.to_string())),
+                    )
+                    .child(
+                        ItemContent::new().flex_none(true).child(
+                            ItemDescription::new().child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .justify_center()
+                                    .h_full()
+                                    .child(duration.to_string()),
+                            ),
+                        ),
+                    ),
+            );
+        }
+        div().w(px(420.)).child(group)
+    }
+
+    /// Port of item-group.tsx — people list with avatar + invite action.
+    fn item_example_group(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let people = [
+            ("item-person-s", "S", "shadcn", "shadcn@vercel.com"),
+            ("item-person-m", "M", "maxleiter", "maxleiter@vercel.com"),
+            ("item-person-e", "E", "evilrabbit", "evilrabbit@vercel.com"),
+        ];
+        let mut group = ItemGroup::new().size(ItemSize::Default);
+        for (id, initials, name, email) in people {
+            let theme = theme.clone();
+            group = group.child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemMedia::new()
+                            .top_align(true)
+                            .child(Avatar::new(initials)),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child(name.to_string()))
+                            .child(ItemDescription::new().child(email.to_string())),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new(format!("{id}-plus"))
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::IconSm)
+                                .child(
+                                    Icon::new(crate::assets::ICON_PLUS)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                ),
+                        ),
+                    ),
+            );
+        }
+        div().w(px(420.)).child(group)
+    }
+
+    /// Port of item-header.tsx — model cards with square header tiles.
+    fn item_example_header(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let card = |theme: &Theme, title: &str, desc: &str| {
+            Item::new()
+                .variant(ItemVariant::Outline)
+                .child(
+                    ItemHeader::new().child(
+                        AspectRatio::new(1.)
+                            .child(div().size_full().rounded(theme.radius_sm()).bg(theme.muted)),
+                    ),
+                )
+                .child(
+                    ItemContent::new()
+                        .child(ItemTitle::new().child(title.to_string()))
+                        .child(ItemDescription::new().child(desc.to_string())),
+                )
+        };
+        div()
+            .w(px(420.))
+            .flex()
+            .flex_row()
+            .gap(px(16.))
+            .child(card(
+                &theme,
+                "v0-1.5-sm",
+                "Everyday tasks and UI generation.",
+            ))
+            .child(card(&theme, "v0-1.5-lg", "Advanced thinking or reasoning."))
+            .child(card(
+                &theme,
+                "v0-2.0-mini",
+                "Open Source model for everyone.",
+            ))
+    }
+
+    /// Port of item-link.tsx — interactive documentation + external resource rows.
+    fn item_example_link(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w(px(420.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Default)
+                    .id("item-link-docs")
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Visit our documentation"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Learn how to get started with our components."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Icon::new(theme.icons.chevron_right())
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .id("item-link-external")
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("External resource"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Opens in a new tab with security attributes."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Icon::new(crate::assets::ICON_EXTERNAL_LINK)
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of item-dropdown.tsx — select menu whose items are flush xs Item rows.
+    fn item_example_dropdown(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let people = [
+            ("item-dd-s", "S", "shadcn", "shadcn@vercel.com"),
+            ("item-dd-m", "M", "maxleiter", "maxleiter@vercel.com"),
+            ("item-dd-e", "E", "evilrabbit", "evilrabbit@vercel.com"),
+        ];
+        let mut menu = DropdownMenu::new("item-dropdown-select").trigger(
+            Button::new("item-dropdown-trigger")
+                .variant(ButtonVariant::Outline)
+                .child("Select")
+                .child(
+                    Icon::new(theme.icons.chevron_down())
+                        .size(px(16.))
+                        .text_color(theme.foreground),
+                ),
+        );
+        for (id, initials, name, email) in people {
+            menu =
+                menu.item(
+                    DropdownMenuItem::new(id).child(
+                        Item::new()
+                            .size(ItemSize::Xs)
+                            .flush(true)
+                            .child(ItemMedia::new().child(
+                                // Closest AvatarSize to the docs' ~26px tile is Default (32).
+                                Avatar::new(initials).size(AvatarSize::Default),
+                            ))
+                            .child(
+                                ItemContent::new()
+                                    .size(ItemSize::Xs)
+                                    .child(ItemTitle::new().child(name.to_string()))
+                                    .child(ItemDescription::new().size(ItemSize::Xs).child(
+                                        div().line_height(px(12.)).child(email.to_string()),
+                                    )),
+                            ),
+                    ),
+                );
+        }
+        div().w(px(420.)).child(menu)
     }
 
     fn table_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {

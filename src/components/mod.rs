@@ -112,9 +112,13 @@ pub use input::Input;
 pub use input_group::{InputGroup, InputGroupAddon};
 pub use input_otp::InputOtp;
 pub use item::{
-    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
-    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,
+    Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemMedia,
+    ItemMediaVariant, ItemSize, ItemTitle, ItemVariant,
 };
+// Public API surface matching shadcn `ItemFooter`/`ItemSeparator` (API
+// reference only); the current docs examples don't use them.
+#[allow(unused_imports)]
+pub use item::{ItemFooter, ItemSeparator};
 pub use kbd::{Kbd, KbdGroup};
 pub use label::Label;
 pub use marker::{Marker, MarkerVariant};
