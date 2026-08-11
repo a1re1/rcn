@@ -672,6 +672,10 @@ pub struct Storybook {
     table_selected: Option<usize>,
     // Checkbox controls
     checkbox_checked: bool,
+    // Label story state
+    label_disabled: bool,
+    label_terms_checked: bool,
+    label_email_input: gpui::Entity<Input>,
     // Radio group story state
     radio_selected: usize,
     // Toggle story state
@@ -966,6 +970,7 @@ impl Storybook {
             input
         });
         let card_spacing_password = cx.new(|cx| Input::new(cx));
+        let label_email_input = cx.new(|cx| Input::new(cx));
         // Live-refresh stories that derive UI from input text.
         for input in [
             &command_input,
@@ -1011,6 +1016,9 @@ impl Storybook {
             item_size: ItemSize::Default,
             table_selected: Some(1),
             checkbox_checked: true,
+            label_disabled: false,
+            label_terms_checked: false,
+            label_email_input,
             radio_selected: 1,
             toggle_pressed: true,
             toggle_outline_pressed: false,
@@ -1288,7 +1296,7 @@ impl Storybook {
             Story::Popover => self.popover_preview(cx).into_any_element(),
             Story::Separator => Self::separator_preview(cx).into_any_element(),
             Story::Skeleton => Self::skeleton_preview().into_any_element(),
-            Story::Label => Self::label_preview().into_any_element(),
+            Story::Label => self.label_preview(cx).into_any_element(),
             Story::Kbd => Self::kbd_preview().into_any_element(),
             Story::Card => self.card_preview(cx).into_any_element(),
             Story::Alert => self.alert_preview().into_any_element(),
@@ -3107,7 +3115,18 @@ impl Storybook {
                 &theme,
             )],
             Story::Skeleton => Vec::new(),
-            Story::Label => Vec::new(),
+            Story::Label => vec![Self::control_row(
+                "disabled",
+                Switch::new("ctl-label-disabled")
+                    .checked(self.label_disabled)
+                    .size(SwitchSize::Sm)
+                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        this.label_disabled = *checked;
+                        cx.notify();
+                    }))
+                    .into_any_element(),
+                &theme,
+            )],
             Story::Kbd => Vec::new(),
             Story::Card => vec![Self::control_row(
                 "size",
@@ -3824,21 +3843,40 @@ impl Storybook {
             )
     }
 
-    fn label_preview() -> impl IntoElement + use<> {
+    fn label_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // label-demo + Label-in-Field (shadcn base-nova docs)
         div()
             .flex()
             .flex_col()
-            .gap(px(12.))
+            .gap(px(24.))
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
                     .gap(px(8.))
-                    .child(Switch::new("label-switch").checked(true))
-                    .child(Label::new().child("Airplane Mode")),
+                    .child(
+                        Checkbox::new("label-terms")
+                            .checked(self.label_terms_checked)
+                            .disabled(self.label_disabled)
+                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                                this.label_terms_checked = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        Label::new()
+                            .disabled(self.label_disabled)
+                            .child("Accept terms and conditions"),
+                    ),
             )
-            .child(Label::new().disabled(true).child("Disabled label"))
+            .child(
+                div().w(px(448.)).child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Your email address"))
+                        .child(self.label_email_input.clone()),
+                ),
+            )
     }
 
     fn kbd_preview() -> impl IntoElement + use<> {

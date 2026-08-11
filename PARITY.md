@@ -33,7 +33,7 @@ solid before the molecules that compose them.
 
 - [x] button — audited in the infrastructure PR (keyboard focus + ring)
 - [x] badge — (static presentation — matches source; focus-visible/aria-invalid omitted; as-child link not ported)
-- [x] label — (static presentation — matches source; peer/group disabled via explicit `.disabled`)
+- [x] label — (matches base-nova source; peer/group disabled via explicit `.disabled` (opacity only — pointer-events/cursor omitted); docs examples: checkbox demo + Label-in-Field in storybook; RTL omitted)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] separator — (static presentation — matches source, no interactive surface)
 - [x] skeleton — animate-pulse (2s opacity breathing)
