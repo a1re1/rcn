@@ -343,7 +343,10 @@ impl RenderOnce for ItemContent {
             .flex()
             .flex_col()
             .when(self.flex_none, |el| el.flex_none())
-            .when(!self.flex_none, |el| el.flex_1())
+            // min_w(0): let the column shrink below its content so long
+            // titles truncate instead of pushing siblings onto the item's
+            // next flex-wrap line (CSS gets this via line-clamp overflow).
+            .when(!self.flex_none, |el| el.flex_1().min_w(px(0.)))
             .gap(gap)
             .children(self.children)
     }

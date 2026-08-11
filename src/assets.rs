@@ -263,12 +263,65 @@ pub const ICON_ITALIC: &str = "icons/italic.svg";
 pub const ICON_BOLD: &str = "icons/bold.svg";
 pub const ICON_ARROW_UP_RIGHT: &str = "icons/arrow-up-right.svg";
 
+/// Embedded photos for the storybook docs examples (the same images the
+/// shadcn docs pages use, checked into `assets/images/`, normalized to
+/// baseline PNG).
+const IMAGES: &[(&str, &[u8])] = &[
+    (
+        "images/avatar-shadcn.png",
+        include_bytes!("../assets/images/avatar-shadcn.png"),
+    ),
+    (
+        "images/avatar-maxleiter.png",
+        include_bytes!("../assets/images/avatar-maxleiter.png"),
+    ),
+    (
+        "images/avatar-evilrabbit.png",
+        include_bytes!("../assets/images/avatar-evilrabbit.png"),
+    ),
+    (
+        "images/tile-midnight.png",
+        include_bytes!("../assets/images/tile-midnight.png"),
+    ),
+    (
+        "images/tile-coffee.png",
+        include_bytes!("../assets/images/tile-coffee.png"),
+    ),
+    (
+        "images/tile-digital.png",
+        include_bytes!("../assets/images/tile-digital.png"),
+    ),
+    (
+        "images/header-v0-sm.png",
+        include_bytes!("../assets/images/header-v0-sm.png"),
+    ),
+    (
+        "images/header-v0-lg.png",
+        include_bytes!("../assets/images/header-v0-lg.png"),
+    ),
+    (
+        "images/header-v0-mini.png",
+        include_bytes!("../assets/images/header-v0-mini.png"),
+    ),
+];
+
+pub const IMAGE_AVATAR_SHADCN: &str = "images/avatar-shadcn.png";
+pub const IMAGE_AVATAR_MAXLEITER: &str = "images/avatar-maxleiter.png";
+pub const IMAGE_AVATAR_EVILRABBIT: &str = "images/avatar-evilrabbit.png";
+pub const IMAGE_TILE_MIDNIGHT: &str = "images/tile-midnight.png";
+pub const IMAGE_TILE_COFFEE: &str = "images/tile-coffee.png";
+pub const IMAGE_TILE_DIGITAL: &str = "images/tile-digital.png";
+pub const IMAGE_HEADER_V0_SM: &str = "images/header-v0-sm.png";
+pub const IMAGE_HEADER_V0_LG: &str = "images/header-v0-lg.png";
+pub const IMAGE_HEADER_V0_MINI: &str = "images/header-v0-mini.png";
+
 pub struct Assets;
 
 impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<Cow<'static, [u8]>>> {
         Ok(ICONS
             .iter()
+            .chain(IMAGES.iter())
             .find(|(name, _)| *name == path)
             .map(|(_, bytes)| Cow::Borrowed(*bytes)))
     }
@@ -276,6 +329,7 @@ impl AssetSource for Assets {
     fn list(&self, path: &str) -> Result<Vec<SharedString>> {
         Ok(ICONS
             .iter()
+            .chain(IMAGES.iter())
             .filter(|(name, _)| name.starts_with(path))
             .map(|(name, _)| SharedString::from(*name))
             .collect())

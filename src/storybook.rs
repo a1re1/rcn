@@ -707,6 +707,8 @@ pub struct Storybook {
     // Dropdown menu story state
     dropdown_open: bool,
     dropdown_status_checked: bool,
+    // Item story state
+    item_dropdown_open: bool,
     // Context menu story state
     context_menu_at: Option<gpui::Point<gpui::Pixels>>,
     // Menubar story state
@@ -1041,6 +1043,7 @@ impl Storybook {
             drawer_open: false,
             dropdown_open: false,
             dropdown_status_checked: true,
+            item_dropdown_open: false,
             context_menu_at: None,
             menubar_open: None,
             select_value: None,
@@ -4476,7 +4479,7 @@ impl Storybook {
         let theme = Theme::of(cx).clone();
         // Docs Demo: outline basic item (controls-wired) + interactive verified profile row.
         div()
-            .w(px(420.))
+            .w(px(448.))
             .flex()
             .flex_col()
             .gap(px(24.))
@@ -4542,7 +4545,7 @@ impl Storybook {
                 )
         };
         div()
-            .w(px(420.))
+            .w(px(448.))
             .flex()
             .flex_col()
             .gap(px(24.))
@@ -4613,7 +4616,7 @@ impl Storybook {
                 )
         };
         div()
-            .w(px(420.))
+            .w(px(448.))
             .flex()
             .flex_col()
             .gap(px(24.))
@@ -4640,7 +4643,7 @@ impl Storybook {
     /// Port of item-icon.tsx — security alert with review action.
     fn item_example_icon(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        div().w(px(420.)).child(
+        div().w(px(512.)).child(
             Item::new()
                 .variant(ItemVariant::Outline)
                 .child(
@@ -4675,14 +4678,21 @@ impl Storybook {
     fn item_example_avatar(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         div()
-            .w(px(420.))
+            // max-w-lg
+            .w(px(512.))
             .flex()
             .flex_col()
             .gap(px(24.))
             .child(
                 Item::new()
                     .variant(ItemVariant::Outline)
-                    .child(ItemMedia::new().top_align(true).child(Avatar::new("ER")))
+                    .child(
+                        ItemMedia::new().top_align(true).child(
+                            Avatar::new("ER")
+                                .size(AvatarSize::Lg)
+                                .image(crate::assets::IMAGE_AVATAR_EVILRABBIT),
+                        ),
+                    )
                     .child(
                         ItemContent::new()
                             .child(ItemTitle::new().child("Evil Rabbit"))
@@ -4708,9 +4718,21 @@ impl Storybook {
                     .child(
                         ItemMedia::new().top_align(true).child(
                             AvatarGroup::new()
-                                .child(Avatar::new("CN"))
-                                .child(Avatar::new("LR"))
-                                .child(Avatar::new("ER")),
+                                .child(
+                                    Avatar::new("CN")
+                                        .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                                        .grayscale(true),
+                                )
+                                .child(
+                                    Avatar::new("LR")
+                                        .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                                        .grayscale(true),
+                                )
+                                .child(
+                                    Avatar::new("ER")
+                                        .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                                        .grayscale(true),
+                                ),
                         ),
                     )
                     .child(
@@ -4735,6 +4757,7 @@ impl Storybook {
     /// Port of item-image.tsx — music rows with image tiles + duration column.
     fn item_example_image(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // (id, title, artist, album, duration, tile)
         let songs = [
             (
                 "item-song-1",
@@ -4742,6 +4765,7 @@ impl Storybook {
                 "Neon Dreams",
                 "Electric Nights",
                 "3:45",
+                crate::assets::IMAGE_TILE_MIDNIGHT,
             ),
             (
                 "item-song-2",
@@ -4749,6 +4773,7 @@ impl Storybook {
                 "The Morning Brew",
                 "Urban Stories",
                 "4:05",
+                crate::assets::IMAGE_TILE_COFFEE,
             ),
             (
                 "item-song-3",
@@ -4756,10 +4781,11 @@ impl Storybook {
                 "Cyber Symphony",
                 "Binary Beats",
                 "3:30",
+                crate::assets::IMAGE_TILE_DIGITAL,
             ),
         ];
         let mut group = ItemGroup::new().size(ItemSize::Default);
-        for (id, title, album, artist, duration) in songs {
+        for (id, title, artist, album, duration, tile) in songs {
             let theme = theme.clone();
             group = group.child(
                 Item::new()
@@ -4769,22 +4795,28 @@ impl Storybook {
                         ItemMedia::new()
                             .variant(ItemMediaVariant::Image)
                             .top_align(true)
-                            .child(div().size_full().rounded(theme.radius_sm()).bg(theme.muted)),
+                            .child(
+                                gpui::img(tile)
+                                    .size_full()
+                                    .object_fit(gpui::ObjectFit::Cover)
+                                    .grayscale(true),
+                            ),
                     )
                     .child(
                         ItemContent::new()
                             .child(
+                                // Title: "<song> - <album>", album span muted.
                                 ItemTitle::new().child(
                                     div()
                                         .flex()
                                         .flex_row()
                                         .items_center()
                                         .gap(px(4.))
-                                        .child(title.to_string())
+                                        .child(format!("{title} -"))
                                         .child(
                                             div()
                                                 .text_color(theme.muted_foreground)
-                                                .child(format!("- {album}")),
+                                                .child(album.to_string()),
                                         ),
                                 ),
                             )
@@ -4804,19 +4836,38 @@ impl Storybook {
                     ),
             );
         }
-        div().w(px(420.)).child(group)
+        // max-w-md
+        div().w(px(448.)).child(group)
     }
 
     /// Port of item-group.tsx — people list with avatar + invite action.
     fn item_example_group(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let people = [
-            ("item-person-s", "S", "shadcn", "shadcn@vercel.com"),
-            ("item-person-m", "M", "maxleiter", "maxleiter@vercel.com"),
-            ("item-person-e", "E", "evilrabbit", "evilrabbit@vercel.com"),
+            (
+                "item-person-s",
+                "S",
+                "shadcn",
+                "shadcn@vercel.com",
+                crate::assets::IMAGE_AVATAR_SHADCN,
+            ),
+            (
+                "item-person-m",
+                "M",
+                "maxleiter",
+                "maxleiter@vercel.com",
+                crate::assets::IMAGE_AVATAR_MAXLEITER,
+            ),
+            (
+                "item-person-e",
+                "E",
+                "evilrabbit",
+                "evilrabbit@vercel.com",
+                crate::assets::IMAGE_AVATAR_EVILRABBIT,
+            ),
         ];
         let mut group = ItemGroup::new().size(ItemSize::Default);
-        for (id, initials, name, email) in people {
+        for (id, initials, name, email, photo) in people {
             let theme = theme.clone();
             group = group.child(
                 Item::new()
@@ -4824,7 +4875,7 @@ impl Storybook {
                     .child(
                         ItemMedia::new()
                             .top_align(true)
-                            .child(Avatar::new(initials)),
+                            .child(Avatar::new(initials).image(photo).grayscale(true)),
                     )
                     .child(
                         ItemContent::new()
@@ -4845,29 +4896,39 @@ impl Storybook {
                     ),
             );
         }
-        div().w(px(420.)).child(group)
+        // max-w-sm
+        div().w(px(384.)).child(group)
     }
 
     /// Port of item-header.tsx — model cards with square header tiles.
     fn item_example_header(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        let card = |theme: &Theme, title: &str, desc: &str| {
-            Item::new()
-                .variant(ItemVariant::Outline)
-                .child(
-                    ItemHeader::new().child(
-                        AspectRatio::new(1.)
-                            .child(div().size_full().rounded(theme.radius_sm()).bg(theme.muted)),
+        let card = |theme: &Theme, title: &str, desc: &str, photo: &'static str| {
+            // grid-cols-3: each cell shares the row evenly; min_w(0) lets the
+            // full-width Item shrink to its cell instead of overflowing.
+            div().flex_1().min_w(px(0.)).child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemHeader::new().child(
+                            AspectRatio::new(1.).child(
+                                gpui::img(photo)
+                                    .size_full()
+                                    .rounded(theme.radius_sm())
+                                    .object_fit(gpui::ObjectFit::Cover),
+                            ),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child(title.to_string()))
+                            .child(ItemDescription::new().child(desc.to_string())),
                     ),
-                )
-                .child(
-                    ItemContent::new()
-                        .child(ItemTitle::new().child(title.to_string()))
-                        .child(ItemDescription::new().child(desc.to_string())),
-                )
+            )
         };
         div()
-            .w(px(420.))
+            // max-w-xl
+            .w(px(576.))
             .flex()
             .flex_row()
             .gap(px(16.))
@@ -4875,12 +4936,19 @@ impl Storybook {
                 &theme,
                 "v0-1.5-sm",
                 "Everyday tasks and UI generation.",
+                crate::assets::IMAGE_HEADER_V0_SM,
             ))
-            .child(card(&theme, "v0-1.5-lg", "Advanced thinking or reasoning."))
+            .child(card(
+                &theme,
+                "v0-1.5-lg",
+                "Advanced thinking or reasoning.",
+                crate::assets::IMAGE_HEADER_V0_LG,
+            ))
             .child(card(
                 &theme,
                 "v0-2.0-mini",
                 "Open Source model for everyone.",
+                crate::assets::IMAGE_HEADER_V0_MINI,
             ))
     }
 
@@ -4888,7 +4956,7 @@ impl Storybook {
     fn item_example_link(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         div()
-            .w(px(420.))
+            .w(px(448.))
             .flex()
             .flex_col()
             .gap(px(24.))
@@ -4938,21 +5006,45 @@ impl Storybook {
     fn item_example_dropdown(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let people = [
-            ("item-dd-s", "S", "shadcn", "shadcn@vercel.com"),
-            ("item-dd-m", "M", "maxleiter", "maxleiter@vercel.com"),
-            ("item-dd-e", "E", "evilrabbit", "evilrabbit@vercel.com"),
+            (
+                "item-dd-s",
+                "S",
+                "shadcn",
+                "shadcn@vercel.com",
+                crate::assets::IMAGE_AVATAR_SHADCN,
+            ),
+            (
+                "item-dd-m",
+                "M",
+                "maxleiter",
+                "maxleiter@vercel.com",
+                crate::assets::IMAGE_AVATAR_MAXLEITER,
+            ),
+            (
+                "item-dd-e",
+                "E",
+                "evilrabbit",
+                "evilrabbit@vercel.com",
+                crate::assets::IMAGE_AVATAR_EVILRABBIT,
+            ),
         ];
-        let mut menu = DropdownMenu::new("item-dropdown-select").trigger(
-            Button::new("item-dropdown-trigger")
-                .variant(ButtonVariant::Outline)
-                .child("Select")
-                .child(
-                    Icon::new(theme.icons.chevron_down())
-                        .size(px(16.))
-                        .text_color(theme.foreground),
-                ),
-        );
-        for (id, initials, name, email) in people {
+        let mut menu = DropdownMenu::new("item-dropdown-select")
+            .open(self.item_dropdown_open)
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.item_dropdown_open = *open;
+                cx.notify();
+            }))
+            .trigger(
+                Button::new("item-dropdown-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .child("Select")
+                    .child(
+                        Icon::new(theme.icons.chevron_down())
+                            .size(px(16.))
+                            .text_color(theme.foreground),
+                    ),
+            );
+        for (id, initials, name, email, photo) in people {
             menu =
                 menu.item(
                     DropdownMenuItem::new(id).child(
@@ -4961,7 +5053,10 @@ impl Storybook {
                             .flush(true)
                             .child(ItemMedia::new().child(
                                 // Closest AvatarSize to the docs' ~26px tile is Default (32).
-                                Avatar::new(initials).size(AvatarSize::Default),
+                                Avatar::new(initials)
+                                    .size(AvatarSize::Default)
+                                    .image(photo)
+                                    .grayscale(true),
                             ))
                             .child(
                                 ItemContent::new()

@@ -190,13 +190,18 @@ pub static AVATAR_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Avatar",
+        signature: "pub fn grayscale(mut self, grayscale: bool) -> Self",
+        doc: "Render the image desaturated — shadcn `<AvatarImage className=\"grayscale\">`.",
+    },
+    ApiEntry {
+        type_name: "Avatar",
         signature: "pub fn size(mut self, size: AvatarSize) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "Avatar",
         signature: "pub fn image(mut self, source: impl Into<ImageSource>) -> Self",
-        doc: "",
+        doc: "Image source. Embedded asset paths (e.g. `images/avatar.png`) work; remote URLs would need an http client, which gpui's plain Application does not have.",
     },
     ApiEntry {
         type_name: "AvatarGroup",
@@ -1380,7 +1385,7 @@ pub static ITEM_API: &[ApiEntry] = &[
     },
 ];
 
-pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\n// Docs Demo: outline basic item (controls-wired) + interactive verified profile row.\ndiv()\n    .w(px(420.))\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        Item::new()\n            .variant(self.item_variant)\n            .size(self.item_size)\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Basic Item\"))\n                    .child(\n                        ItemDescription::new()\n                            .child(\"A simple item with title and description.\"),\n                    ),\n            )\n            .child(\n                ItemActions::new().child(\n                    Button::new(\"item-demo-action\")\n                        .variant(ButtonVariant::Outline)\n                        .size(ButtonSize::Sm)\n                        .child(\"Action\"),\n                ),\n            ),\n    )\n    .child(\n        Item::new()\n            .variant(ItemVariant::Outline)\n            .size(ItemSize::Sm)\n            .id(\"item-demo-link\")\n            .on_click(|_e, _w, _cx| {})\n            .child(\n                ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                    Icon::new(crate::assets::ICON_BADGE_CHECK)\n                        .size(px(20.))\n                        .text_color(theme.foreground),\n                ),\n            )\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Your profile has been verified.\")),\n            )\n            .child(\n                ItemActions::new().child(\n                    Icon::new(theme.icons.chevron_right())\n                        .size(px(16.))\n                        .text_color(theme.muted_foreground),\n                ),\n            ),\n    )\n    ";
+pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\n// Docs Demo: outline basic item (controls-wired) + interactive verified profile row.\ndiv()\n    .w(px(448.))\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        Item::new()\n            .variant(self.item_variant)\n            .size(self.item_size)\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Basic Item\"))\n                    .child(\n                        ItemDescription::new()\n                            .child(\"A simple item with title and description.\"),\n                    ),\n            )\n            .child(\n                ItemActions::new().child(\n                    Button::new(\"item-demo-action\")\n                        .variant(ButtonVariant::Outline)\n                        .size(ButtonSize::Sm)\n                        .child(\"Action\"),\n                ),\n            ),\n    )\n    .child(\n        Item::new()\n            .variant(ItemVariant::Outline)\n            .size(ItemSize::Sm)\n            .id(\"item-demo-link\")\n            .on_click(|_e, _w, _cx| {})\n            .child(\n                ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                    Icon::new(crate::assets::ICON_BADGE_CHECK)\n                        .size(px(20.))\n                        .text_color(theme.foreground),\n                ),\n            )\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Your profile has been verified.\")),\n            )\n            .child(\n                ItemActions::new().child(\n                    Icon::new(theme.icons.chevron_right())\n                        .size(px(16.))\n                        .text_color(theme.muted_foreground),\n                ),\n            ),\n    )\n    ";
 
 pub static KBD_API: &[ApiEntry] = &[
     ApiEntry {

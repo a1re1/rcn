@@ -42,6 +42,7 @@ impl AvatarSize {
 pub struct Avatar {
     size: AvatarSize,
     image: Option<ImageSource>,
+    grayscale: bool,
     fallback: SharedString,
 }
 
@@ -50,8 +51,15 @@ impl Avatar {
         Self {
             size: AvatarSize::default(),
             image: None,
+            grayscale: false,
             fallback: fallback.into(),
         }
+    }
+
+    /// Render the image desaturated — shadcn `<AvatarImage className="grayscale">`.
+    pub fn grayscale(mut self, grayscale: bool) -> Self {
+        self.grayscale = grayscale;
+        self
     }
 
     pub fn size(mut self, size: AvatarSize) -> Self {
@@ -59,9 +67,9 @@ impl Avatar {
         self
     }
 
-    // TODO(rcn): exercise in the storybook once an http client is wired up
-    // for remote image sources (gpui's plain Application has none).
-    #[allow(dead_code)]
+    /// Image source. Embedded asset paths (e.g. `images/avatar.png`) work;
+    /// remote URLs would need an http client, which gpui's plain
+    /// Application does not have.
     pub fn image(mut self, source: impl Into<ImageSource>) -> Self {
         self.image = Some(source.into());
         self
@@ -90,7 +98,8 @@ impl RenderOnce for Avatar {
                     img(source)
                         .size_full()
                         .rounded_full()
-                        .object_fit(ObjectFit::Cover),
+                        .object_fit(ObjectFit::Cover)
+                        .grayscale(self.grayscale),
                 ),
                 // flex size-full items-center justify-center bg-muted
                 // text-muted-foreground
@@ -155,10 +164,18 @@ impl RenderOnce for AvatarGroup {
         // auto-sized wrapper) keeps the circles round under the negative
         // overlap margins.
         let ring = px(self.size.pixels() + 4.);
+        // Explicit width: ring + (n-1) * (ring - 8px overlap). The negative
+        // child margins otherwise confuse nested min-content measurement
+        // (the group collapses when placed inside another flex row, e.g.
+        // ItemMedia), letting siblings draw over the avatars.
+        let count = self.children.len().max(1) as f32;
+        let width = px((self.size.pixels() + 4.) + (count - 1.) * (self.size.pixels() - 4.));
         div()
             .flex()
             .flex_row()
+            .flex_shrink_0()
             .items_center()
+            .w(width)
             .children(self.children.into_iter().enumerate().map(|(index, child)| {
                 div()
                     .flex()
