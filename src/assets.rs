@@ -208,6 +208,22 @@ const ICONS: &[(&str, &[u8])] = &[
         "icons/search.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>"##,
     ),
+    (
+        "icons/bookmark.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>"##,
+    ),
+    (
+        "icons/bookmark-filled.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>"##,
+    ),
+    (
+        "icons/italic.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>"##,
+    ),
+    (
+        "icons/bold.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>"##,
+    ),
 ];
 
 pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
@@ -215,6 +231,10 @@ pub const ICON_LOADER: &str = "icons/loader.svg";
 pub const ICON_ELLIPSIS: &str = "icons/ellipsis.svg";
 pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
+pub const ICON_BOOKMARK: &str = "icons/bookmark.svg";
+pub const ICON_BOOKMARK_FILLED: &str = "icons/bookmark-filled.svg";
+pub const ICON_ITALIC: &str = "icons/italic.svg";
+pub const ICON_BOLD: &str = "icons/bold.svg";
 
 pub struct Assets;
 
