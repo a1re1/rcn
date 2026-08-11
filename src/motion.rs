@@ -110,9 +110,8 @@ pub fn tooltip_in<E: IntoElement + Styled + 'static>(
 }
 
 /// Tailwind `animate-pulse`: opacity breathing 1 → 0.5 → 1 over 2s,
-/// repeating.
-// For the skeleton component; not yet ported.
-#[allow(dead_code)]
+/// repeating. gpui's cosine breathing approximates Tailwind's
+/// `pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite` (keyframe: 50% opacity 0.5).
 pub fn pulse<E: IntoElement + Styled + 'static>(
     id: impl Into<ElementId>,
     element: E,

@@ -233,6 +233,31 @@ pub static BADGE_API: &[ApiEntry] = &[
         signature: "pub fn variant(mut self, variant: BadgeVariant) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn on_click( mut self, id: impl Into<ElementId>, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Interactive/link badge (`render={<a/>}`). Sets the element id (required by gpui's StatefulInteractiveElement), makes the badge focusable, and attaches the click handler. Also enables focus-ring and `[a]:hover` styles for the active variant.",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn icon_inline_start(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-1.5`).",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn icon_inline_end(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-1.5`).",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn bg(mut self, color: Hsla) -> Self",
+        doc: "`className` color-override port — background color applied after the variant styles (e.g. `className=\"bg-blue-50\"`).",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn text_color(mut self, color: Hsla) -> Self",
+        doc: "`className` color-override port — text color applied after the variant styles (e.g. `className=\"text-blue-700\"`).",
+    },
 ];
 
 pub static BADGE_USAGE: &str = "Badge::new().variant(self.badge_variant).child(\"Badge\")\n    ";
@@ -826,12 +851,32 @@ pub static DIALOG_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Dialog",
         signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
+        doc: "Controlled open state. Distinguishes \"never set\" (`None`) from `open(false)` so uncontrolled keyed state can take over.",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn default_open(mut self, open: bool) -> Self",
+        doc: "Initial open state when uncontrolled (default `false`).",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
+        doc: "Inline trigger element. Clicking it toggles open in uncontrolled mode (and notifies `on_open_change` when set).",
     },
     ApiEntry {
         type_name: "Dialog",
         signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn show_close_button(mut self, show: bool) -> Self",
+        doc: "Show the top-right close button (default `true`, matching shadcn).",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn max_w(mut self, width: gpui::Pixels) -> Self",
+        doc: "Override the content panel max width (default 448px / `sm:max-w-md`).",
     },
     ApiEntry {
         type_name: "DialogHeader",
@@ -853,9 +898,24 @@ pub static DIALOG_API: &[ApiEntry] = &[
         signature: "pub fn new() -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "DialogFooter",
+        signature: "pub fn show_close_button(mut self, show: bool) -> Self",
+        doc: "Append an outline \"Close\" button after children (default false).",
+    },
+    ApiEntry {
+        type_name: "DialogFooter",
+        signature: "pub fn on_close( mut self, handler: impl Fn(&mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Handler invoked when the footer's Close button is clicked.",
+    },
+    ApiEntry {
+        type_name: "DialogFooter",
+        signature: "pub fn justify_start(mut self) -> Self",
+        doc: "Use `justify-start` instead of the default `justify-end`.",
+    },
 ];
 
-pub static DIALOG_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .child(\n        Button::new(\"dialog-trigger\")\n            .variant(ButtonVariant::Outline)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.dialog_open = true;\n                cx.notify();\n            }))\n            .child(\"Edit Profile\"),\n    )\n    .child(\n        Dialog::new(\"dialog-demo\")\n            .open(self.dialog_open)\n            .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                this.dialog_open = *open;\n                cx.notify();\n            }))\n            .child(\n                DialogHeader::new()\n                    .child(DialogTitle::new().child(\"Edit profile\"))\n                    .child(DialogDescription::new().child(\n                        \"Make changes to your profile here. Click save when you're done.\",\n                    )),\n            )\n            .child(\n                div()\n                    .h(px(80.))\n                    .w_full()\n                    .rounded(theme.radius_md())\n                    .bg(theme.muted),\n            )\n            .child(\n                DialogFooter::new()\n                    .child(\n                        Button::new(\"dialog-cancel\")\n                            .variant(ButtonVariant::Outline)\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.dialog_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Cancel\"),\n                    )\n                    .child(\n                        Button::new(\"dialog-save\")\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.dialog_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Save changes\"),\n                    ),\n            ),\n    )\n    ";
+pub static DIALOG_USAGE: &str = "const LOREM: &str = concat!(\n    \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do \",\n    \"eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut \",\n    \"enim ad minim veniam, quis nostrud exercitation ullamco laboris \",\n    \"nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in \",\n    \"reprehenderit in voluptate velit esse cillum dolore eu fugiat \",\n    \"nulla pariatur. Excepteur sint occaecat cupidatat non proident, \",\n    \"sunt in culpa qui officia deserunt mollit anim id est laborum.\",\n);\n\nlet scroll_body = |id: SharedString| {\n    div()\n        .id(id.clone())\n        .max_h(px(320.))\n        .overflow_y_scroll()\n        .children((0..10).map(move |i| {\n            div()\n                .id(ElementId::Name(format!(\"{id}-p-{i}\").into()))\n                .mb(px(16.))\n                .line_height(px(21.))\n                .child(LOREM)\n        }))\n};\n\nlet sticky_entity = cx.entity();\n\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    // a. Edit profile (demo) — controlled; controls-panel \"open\" switch\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Open Dialog\"),\n            )\n            .child(\n                Dialog::new(\"dialog-demo\")\n                    .open(self.dialog_open)\n                    .max_w(px(384.))\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Edit profile\"))\n                            .child(DialogDescription::new().child(\n                                \"Make changes to your profile here. Click save when you're done.\",\n                            )),\n                    )\n                    .child(\n                        FieldGroup::new()\n                            .child(\n                                Field::new()\n                                    .child(Label::new().child(\"Name\"))\n                                    .child(self.dialog_name_input.clone()),\n                            )\n                            .child(\n                                Field::new()\n                                    .child(Label::new().child(\"Username\"))\n                                    .child(self.dialog_username_input.clone()),\n                            ),\n                    )\n                    .child(\n                        DialogFooter::new()\n                            .child(\n                                Button::new(\"dialog-cancel\")\n                                    .variant(ButtonVariant::Outline)\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Cancel\"),\n                            )\n                            .child(\n                                Button::new(\"dialog-save\")\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Save changes\"),\n                            ),\n                    ),\n            ),\n    )\n    // b. Share link — custom close / justify_start footer\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-share-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_share_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Share\"),\n            )\n            .child(\n                Dialog::new(\"dialog-share\")\n                    .open(self.dialog_share_open)\n                    .max_w(px(448.))\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_share_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Share link\"))\n                            .child(DialogDescription::new().child(\n                                \"Anyone who has this link will be able to view this.\",\n                            )),\n                    )\n                    .child(self.dialog_share_input.clone())\n                    .child(\n                        DialogFooter::new()\n                            .justify_start()\n                            .child(\n                                Button::new(\"dialog-share-close\")\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_share_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Close\"),\n                            ),\n                    ),\n            ),\n    )\n    // c. No close button — fully uncontrolled: built-in .trigger()\n    // + default_open, no external open flag (backdrop/Escape close).\n    .child(\n        Dialog::new(\"dialog-no-close\")\n            .default_open(false)\n            .show_close_button(false)\n            .trigger(\n                Button::new(\"dialog-no-close-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .child(\"No Close Button\"),\n            )\n            .child(\n                DialogHeader::new()\n                    .child(DialogTitle::new().child(\"No Close Button\"))\n                    .child(DialogDescription::new().child(\n                        \"This dialog doesn't have a close button in the top-right corner.\",\n                    )),\n            ),\n    )\n    // d. Sticky footer — DialogFooter::show_close_button\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-sticky-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_sticky_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Sticky Footer\"),\n            )\n            .child(\n                Dialog::new(\"dialog-sticky\")\n                    .open(self.dialog_sticky_open)\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_sticky_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Sticky Footer\"))\n                            .child(DialogDescription::new().child(\n                                \"This dialog has a sticky footer that stays visible while the content scrolls.\",\n                            )),\n                    )\n                    .child(scroll_body(\"dialog-sticky-scroll\".into()))\n                    .child(\n                        DialogFooter::new()\n                            .show_close_button(true)\n                            .on_close({\n                                let entity = sticky_entity.clone();\n                                move |_window, cx| {\n                                    entity.update(cx, |this, cx| {\n                                        this.dialog_sticky_open = false;\n                                        cx.notify();\n                                    });\n                                }\n                            }),\n                    ),\n            ),\n    )\n    // e. Scrollable content — same body, no footer\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-scroll-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_scroll_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Scrollable Content\"),\n            )\n            .child(\n                Dialog::new(\"dialog-scroll\")\n                    .open(self.dialog_scroll_open)\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_scroll_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Scrollable Content\"))\n                            .child(DialogDescription::new().child(\n                                \"This is a dialog with scrollable content.\",\n                            )),\n                    )\n                    .child(scroll_body(\"dialog-scroll-scroll\".into())),\n            ),\n    )\n    ";
 
 pub static DRAWER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1345,7 +1405,7 @@ pub static LABEL_API: &[ApiEntry] = &[
     },
 ];
 
-pub static LABEL_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(12.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(Switch::new(\"label-switch\").checked(true))\n            .child(Label::new().child(\"Airplane Mode\")),\n    )\n    .child(Label::new().disabled(true).child(\"Disabled label\"))\n    ";
+pub static LABEL_USAGE: &str = "// Port of label-demo.tsx — Checkbox + Label.\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Checkbox::new(\"label-terms\")\n            .checked(self.label_terms_checked)\n            .disabled(self.label_disabled)\n            .on_change(cx.listener(|this, checked: &bool, _, cx| {\n                this.label_terms_checked = *checked;\n                cx.notify();\n            })),\n    )\n    .child(\n        Label::new()\n            .disabled(self.label_disabled)\n            .child(\"Accept terms and conditions\"),\n    )\n    ";
 
 pub static MARKER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1523,14 +1583,34 @@ pub static PAGINATION_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Pagination",
+        signature: "pub fn w_auto(mut self) -> Self",
+        doc: "`w-auto` instead of the default `w-full` (ports Icons Only `className=\"mx-0 w-auto\"`).",
+    },
+    ApiEntry {
+        type_name: "PaginationContent",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationItem",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
         type_name: "PaginationLink",
-        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<gpui::SharedString>) -> Self",
+        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "PaginationLink",
         signature: "pub fn active(mut self, active: bool) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationLink",
+        signature: "pub fn size(mut self, size: ButtonSize) -> Self",
+        doc: "Button size — shadcn default `\"icon\"`.",
     },
     ApiEntry {
         type_name: "PaginationLink",
@@ -1541,6 +1621,11 @@ pub static PAGINATION_API: &[ApiEntry] = &[
         type_name: "PaginationPrevious",
         signature: "pub fn new(id: impl Into<ElementId>) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationPrevious",
+        signature: "pub fn text(mut self, text: impl Into<SharedString>) -> Self",
+        doc: "Label text — shadcn `text` prop, default `\"Previous\"`.",
     },
     ApiEntry {
         type_name: "PaginationPrevious",
@@ -1551,6 +1636,11 @@ pub static PAGINATION_API: &[ApiEntry] = &[
         type_name: "PaginationNext",
         signature: "pub fn new(id: impl Into<ElementId>) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationNext",
+        signature: "pub fn text(mut self, text: impl Into<SharedString>) -> Self",
+        doc: "Label text — shadcn `text` prop, default `\"Next\"`.",
     },
     ApiEntry {
         type_name: "PaginationNext",
@@ -1564,7 +1654,7 @@ pub static PAGINATION_API: &[ApiEntry] = &[
     },
 ];
 
-pub static PAGINATION_USAGE: &str = "Pagination::new()\n    .child(\n        PaginationPrevious::new(\"page-prev\").on_click(cx.listener(|this, _, _, cx| {\n            this.pagination_page = this.pagination_page.saturating_sub(1).max(1);\n            cx.notify();\n        })),\n    )\n    .children((1..=3).map(|page| {\n        PaginationLink::new((\"page-link\", page), page.to_string())\n            .active(self.pagination_page == page)\n            .on_click(cx.listener(move |this, _, _, cx| {\n                this.pagination_page = page;\n                cx.notify();\n            }))\n    }))\n    .child(PaginationEllipsis::new())\n    .child(\n        PaginationNext::new(\"page-next\").on_click(cx.listener(|this, _, _, cx| {\n            this.pagination_page = (this.pagination_page + 1).min(3);\n            cx.notify();\n        })),\n    )\n    ";
+pub static PAGINATION_USAGE: &str = "// shadcn pagination-demo: Prev / 1 / 2-active / 3 / ellipsis / Next\nlet link_size = self.pagination_link_size;\nPagination::new().child(\n    PaginationContent::new()\n        .child(\n            PaginationItem::new().child(\n                PaginationPrevious::new(\"page-prev\")\n                    .text(\"Previous\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.pagination_page =\n                            this.pagination_page.saturating_sub(1).max(1);\n                        cx.notify();\n                    })),\n            ),\n        )\n        .children((1..=3).map(|page| {\n            PaginationItem::new().child(\n                PaginationLink::new((\"page-link\", page), page.to_string())\n                    .size(link_size)\n                    .active(self.pagination_page == page)\n                    .on_click(cx.listener(move |this, _, _, cx| {\n                        this.pagination_page = page;\n                        cx.notify();\n                    })),\n            )\n        }))\n        .child(PaginationItem::new().child(PaginationEllipsis::new()))\n        .child(\n            PaginationItem::new().child(\n                PaginationNext::new(\"page-next\")\n                    .text(\"Next\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.pagination_page = (this.pagination_page + 1).min(3);\n                        cx.notify();\n                    })),\n            ),\n        ),\n)\n    ";
 
 pub static POPOVER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2006,30 +2096,13 @@ pub static SIDEBAR_API: &[ApiEntry] = &[
 
 pub static SIDEBAR_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet items = [\"Home\", \"Inbox\", \"Calendar\", \"Search\", \"Settings\"];\ndiv()\n    .w(px(480.))\n    .h(px(320.))\n    .rounded(theme.radius_lg())\n    .border_1()\n    .border_color(theme.border)\n    .overflow_hidden()\n    .child(\n        SidebarProvider::new()\n            .open(self.sidebar_open)\n            .sidebar(\n                Sidebar::new()\n                    .child(\n                        SidebarHeader::new().child(\n                            div()\n                                .px(px(8.))\n                                .text_size(px(14.))\n                                .font_weight(FontWeight::SEMIBOLD)\n                                .child(\"Acme Inc\"),\n                        ),\n                    )\n                    .child(SidebarContent::new().child(\n                        SidebarGroup::new().label(\"Application\").children(\n                            items.into_iter().enumerate().map(|(index, label)| {\n                                SidebarMenuButton::new((\"sidebar-item\", index))\n                                    .active(self.sidebar_active == index)\n                                    .on_click(cx.listener(move |this, _, _, cx| {\n                                        this.sidebar_active = index;\n                                        cx.notify();\n                                    }))\n                                    .child(label)\n                            }),\n                        ),\n                    ))\n                    .child(\n                        SidebarFooter::new().child(\n                            div()\n                                .px(px(8.))\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"evil rabbit\"),\n                        ),\n                    ),\n            )\n            .inset(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .p(px(12.))\n                    .child(SidebarTrigger::new(\"sidebar-trigger\").on_click(cx.listener(\n                        |this, _, _, cx| {\n                            this.sidebar_open = !this.sidebar_open;\n                            cx.notify();\n                        },\n                    )))\n                    .child(\n                        div()\n                            .text_size(px(14.))\n                            .text_color(theme.muted_foreground)\n                            .child(format!(\"Active: {}\", items[self.sidebar_active])),\n                    ),\n            ),\n    )\n    ";
 
-pub static SKELETON_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn w(mut self, width: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn h(mut self, height: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn rounded_full(mut self) -> Self",
-        doc: "",
-    },
-];
+pub static SKELETON_API: &[ApiEntry] = &[ApiEntry {
+    type_name: "Skeleton",
+    signature: "pub fn new() -> Self",
+    doc: "",
+}];
 
-pub static SKELETON_USAGE: &str = "// Mirrors the shadcn docs example: avatar row + card-shaped block.\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(16.))\n            .child(Skeleton::new().w(px(48.)).h(px(48.)).rounded_full())\n            .child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .child(Skeleton::new().w(px(200.)).h(px(16.)))\n                    .child(Skeleton::new().w(px(160.)).h(px(16.))),\n            ),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(Skeleton::new().w(px(200.)).h(px(100.)))\n            .child(Skeleton::new().w(px(200.)).h(px(16.)))\n            .child(Skeleton::new().w(px(160.)).h(px(16.))),\n    )\n    ";
+pub static SKELETON_USAGE: &str = "// skeleton-demo: avatar circle + two text lines.\ndiv()\n    .flex()\n    .items_center()\n    .gap(px(16.))\n    .child(Skeleton::new().h(px(48.)).w(px(48.)).rounded_full())\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(Skeleton::new().h(px(16.)).w(px(250.)))\n            .child(Skeleton::new().h(px(16.)).w(px(200.))),\n    )\n    ";
 
 pub static SLIDER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2311,7 +2384,12 @@ pub static TOGGLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Toggle",
         signature: "pub fn pressed(mut self, pressed: bool) -> Self",
-        doc: "",
+        doc: "Controlled pressed state. Takes precedence over `default_pressed`.",
+    },
+    ApiEntry {
+        type_name: "Toggle",
+        signature: "pub fn default_pressed(mut self, pressed: bool) -> Self",
+        doc: "Uncontrolled initial pressed state (Base UI `defaultPressed`). Default false. Ignored when `.pressed(bool)` is set.",
     },
     ApiEntry {
         type_name: "Toggle",
@@ -2320,12 +2398,22 @@ pub static TOGGLE_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Toggle",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
+        signature: "pub fn icon_inline_start(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Sm).",
+    },
+    ApiEntry {
+        type_name: "Toggle",
+        signature: "pub fn icon_inline_end(mut self) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Toggle",
+        signature: "pub fn on_pressed_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
         doc: "",
     },
 ];
 
-pub static TOGGLE_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Toggle::new(\"toggle-italic\")\n            .pressed(self.toggle_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\"Italic\"),\n    )\n    .child(\n        Toggle::new(\"toggle-outline\")\n            .variant(ToggleVariant::Outline)\n            .pressed(self.toggle_outline_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_outline_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\"Outline\"),\n    )\n    .child(\n        Toggle::new(\"toggle-icon\")\n            .size(ToggleSize::Sm)\n            .pressed(self.toggle_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\n                gpui::svg()\n                    .path(theme.icons.chevron_down())\n                    .size(px(16.))\n                    .text_color(theme.foreground),\n            ),\n    )\n    .child(\n        Toggle::new(\"toggle-disabled\")\n            .size(ToggleSize::Lg)\n            .disabled(true)\n            .child(\"Disabled\"),\n    )\n    ";
+pub static TOGGLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet icon_path = if self.toggle_pressed {\n    crate::assets::ICON_BOOKMARK_FILLED\n} else {\n    crate::assets::ICON_BOOKMARK\n};\nToggle::new(\"toggle-bookmark\")\n    .size(ToggleSize::Sm)\n    .variant(ToggleVariant::Outline)\n    .icon_inline_start()\n    .pressed(self.toggle_pressed)\n    .on_pressed_change(cx.listener(|this, pressed: &bool, _, cx| {\n        this.toggle_pressed = *pressed;\n        cx.notify();\n    }))\n    .child(\n        gpui::svg()\n            .path(icon_path)\n            .size(px(14.))\n            .text_color(theme.foreground),\n    )\n    .child(\"Bookmark\")\n    ";
 
 pub static TOGGLE_GROUP_API: &[ApiEntry] = &[
     ApiEntry {

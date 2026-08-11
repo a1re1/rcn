@@ -1,8 +1,9 @@
-//! Label — port of shadcn base-vega `ui/label.tsx`.
+//! Label — port of shadcn base-nova `ui/label.tsx`.
 //!
 //! A flex-row text label for associating copy with controls. Peer/group
 //! disabled cascade is approximated via an explicit `.disabled(bool)` builder
-//! (opacity 0.5); pointer-events and cursor variants are omitted.
+//! (opacity 0.5); pointer-events and cursor variants are omitted. The RTL
+//! docs example is omitted (LTR-only layout).
 
 use gpui::{
     AnyElement, App, FontWeight, IntoElement, ParentElement, RenderOnce, Styled, Window, div, px,
