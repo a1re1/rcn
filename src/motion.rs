@@ -18,8 +18,8 @@
 use std::time::Duration;
 
 use gpui::{
-    Animation, AnimationElement, AnimationExt as _, BoxShadow, ElementId, Hsla, IntoElement,
-    Styled, point, px,
+    Animation, AnimationElement, AnimationExt as _, BoxShadow, Div, ElementId, Hsla, IntoElement,
+    Pixels, Styled, div, point, px,
 };
 
 use crate::theme::{Theme, alpha};
@@ -35,10 +35,16 @@ pub fn ease_out() -> impl Fn(f32) -> f32 {
 }
 
 /// Tailwind's default transition curve — cubic-bezier(0.4, 0, 0.2, 1).
-// Part of the motion primitive set; no component uses it yet.
-#[allow(dead_code)]
 pub fn ease_transition() -> impl Fn(f32) -> f32 {
     cubic_bezier(0.4, 0., 0.2, 1.)
+}
+
+/// Clock shared by [`transition`] and the switch's post-toggle settle timer.
+pub const TRANSITION_DURATION: Duration = Duration::from_millis(150);
+
+/// Tailwind `transition-*` utilities: 150ms [`ease_transition`].
+pub fn transition() -> Animation {
+    Animation::new(TRANSITION_DURATION).with_easing(ease_transition())
 }
 
 /// `animate-in` (tw-animate-css enter keyframes): 150ms `ease`.
@@ -214,6 +220,42 @@ pub fn focus_ring(theme: &Theme) -> Vec<BoxShadow> {
 /// The destructive variant of the ring (`ring-destructive/20`).
 pub fn focus_ring_destructive(theme: &Theme) -> Vec<BoxShadow> {
     ring_shadow(alpha(theme.destructive, if theme.dark { 0.4 } else { 0.2 }))
+}
+
+/// The focus ring as an absolutely-positioned border overlay instead of a
+/// box shadow.
+///
+/// gpui paints box shadows behind the whole element quad, so on an element
+/// with a transparent (or translucent) background the ring color shows
+/// *through* the interior as a fill — unlike CSS, where an outset shadow is
+/// clipped to outside the border box. This overlay draws only the 3px band
+/// outside the border, like the real `ring-3`. `radius` is the element's own
+/// border radius; assumes the element has a 1px border.
+pub fn focus_ring_overlay(theme: &Theme, radius: Pixels) -> Div {
+    ring_overlay(alpha(theme.ring, 0.5), radius)
+}
+
+/// The destructive variant of [`focus_ring_overlay`]
+/// (`ring-destructive/20`, dark `/40`).
+pub fn focus_ring_overlay_destructive(theme: &Theme, radius: Pixels) -> Div {
+    ring_overlay(
+        alpha(theme.destructive, if theme.dark { 0.4 } else { 0.2 }),
+        radius,
+    )
+}
+
+fn ring_overlay(color: Hsla, radius: Pixels) -> Div {
+    // Absolute insets are padding-box-relative: -4px reaches 3px past the
+    // 1px border, so the 3px border of this overlay is exactly the ring band.
+    div()
+        .absolute()
+        .top(px(-4.))
+        .left(px(-4.))
+        .right(px(-4.))
+        .bottom(px(-4.))
+        .rounded(radius + px(3.))
+        .border_3()
+        .border_color(color)
 }
 
 fn ring_shadow(color: Hsla) -> Vec<BoxShadow> {

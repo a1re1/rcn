@@ -49,7 +49,7 @@ solid before the molecules that compose them.
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
 - [x] input — full focus ring shadow (was border-only)
-- [x] textarea — focus ring shadow
+- [x] textarea — base-nova parity (rounded-lg px-2.5 no-shadow shell; disabled + invalid states with destructive ring rendered as a border overlay, not a see-through box shadow; corner drag-resize grip like the native `resize`; min-h-16 default; all docs examples; RTL, field-sizing-content auto-grow, and multi-line editing omitted/TODO)
 
 ### Tier 2 — molecules on the atoms
 
@@ -59,7 +59,7 @@ solid before the molecules that compose them.
 - [x] alert — (static presentation — matches source; parent-context destructive tint TODO)
 - [x] card — base-nova parity (footer border/bg + pb-0 via mb(-spacing); header `.action()` slot; `.spacing()` override; `.flush_top()`/`.flush_bottom()`; no shadow; RTL and `[.border-b]`/`[.border-t]` utilities omitted)
 - [x] empty — (static presentation — matches source; dashed border approximated solid)
-- [x] item — (static presentation — matches source layout variants)
+- [x] item — (base-nova root/sizes/radius; interactive link mode with focus ring + hover; per-size media/content/description/group builders; line clamps; all docs examples; omitted: RTL, hover color transition (instant swap), automatic has-description/media context selectors (explicit builders instead))
 - [x] field — base-nova parity (all ten parts incl. FieldLabel/FieldContent/FieldTitle/FieldSeparator; vertical/horizontal orientations + responsive via measured container width (`container_query`, @md 448px); `.invalid()` destructive cascade; choice cards via `FieldLabel::choice_card(checked)` with dark-mode primary tints; `FieldError::errors()` dedup + bullet list; browser-measured legend/description spacing; RTL and aria semantics omitted)
 - [x] input-group — focus ring shadow on the shell
 - [x] input-otp — (slot presentation + click-to-focus; per-slot caret/paste keyboard TODO)
@@ -70,7 +70,7 @@ solid before the molecules that compose them.
 - [x] breadcrumb — (link focus rings)
 - [x] pagination — base-vega parity (Content/Item composition; Link.size + Previous/Next.text; icon-side padding via icon_inline_start/end; currentColor Icon chevrons; sm-breakpoint label hide via viewport width; foreground ellipsis; Simple + Icons Only docs examples; aria/sr-only omitted — no a11y tree; RTL omitted — unsupported, TODO)
 - [x] table — (static presentation — matches source table parts)
-- [x] scroll-area — (vertical overflow scroll; custom scrollbar + horizontal TODO)
+- [x] scroll-area — (custom painted scrollbar w/ proportional thumb, drag + track-click, horizontal orientation, focus ring; RTL + hover-fade states omitted)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] marker — (static presentation — matches source divider variants)
 

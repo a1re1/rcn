@@ -190,13 +190,18 @@ pub static AVATAR_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Avatar",
+        signature: "pub fn grayscale(mut self, grayscale: bool) -> Self",
+        doc: "Render the image desaturated — shadcn `<AvatarImage className=\"grayscale\">`.",
+    },
+    ApiEntry {
+        type_name: "Avatar",
         signature: "pub fn size(mut self, size: AvatarSize) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "Avatar",
         signature: "pub fn image(mut self, source: impl Into<ImageSource>) -> Self",
-        doc: "",
+        doc: "Image source. Embedded asset paths (e.g. `images/avatar.png`) work; remote URLs would need an http client, which gpui's plain Application does not have.",
     },
     ApiEntry {
         type_name: "AvatarGroup",
@@ -1185,7 +1190,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     },
 ];
 
-pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(\n                                    FieldLabel::new().child(\"Name on Card\"),\n                                )\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(\n                                    FieldLabel::new().child(\"Card Number\"),\n                                )\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(\n                                                FieldLabel::new().child(\"Month\"),\n                                            )\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\",\n                                                        \"06\", \"07\", \"08\", \"09\", \"10\",\n                                                        \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(\n                                                FieldLabel::new().child(\"Year\"),\n                                            )\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(FieldDescription::new().child(\n                    \"The billing address associated with your payment method\",\n                ))\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(\n                            Textarea::new(self.field_comments.clone()).rows(3),\n                        ),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
+pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Name on Card\"))\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Card Number\"))\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Month\"))\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\", \"06\",\n                                                        \"07\", \"08\", \"09\", \"10\", \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Year\"))\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"The billing address associated with your payment method\"),\n                )\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(Textarea::new(self.field_comments.clone()).rows(3)),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
 
 pub static HOVER_CARD_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1319,6 +1324,21 @@ pub static ITEM_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Item",
+        signature: "pub fn flush(mut self, flush: bool) -> Self",
+        doc: "Zero out padding — source class `in-data-[slot=dropdown-menu-content]:p-0`. Used by the dropdown storybook example where the item sits inside a menu.",
+    },
+    ApiEntry {
+        type_name: "Item",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Make the item interactive (focusable + clickable). Source: shadcn `render={<a/>}` / `[a]:hover:bg-muted` + focus-visible ring.",
+    },
+    ApiEntry {
+        type_name: "Item",
+        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "",
+    },
+    ApiEntry {
         type_name: "ItemMedia",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -1329,9 +1349,29 @@ pub static ITEM_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "ItemMedia",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Image-tile size from the parent item size. Source: `size-10 ... group-data-[size=sm]/item:size-8 group-data-[size=xs]/item:size-6`. Only affects [`ItemMediaVariant::Image`]; default is [`ItemSize::Default`].",
+    },
+    ApiEntry {
+        type_name: "ItemMedia",
+        signature: "pub fn top_align(mut self, top_align: bool) -> Self",
+        doc: "Top-align media when the item has a description. Source: `group-has-data-[slot=item-description]/item:self-start` + `translate-y-0.5` — applied as `.self_start().mt(px(2.))`. shadcn does this automatically; storybook sets it wherever a description is present.",
+    },
+    ApiEntry {
         type_name: "ItemContent",
         signature: "pub fn new() -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "ItemContent",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Parent item size. Source: `group-data-[size=xs]/item:gap-0` (Xs → gap 0, else gap 4px / `gap-1`).",
+    },
+    ApiEntry {
+        type_name: "ItemContent",
+        signature: "pub fn flex_none(mut self, flex_none: bool) -> Self",
+        doc: "Replace `flex-1` with `flex-none` for trailing content columns. Source: `[&+[data-slot=item-content]]:flex-none`.",
     },
     ApiEntry {
         type_name: "ItemTitle",
@@ -1342,6 +1382,11 @@ pub static ITEM_API: &[ApiEntry] = &[
         type_name: "ItemDescription",
         signature: "pub fn new() -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "ItemDescription",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Parent item size. Source: `group-data-[size=xs]/item:text-xs` (Xs → 12px/16px line-height; else 14px/21px).",
     },
     ApiEntry {
         type_name: "ItemActions",
@@ -1364,13 +1409,18 @@ pub static ITEM_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "ItemGroup",
+        signature: "pub fn size(mut self, size: ItemSize) -> Self",
+        doc: "Inter-item gap from child item size. Source: `gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2` (Default 16px, Sm 10px, Xs 8px). shadcn derives this from child sizes automatically; set explicitly here.",
+    },
+    ApiEntry {
         type_name: "ItemSeparator",
         signature: "pub fn new() -> Self",
         doc: "",
     },
 ];
 
-pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv().w(px(420.)).child(\n    ItemGroup::new()\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .size(self.item_size)\n                .child(\n                    ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                        gpui::svg()\n                            .path(theme.icons.chevron_right())\n                            .size(px(16.))\n                            .text_color(theme.foreground),\n                    ),\n                )\n                .child(\n                    ItemContent::new()\n                        .child(ItemTitle::new().child(\"Basic Item\"))\n                        .child(\n                            ItemDescription::new()\n                                .child(\"A simple item with title and description.\"),\n                        ),\n                )\n                .child(\n                    ItemActions::new().child(\n                        Button::new(\"item-action\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::Sm)\n                            .child(\"Action\"),\n                    ),\n                ),\n        )\n        .child(ItemSeparator::new())\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .child(ItemMedia::new().child(Avatar::new(\"CN\")))\n                .child(\n                    ItemContent::new()\n                        .child(ItemTitle::new().child(\"Evil Rabbit\"))\n                        .child(ItemDescription::new().child(\"Last seen 5 months ago\")),\n                )\n                .child(\n                    ItemActions::new().child(\n                        Button::new(\"item-add\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::IconSm)\n                            .child(\n                                gpui::svg()\n                                    .path(theme.icons.chevron_right())\n                                    .size(px(16.))\n                                    .text_color(theme.foreground),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .size(self.item_size)\n                .child(\n                    ItemHeader::new()\n                        .child(ItemTitle::new().child(\"Deployment\"))\n                        .child(Badge::new().variant(BadgeVariant::Secondary).child(\"Live\")),\n                )\n                .child(ItemContent::new().child(\n                    ItemDescription::new().child(\"Deployed 2 hours ago by evil rabbit.\"),\n                ))\n                .child(\n                    ItemFooter::new()\n                        .child(\n                            div()\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"main / a1b2c3d\"),\n                        )\n                        .child(\n                            Button::new(\"item-rollback\")\n                                .variant(ButtonVariant::Ghost)\n                                .size(ButtonSize::Xs)\n                                .child(\"Rollback\"),\n                        ),\n                ),\n        ),\n)\n    ";
+pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\n// Docs Demo: outline basic item (controls-wired) + interactive verified profile row.\ndiv()\n    .w(px(448.))\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        Item::new()\n            .variant(self.item_variant)\n            .size(self.item_size)\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Basic Item\"))\n                    .child(\n                        ItemDescription::new()\n                            .child(\"A simple item with title and description.\"),\n                    ),\n            )\n            .child(\n                ItemActions::new().child(\n                    Button::new(\"item-demo-action\")\n                        .variant(ButtonVariant::Outline)\n                        .size(ButtonSize::Sm)\n                        .child(\"Action\"),\n                ),\n            ),\n    )\n    .child(\n        Item::new()\n            .variant(ItemVariant::Outline)\n            .size(ItemSize::Sm)\n            .id(\"item-demo-link\")\n            .on_click(|_e, _w, _cx| {})\n            .child(\n                ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                    Icon::new(crate::assets::ICON_BADGE_CHECK)\n                        .size(px(20.))\n                        .text_color(theme.foreground),\n                ),\n            )\n            .child(\n                ItemContent::new()\n                    .child(ItemTitle::new().child(\"Your profile has been verified.\")),\n            )\n            .child(\n                ItemActions::new().child(\n                    Icon::new(theme.icons.chevron_right())\n                        .size(px(16.))\n                        .text_color(theme.muted_foreground),\n                ),\n            ),\n    )\n    ";
 
 pub static KBD_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1907,9 +1957,14 @@ pub static SCROLL_AREA_API: &[ApiEntry] = &[
         signature: "pub fn w(mut self, width: Pixels) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "ScrollArea",
+        signature: "pub fn horizontal(mut self) -> Self",
+        doc: "Paint a horizontal scrollbar along the bottom edge and enable `overflow_x_scroll` on the viewport (shadcn horizontal ScrollBar).",
+    },
 ];
 
-pub static SCROLL_AREA_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .rounded(theme.radius_md())\n    .border_1()\n    .border_color(theme.border)\n    .child(\n        ScrollArea::new(\"scroll-area-tags\")\n            .h(px(200.))\n            .w(px(192.))\n            .child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .p(px(16.))\n                    .child(\n                        div()\n                            .text_size(px(14.))\n                            .font_weight(FontWeight::MEDIUM)\n                            .pb(px(8.))\n                            .child(\"Tags\"),\n                    )\n                    .children((1..=20).flat_map(|version| {\n                        [\n                            div()\n                                .py(px(6.))\n                                .text_size(px(13.))\n                                .child(format!(\"v1.2.0-beta.{version}\"))\n                                .into_any_element(),\n                            Separator::new().into_any_element(),\n                        ]\n                    })),\n            ),\n    )\n    ";
+pub static SCROLL_AREA_USAGE: &str = "let theme = Theme::of(cx).clone();\n// shadcn docs demos: vertical Tags list, then horizontal artwork row.\ndiv()\n    .flex()\n    .flex_col()\n    .items_start()\n    .gap(px(24.))\n    .child(\n        // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288\n        // total, so the ScrollArea inside the 1px border is 190×286).\n        div()\n            .rounded(theme.radius_md())\n            .border_1()\n            .border_color(theme.border)\n            .child(\n                ScrollArea::new(\"scroll-area-tags\")\n                    .h(px(286.))\n                    .w(px(190.))\n                    .child(\n                        div()\n                            .p(px(16.))\n                            .child(\n                                div()\n                                    .text_size(px(14.))\n                                    .font_weight(FontWeight::MEDIUM)\n                                    .mb(px(16.))\n                                    .child(\"Tags\"),\n                            )\n                            .children((1..=50).rev().flat_map(|version| {\n                                [\n                                    div()\n                                        .text_size(px(14.))\n                                        .child(format!(\"v1.2.0-beta.{version}\"))\n                                        .into_any_element(),\n                                    div()\n                                        .my(px(8.))\n                                        .child(Separator::new())\n                                        .into_any_element(),\n                                ]\n                            })),\n                    ),\n            ),\n    )\n    .child(\n        // Horizontal artwork demo (shadcn w-96 + orientation=\"horizontal\"),\n        // with the docs page's three Unsplash photos embedded as assets.\n        div()\n            .rounded(theme.radius_md())\n            .border_1()\n            .border_color(theme.border)\n            .child(\n                // Height fits the square figure + caption + 16px padding\n                // (no explicit h in shadcn; gpui viewport is size_full so\n                // the root needs a definite height for the track to paint).\n                ScrollArea::new(\"scroll-area-artwork\")\n                    .w(px(382.))\n                    .h(px(358.))\n                    .horizontal()\n                    .child(\n                        div().flex().flex_row().gap(px(16.)).p(px(16.)).children(\n                            [\n                                (\"Ornella Binni\", crate::assets::PHOTO_ORNELLA_BINNI),\n                                (\"Tom Byrom\", crate::assets::PHOTO_TOM_BYROM),\n                                (\n                                    \"Vladimir Malyavko\",\n                                    crate::assets::PHOTO_VLADIMIR_MALYAVKO,\n                                ),\n                            ]\n                            .into_iter()\n                            .map(|(artist, photo)| {\n                                let theme = theme.clone();\n                                div()\n                                    .id(photo)\n                                    .flex()\n                                    .flex_col()\n                                    .flex_none()\n                                    .child(\n                                        // Square center-crop, like the\n                                        // docs page's visible framing.\n                                        img(photo)\n                                            .w(px(300.))\n                                            .h(px(300.))\n                                            .rounded(theme.radius_md())\n                                            .object_fit(ObjectFit::Cover),\n                                    )\n                                    .child(\n                                        div()\n                                            .pt(px(8.))\n                                            .text_size(px(12.))\n                                            .text_color(theme.muted_foreground)\n                                            .child(\n                                                div()\n                                                    .flex()\n                                                    .flex_row()\n                                                    .child(\"Photo by \")\n                                                    .child(\n                                                        div()\n                                                            .font_weight(\n                                                                FontWeight::SEMIBOLD,\n                                                            )\n                                                            .text_color(theme.foreground)\n                                                            .child(artist),\n                                                    ),\n                                            ),\n                                    )\n                                    .into_any_element()\n                            }),\n                        ),\n                    ),\n            ),\n    )\n    ";
 
 pub static SELECT_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2173,6 +2228,11 @@ pub static SWITCH_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Switch",
         signature: "pub fn checked(mut self, checked: bool) -> Self",
+        doc: "Controlled checked override. When set, wins over keyed uncontrolled state.",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn default_checked(mut self, default_checked: bool) -> Self",
         doc: "",
     },
     ApiEntry {
@@ -2187,12 +2247,22 @@ pub static SWITCH_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Switch",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
+        signature: "pub fn read_only(mut self, read_only: bool) -> Self",
+        doc: "Focusable with the focus ring, but activation (click/Enter/Space) is a no-op. Distinct from [`Self::disabled`] (unfocusable, 50% opacity, no pointer events).",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "`aria-invalid`: destructive border + always-visible destructive ring.",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn on_checked_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Base UI `onCheckedChange` — called with the next checked value.",
     },
 ];
 
-pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .on_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
+pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .invalid(self.switch_invalid)\n    .read_only(self.switch_read_only)\n    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
 
 pub static TABLE_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2328,12 +2398,26 @@ pub static TEXTAREA_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Textarea",
         signature: "pub fn rows(mut self, rows: u32) -> Self",
-        doc: "Minimum visible rows (drives the shell's min-height).",
+        doc: "Minimum visible rows (drives the shell's min-height).  When unset, the shell uses shadcn's `min-h-16` (64px). When set, min height is `20 * rows + 16` px.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
+        doc: "Disabled shell styling (opacity 0.5 + muted input background).  shadcn's `cursor-not-allowed` is omitted (no gpui equivalent worth faking). The caller is responsible for also calling [`Input::set_disabled`]`(true)` on the wrapped entity so the field is unfocusable/uneditable.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "Invalid shell styling (destructive border + always-on destructive ring).  Wins over the focused ring/border: when invalid, the destructive chrome is shown whether focused or not.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn resizable(mut self, resizable: bool) -> Self",
+        doc: "",
     },
 ];
 
-pub static TEXTAREA_USAGE: &str =
-    "div()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()).rows(4))\n    ";
+pub static TEXTAREA_USAGE: &str = "// Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.\ndiv()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()))\n    ";
 
 pub static TOAST_API: &[ApiEntry] = &[
     ApiEntry {

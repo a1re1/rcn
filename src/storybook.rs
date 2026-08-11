@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString, Window, div,
-    hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
+    SharedString, Window, div, hsla, img, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -38,17 +38,15 @@ use crate::components::{
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input,
-    InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions,
-    ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
-    ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
-    Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
-    MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
-    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis,
-    PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Popover,
-    PopoverDescription, PopoverHeader, PopoverTitle,
-    Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
+    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSize,
+    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
+    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
+    MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
+    NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
+    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
+    PopoverTitle, Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice,
+    QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
     ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
@@ -665,6 +663,12 @@ pub struct Storybook {
     switch_checked: bool,
     switch_size: SwitchSize,
     switch_disabled: bool,
+    switch_invalid: bool,
+    switch_read_only: bool,
+    /// Choice-card example: "Share across devices"
+    switch_ex_share: bool,
+    /// Choice-card example: "Enable notifications" (starts checked)
+    switch_ex_notifications: bool,
     // Progress controls
     progress_value: f32,
     // Item controls
@@ -716,6 +720,8 @@ pub struct Storybook {
     // Dropdown menu story state
     dropdown_open: bool,
     dropdown_status_checked: bool,
+    // Item story state
+    item_dropdown_open: bool,
     // Context menu story state
     context_menu_at: Option<gpui::Point<gpui::Pixels>>,
     // Menubar story state
@@ -735,6 +741,10 @@ pub struct Storybook {
     input_disabled: gpui::Entity<Input>,
     // Textarea story state
     textarea_input: gpui::Entity<Input>,
+    textarea_field_input: gpui::Entity<Input>,
+    textarea_disabled_input: gpui::Entity<Input>,
+    textarea_invalid_input: gpui::Entity<Input>,
+    textarea_button_input: gpui::Entity<Input>,
     // Field story state
     field_input: gpui::Entity<Input>,
     field_error_input: gpui::Entity<Input>,
@@ -866,6 +876,31 @@ impl Storybook {
             input
         });
         let textarea_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_field_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_disabled_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input.set_disabled(true);
+            input
+        });
+        let textarea_invalid_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_button_input = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Type your message here.");
             input.set_bare(true);
@@ -1043,6 +1078,10 @@ impl Storybook {
             switch_checked: true,
             switch_size: SwitchSize::Default,
             switch_disabled: false,
+            switch_invalid: false,
+            switch_read_only: false,
+            switch_ex_share: false,
+            switch_ex_notifications: true,
             progress_value: 60.,
             item_variant: ItemVariant::Outline,
             item_size: ItemSize::Default,
@@ -1077,6 +1116,7 @@ impl Storybook {
             drawer_open: false,
             dropdown_open: false,
             dropdown_status_checked: true,
+            item_dropdown_open: false,
             context_menu_at: None,
             menubar_open: None,
             select_value: None,
@@ -1088,6 +1128,10 @@ impl Storybook {
             input_demo,
             input_disabled,
             textarea_input,
+            textarea_field_input,
+            textarea_disabled_input,
+            textarea_invalid_input,
+            textarea_button_input,
             field_input,
             field_error_input,
             field_name_input,
@@ -2124,23 +2168,159 @@ impl Storybook {
                     },
                 ),
             ],
-            Story::Switch => vec![(
-                "Sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Switch::new("ex-switch-sm")
-                            .size(SwitchSize::Sm)
-                            .checked(true),
+            Story::Switch => vec![
+                (
+                    "Demo",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Switch::new("ex-switch-demo"))
+                        .child(Label::new().child("Airplane Mode"))
+                        .into_any_element(),
+                ),
+                (
+                    "Description",
+                    div().w(px(384.)).child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .content(
+                                FieldContent::new()
+                                    .child(
+                                        FieldLabel::new().child("Share across devices"),
+                                    )
+                                    .child(
+                                        FieldDescription::new().child(
+                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                        ),
+                                    ),
+                            )
+                            .child(Switch::new("ex-switch-description")),
                     )
-                    .child(Switch::new("ex-switch-default").checked(true))
-                    .child(Switch::new("ex-switch-disabled").disabled(true))
                     .into_any_element(),
-            )],
+                ),
+                (
+                    "Choice Card",
+                    div().w(px(384.)).child(
+                        FieldGroup::new()
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_share)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Share across devices"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-share")
+                                                    .checked(self.switch_ex_share)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_share = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            )
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_notifications)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Enable notifications"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Receive notifications when focus mode is enabled or disabled.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-notify")
+                                                    .checked(self.switch_ex_notifications)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_notifications = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Switch::new("ex-switch-disabled-demo").disabled(true))
+                        .child(
+                            FieldLabel::new()
+                                .disabled(true)
+                                .child("Disabled"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .invalid(true)
+                        .content(
+                            FieldContent::new()
+                                .child(
+                                    FieldLabel::new()
+                                        .child("Accept terms and conditions"),
+                                )
+                                .child(
+                                    FieldDescription::new().child(
+                                        "You must accept the terms and conditions to continue.",
+                                    ),
+                                ),
+                        )
+                        // Uncontrolled, like the docs' `<Switch aria-invalid />` —
+                        // an invalid switch still toggles.
+                        .child(Switch::new("ex-switch-invalid-demo").invalid(true))
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div().w(px(160.)).child(
+                        FieldGroup::new()
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-sm").size(SwitchSize::Sm))
+                                    .child(FieldLabel::new().child("Small")),
+                            )
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-default"))
+                                    .child(FieldLabel::new().child("Default")),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+            ],
             Story::Checkbox => vec![(
                 "States",
                 div()
@@ -2997,6 +3177,108 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::Item => vec![
+                (
+                    "Variant",
+                    self.item_example_variant(cx).into_any_element(),
+                ),
+                (
+                    "Size",
+                    self.item_example_size(cx).into_any_element(),
+                ),
+                (
+                    "Icon",
+                    self.item_example_icon(cx).into_any_element(),
+                ),
+                (
+                    "Avatar",
+                    self.item_example_avatar(cx).into_any_element(),
+                ),
+                (
+                    "Image",
+                    self.item_example_image(cx).into_any_element(),
+                ),
+                (
+                    "Group",
+                    self.item_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Header",
+                    self.item_example_header(cx).into_any_element(),
+                ),
+                (
+                    "Link",
+                    self.item_example_link(cx).into_any_element(),
+                ),
+                (
+                    "Dropdown",
+                    self.item_example_dropdown(cx).into_any_element(),
+                ),
+            ],
+            // RTL docs example intentionally omitted (repo-wide out of scope).
+            Story::TextareaStory => vec![
+                (
+                    "Field",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Enter your message below."),
+                                )
+                                .child(Textarea::new(self.textarea_field_input.clone())),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().disabled(true).child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_disabled_input.clone())
+                                        .disabled(true),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .invalid(true)
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_invalid_input.clone())
+                                        .invalid(true),
+                                )
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Please enter a valid message."),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Button",
+                    div()
+                        .w(px(288.))
+                        .flex()
+                        .flex_col()
+                        .gap(px(8.))
+                        .child(Textarea::new(self.textarea_button_input.clone()))
+                        // Direct flex-col child so the button stretches full
+                        // width, like the docs' `grid w-full gap-2`.
+                        .child(Button::new("textarea-send").child("Send message"))
+                        .into_any_element(),
+                ),
+            ],
             Story::Skeleton => vec![
                 (
                     "Avatar",
@@ -3392,6 +3674,22 @@ impl Storybook {
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
             ),
+            (Story::TextareaStory, "Field") => Some(
+                "Use Field, FieldLabel, and FieldDescription to create a textarea with a \
+                 label and description.",
+            ),
+            (Story::TextareaStory, "Disabled") => Some(
+                "Use .disabled(true) to disable the textarea shell (plus Input::set_disabled \
+                 on the wrapped entity). FieldLabel::disabled(true) mirrors the Field \
+                 data-disabled styling.",
+            ),
+            (Story::TextareaStory, "Invalid") => Some(
+                "Use .invalid(true) to mark the textarea as invalid. Field::invalid(true) \
+                 paints the label destructive.",
+            ),
+            (Story::TextareaStory, "Button") => {
+                Some("Pair with Button to create a textarea with a submit button.")
+            }
             (Story::Badge, "With Icon") => Some(
                 "You can render an icon inside the badge. Use .icon_inline_start() / .icon_inline_end() to trim the padding on the icon side.",
             ),
@@ -3453,7 +3751,7 @@ impl Storybook {
                     Switch::new("button-disabled")
                         .checked(self.button_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.button_disabled = *checked;
                             cx.notify();
                         }))
@@ -3495,7 +3793,7 @@ impl Storybook {
                     Switch::new("ctl-switch-checked")
                         .checked(self.switch_checked)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_checked = *checked;
                             cx.notify();
                         }))
@@ -3521,8 +3819,32 @@ impl Storybook {
                     Switch::new("ctl-switch-disabled")
                         .checked(self.switch_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_disabled = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "invalid",
+                    Switch::new("ctl-switch-invalid")
+                        .checked(self.switch_invalid)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_invalid = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "read_only",
+                    Switch::new("ctl-switch-read-only")
+                        .checked(self.switch_read_only)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_read_only = *checked;
                             cx.notify();
                         }))
                         .into_any_element(),
@@ -3535,7 +3857,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-multiple")
                         .checked(self.accordion_multiple)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_multiple = *on;
                             cx.notify();
                         }))
@@ -3547,7 +3869,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-root-disabled")
                         .checked(self.accordion_root_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_root_disabled = *on;
                             cx.notify();
                         }))
@@ -3559,7 +3881,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-disabled")
                         .checked(self.accordion_disable_third)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_disable_third = *on;
                             cx.notify();
                         }))
@@ -3628,7 +3950,7 @@ impl Storybook {
                 Switch::new("ctl-checkbox-checked")
                     .checked(self.checkbox_checked)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.checkbox_checked = *checked;
                         cx.notify();
                     }))
@@ -3644,7 +3966,7 @@ impl Storybook {
                 Switch::new("ctl-collapsible-open")
                     .checked(self.collapsible_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.collapsible_open = *open;
                         cx.notify();
                     }))
@@ -3727,7 +4049,7 @@ impl Storybook {
                     Switch::new("tooltip-disabled")
                         .checked(self.tooltip_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.tooltip_disabled = *checked;
                             cx.notify();
                         }))
@@ -3741,7 +4063,7 @@ impl Storybook {
                 Switch::new("ctl-dialog-open")
                     .checked(self.dialog_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.dialog_open = *open;
                         cx.notify();
                     }))
@@ -3840,7 +4162,7 @@ impl Storybook {
                 Switch::new("ctl-label-disabled")
                     .checked(self.label_disabled)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.label_disabled = *checked;
                         cx.notify();
                     }))
@@ -3867,7 +4189,7 @@ impl Storybook {
                 Switch::new("ctl-popover-open")
                     .checked(self.popover_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.popover_open = *open;
                         cx.notify();
                     }))
@@ -4391,7 +4713,7 @@ impl Storybook {
                     .child(
                         Switch::new("tokens-switch")
                             .checked(self.switch_checked)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                                 this.switch_checked = *checked;
                                 cx.notify();
                             })),
@@ -4443,7 +4765,9 @@ impl Storybook {
             .checked(self.switch_checked)
             .size(self.switch_size)
             .disabled(self.switch_disabled)
-            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+            .invalid(self.switch_invalid)
+            .read_only(self.switch_read_only)
+            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                 this.switch_checked = *checked;
                 cx.notify();
             }))
@@ -4698,90 +5022,604 @@ impl Storybook {
 
     fn item_preview(&self, cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        div().w(px(420.)).child(
-            ItemGroup::new()
+        // Docs Demo: outline basic item (controls-wired) + interactive verified profile row.
+        div()
+            .w(px(448.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(self.item_variant)
+                    .size(self.item_size)
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Basic Item"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("A simple item with title and description."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new("item-demo-action")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Sm)
+                                .child("Action"),
+                        ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .size(ItemSize::Sm)
+                    .id("item-demo-link")
+                    .on_click(|_e, _w, _cx| {})
+                    .child(
+                        ItemMedia::new().variant(ItemMediaVariant::Icon).child(
+                            Icon::new(crate::assets::ICON_BADGE_CHECK)
+                                .size(px(20.))
+                                .text_color(theme.foreground),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Your profile has been verified.")),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Icon::new(theme.icons.chevron_right())
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of item-variant.tsx — default / outline / muted rows with inbox media.
+    fn item_example_variant(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let inbox = |theme: &Theme| {
+            ItemMedia::new()
+                .variant(ItemMediaVariant::Icon)
+                .top_align(true)
                 .child(
-                    Item::new()
-                        .variant(self.item_variant)
-                        .size(self.item_size)
-                        .child(
-                            ItemMedia::new().variant(ItemMediaVariant::Icon).child(
-                                gpui::svg()
-                                    .path(theme.icons.chevron_right())
-                                    .size(px(16.))
-                                    .text_color(theme.foreground),
+                    Icon::new(crate::assets::ICON_INBOX)
+                        .size(px(16.))
+                        .text_color(theme.foreground),
+                )
+        };
+        div()
+            .w(px(448.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Default)
+                    .child(inbox(&theme))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Default Variant"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Transparent background with no border."),
                             ),
-                        )
-                        .child(
-                            ItemContent::new()
-                                .child(ItemTitle::new().child("Basic Item"))
-                                .child(
-                                    ItemDescription::new()
-                                        .child("A simple item with title and description."),
-                                ),
-                        )
-                        .child(
-                            ItemActions::new().child(
-                                Button::new("item-action")
-                                    .variant(ButtonVariant::Outline)
-                                    .size(ButtonSize::Sm)
-                                    .child("Action"),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(inbox(&theme))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Outline Variant"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Outlined style with a visible border."),
                             ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Muted)
+                    .child(inbox(&theme))
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Muted Variant"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Muted background for secondary content."),
+                            ),
+                    ),
+            )
+    }
+
+    /// Port of item-size.tsx — default / sm / xs with size propagation.
+    fn item_example_size(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let row = |theme: &Theme, size: ItemSize, title: &str, desc: &str| {
+            Item::new()
+                .variant(ItemVariant::Outline)
+                .size(size)
+                .child(
+                    ItemMedia::new()
+                        .variant(ItemMediaVariant::Icon)
+                        .size(size)
+                        .top_align(true)
+                        .child(
+                            Icon::new(crate::assets::ICON_INBOX)
+                                .size(px(16.))
+                                .text_color(theme.foreground),
                         ),
                 )
-                .child(ItemSeparator::new())
                 .child(
-                    Item::new()
-                        .variant(self.item_variant)
-                        .child(ItemMedia::new().child(Avatar::new("CN")))
+                    ItemContent::new()
+                        .size(size)
+                        .child(ItemTitle::new().child(title.to_string()))
+                        .child(ItemDescription::new().size(size).child(desc.to_string())),
+                )
+        };
+        div()
+            .w(px(448.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(row(
+                &theme,
+                ItemSize::Default,
+                "Default Size",
+                "The standard size for most use cases.",
+            ))
+            .child(row(
+                &theme,
+                ItemSize::Sm,
+                "Small Size",
+                "A compact size for dense layouts.",
+            ))
+            .child(row(
+                &theme,
+                ItemSize::Xs,
+                "Extra Small Size",
+                "The most compact size available.",
+            ))
+    }
+
+    /// Port of item-icon.tsx — security alert with review action.
+    fn item_example_icon(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div().w(px(512.)).child(
+            Item::new()
+                .variant(ItemVariant::Outline)
+                .child(
+                    ItemMedia::new()
+                        .variant(ItemMediaVariant::Icon)
+                        .top_align(true)
                         .child(
-                            ItemContent::new()
-                                .child(ItemTitle::new().child("Evil Rabbit"))
-                                .child(ItemDescription::new().child("Last seen 5 months ago")),
-                        )
-                        .child(
-                            ItemActions::new().child(
-                                Button::new("item-add")
-                                    .variant(ButtonVariant::Outline)
-                                    .size(ButtonSize::IconSm)
-                                    .child(
-                                        gpui::svg()
-                                            .path(theme.icons.chevron_right())
-                                            .size(px(16.))
-                                            .text_color(theme.foreground),
-                                    ),
-                            ),
+                            Icon::new(crate::assets::ICON_SHIELD_ALERT)
+                                .size(px(16.))
+                                .text_color(theme.foreground),
                         ),
                 )
                 .child(
-                    Item::new()
-                        .variant(self.item_variant)
-                        .size(self.item_size)
+                    ItemContent::new()
+                        .child(ItemTitle::new().child("Security Alert"))
                         .child(
-                            ItemHeader::new()
-                                .child(ItemTitle::new().child("Deployment"))
-                                .child(Badge::new().variant(BadgeVariant::Secondary).child("Live")),
-                        )
-                        .child(ItemContent::new().child(
-                            ItemDescription::new().child("Deployed 2 hours ago by evil rabbit."),
-                        ))
-                        .child(
-                            ItemFooter::new()
-                                .child(
-                                    div()
-                                        .text_size(px(12.))
-                                        .text_color(theme.muted_foreground)
-                                        .child("main / a1b2c3d"),
-                                )
-                                .child(
-                                    Button::new("item-rollback")
-                                        .variant(ButtonVariant::Ghost)
-                                        .size(ButtonSize::Xs)
-                                        .child("Rollback"),
-                                ),
+                            ItemDescription::new().child("New login detected from unknown device."),
                         ),
+                )
+                .child(
+                    ItemActions::new().child(
+                        Button::new("item-icon-review")
+                            .variant(ButtonVariant::Outline)
+                            .size(ButtonSize::Sm)
+                            .child("Review"),
+                    ),
                 ),
         )
+    }
+
+    /// Port of item-avatar.tsx — single avatar + avatar group invite rows.
+    fn item_example_avatar(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            // max-w-lg
+            .w(px(512.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemMedia::new().top_align(true).child(
+                            Avatar::new("ER")
+                                .size(AvatarSize::Lg)
+                                .image(crate::assets::IMAGE_AVATAR_EVILRABBIT),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Evil Rabbit"))
+                            .child(ItemDescription::new().child("Last seen 5 months ago")),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new("item-avatar-plus")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::IconSm)
+                                .rounded_full()
+                                .child(
+                                    Icon::new(crate::assets::ICON_PLUS)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                ),
+                        ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemMedia::new().top_align(true).child(
+                            AvatarGroup::new()
+                                .child(
+                                    Avatar::new("CN")
+                                        .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                                        .grayscale(true),
+                                )
+                                .child(
+                                    Avatar::new("LR")
+                                        .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                                        .grayscale(true),
+                                )
+                                .child(
+                                    Avatar::new("ER")
+                                        .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                                        .grayscale(true),
+                                ),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("No Team Members"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Invite your team to collaborate on this project."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new("item-avatar-invite")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Sm)
+                                .child("Invite"),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of item-image.tsx — music rows with image tiles + duration column.
+    fn item_example_image(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        // (id, title, artist, album, duration, tile)
+        let songs = [
+            (
+                "item-song-1",
+                "Midnight City Lights",
+                "Neon Dreams",
+                "Electric Nights",
+                "3:45",
+                crate::assets::IMAGE_TILE_MIDNIGHT,
+            ),
+            (
+                "item-song-2",
+                "Coffee Shop Conversations",
+                "The Morning Brew",
+                "Urban Stories",
+                "4:05",
+                crate::assets::IMAGE_TILE_COFFEE,
+            ),
+            (
+                "item-song-3",
+                "Digital Rain",
+                "Cyber Symphony",
+                "Binary Beats",
+                "3:30",
+                crate::assets::IMAGE_TILE_DIGITAL,
+            ),
+        ];
+        let mut group = ItemGroup::new().size(ItemSize::Default);
+        for (id, title, artist, album, duration, tile) in songs {
+            let theme = theme.clone();
+            group = group.child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .id(id)
+                    .child(
+                        ItemMedia::new()
+                            .variant(ItemMediaVariant::Image)
+                            .top_align(true)
+                            .child(
+                                // Rounding must sit on the img itself:
+                                // overflow_hidden clips to a rect in gpui,
+                                // so the media shell's radius can't crop it.
+                                gpui::img(tile)
+                                    .size_full()
+                                    .rounded(theme.radius_sm())
+                                    .object_fit(gpui::ObjectFit::Cover)
+                                    .grayscale(true),
+                            ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(
+                                // Title: "<song> - <album>", album span muted.
+                                ItemTitle::new().child(
+                                    div()
+                                        .flex()
+                                        .flex_row()
+                                        .items_center()
+                                        .gap(px(4.))
+                                        .child(format!("{title} -"))
+                                        .child(
+                                            div()
+                                                .text_color(theme.muted_foreground)
+                                                .child(album.to_string()),
+                                        ),
+                                ),
+                            )
+                            .child(ItemDescription::new().child(artist.to_string())),
+                    )
+                    .child(
+                        ItemContent::new().flex_none(true).child(
+                            ItemDescription::new().child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .justify_center()
+                                    .h_full()
+                                    .child(duration.to_string()),
+                            ),
+                        ),
+                    ),
+            );
+        }
+        // max-w-md
+        div().w(px(448.)).child(group)
+    }
+
+    /// Port of item-group.tsx — people list with avatar + invite action.
+    fn item_example_group(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let people = [
+            (
+                "item-person-s",
+                "S",
+                "shadcn",
+                "shadcn@vercel.com",
+                crate::assets::IMAGE_AVATAR_SHADCN,
+            ),
+            (
+                "item-person-m",
+                "M",
+                "maxleiter",
+                "maxleiter@vercel.com",
+                crate::assets::IMAGE_AVATAR_MAXLEITER,
+            ),
+            (
+                "item-person-e",
+                "E",
+                "evilrabbit",
+                "evilrabbit@vercel.com",
+                crate::assets::IMAGE_AVATAR_EVILRABBIT,
+            ),
+        ];
+        let mut group = ItemGroup::new().size(ItemSize::Default);
+        for (id, initials, name, email, photo) in people {
+            let theme = theme.clone();
+            group = group.child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemMedia::new()
+                            .top_align(true)
+                            .child(Avatar::new(initials).image(photo).grayscale(true)),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child(name.to_string()))
+                            .child(ItemDescription::new().child(email.to_string())),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Button::new(format!("{id}-plus"))
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::IconSm)
+                                .child(
+                                    Icon::new(crate::assets::ICON_PLUS)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                ),
+                        ),
+                    ),
+            );
+        }
+        // max-w-sm
+        div().w(px(384.)).child(group)
+    }
+
+    /// Port of item-header.tsx — model cards with square header tiles.
+    fn item_example_header(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let card = |theme: &Theme, title: &str, desc: &str, photo: &'static str| {
+            // grid-cols-3: each cell shares the row evenly; min_w(0) lets the
+            // full-width Item shrink to its cell instead of overflowing.
+            div().flex_1().min_w(px(0.)).child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .child(
+                        ItemHeader::new().child(
+                            AspectRatio::new(1.).child(
+                                gpui::img(photo)
+                                    .size_full()
+                                    .rounded(theme.radius_sm())
+                                    .object_fit(gpui::ObjectFit::Cover),
+                            ),
+                        ),
+                    )
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child(title.to_string()))
+                            .child(ItemDescription::new().child(desc.to_string())),
+                    ),
+            )
+        };
+        div()
+            // max-w-xl
+            .w(px(576.))
+            .flex()
+            .flex_row()
+            .gap(px(16.))
+            .child(card(
+                &theme,
+                "v0-1.5-sm",
+                "Everyday tasks and UI generation.",
+                crate::assets::IMAGE_HEADER_V0_SM,
+            ))
+            .child(card(
+                &theme,
+                "v0-1.5-lg",
+                "Advanced thinking or reasoning.",
+                crate::assets::IMAGE_HEADER_V0_LG,
+            ))
+            .child(card(
+                &theme,
+                "v0-2.0-mini",
+                "Open Source model for everyone.",
+                crate::assets::IMAGE_HEADER_V0_MINI,
+            ))
+    }
+
+    /// Port of item-link.tsx — interactive documentation + external resource rows.
+    fn item_example_link(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w(px(448.))
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Default)
+                    .id("item-link-docs")
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("Visit our documentation"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Learn how to get started with our components."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Icon::new(theme.icons.chevron_right())
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    ),
+            )
+            .child(
+                Item::new()
+                    .variant(ItemVariant::Outline)
+                    .id("item-link-external")
+                    .child(
+                        ItemContent::new()
+                            .child(ItemTitle::new().child("External resource"))
+                            .child(
+                                ItemDescription::new()
+                                    .child("Opens in a new tab with security attributes."),
+                            ),
+                    )
+                    .child(
+                        ItemActions::new().child(
+                            Icon::new(crate::assets::ICON_EXTERNAL_LINK)
+                                .size(px(16.))
+                                .text_color(theme.muted_foreground),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of item-dropdown.tsx — select menu whose items are flush xs Item rows.
+    fn item_example_dropdown(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let people = [
+            (
+                "item-dd-s",
+                "S",
+                "shadcn",
+                "shadcn@vercel.com",
+                crate::assets::IMAGE_AVATAR_SHADCN,
+            ),
+            (
+                "item-dd-m",
+                "M",
+                "maxleiter",
+                "maxleiter@vercel.com",
+                crate::assets::IMAGE_AVATAR_MAXLEITER,
+            ),
+            (
+                "item-dd-e",
+                "E",
+                "evilrabbit",
+                "evilrabbit@vercel.com",
+                crate::assets::IMAGE_AVATAR_EVILRABBIT,
+            ),
+        ];
+        let mut menu = DropdownMenu::new("item-dropdown-select")
+            .open(self.item_dropdown_open)
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.item_dropdown_open = *open;
+                cx.notify();
+            }))
+            .trigger(
+                Button::new("item-dropdown-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .child("Select")
+                    .child(
+                        Icon::new(theme.icons.chevron_down())
+                            .size(px(16.))
+                            .text_color(theme.foreground),
+                    ),
+            );
+        for (id, initials, name, email, photo) in people {
+            menu =
+                menu.item(
+                    DropdownMenuItem::new(id).child(
+                        Item::new()
+                            .size(ItemSize::Xs)
+                            .flush(true)
+                            .child(ItemMedia::new().child(
+                                // Closest AvatarSize to the docs' ~26px tile is Default (32).
+                                Avatar::new(initials)
+                                    .size(AvatarSize::Default)
+                                    .image(photo)
+                                    .grayscale(true),
+                            ))
+                            .child(
+                                ItemContent::new()
+                                    .size(ItemSize::Xs)
+                                    .child(ItemTitle::new().child(name.to_string()))
+                                    .child(ItemDescription::new().size(ItemSize::Xs).child(
+                                        div().line_height(px(12.)).child(email.to_string()),
+                                    )),
+                            ),
+                    ),
+                );
+        }
+        // Docs preview centers the trigger.
+        div().w(px(420.)).flex().justify_center().child(menu)
     }
 
     fn table_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
@@ -5252,36 +6090,114 @@ impl Storybook {
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // shadcn docs demos: vertical Tags list, then horizontal artwork row.
         div()
-            .rounded(theme.radius_md())
-            .border_1()
-            .border_color(theme.border)
+            .flex()
+            .flex_col()
+            .items_start()
+            .gap(px(24.))
             .child(
-                ScrollArea::new("scroll-area-tags")
-                    .h(px(200.))
-                    .w(px(192.))
+                // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288
+                // total, so the ScrollArea inside the 1px border is 190×286).
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
                     .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .p(px(16.))
+                        ScrollArea::new("scroll-area-tags")
+                            .h(px(286.))
+                            .w(px(190.))
                             .child(
                                 div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .pb(px(8.))
-                                    .child("Tags"),
-                            )
-                            .children((1..=20).flat_map(|version| {
-                                [
-                                    div()
-                                        .py(px(6.))
-                                        .text_size(px(13.))
-                                        .child(format!("v1.2.0-beta.{version}"))
-                                        .into_any_element(),
-                                    Separator::new().into_any_element(),
-                                ]
-                            })),
+                                    .p(px(16.))
+                                    .child(
+                                        div()
+                                            .text_size(px(14.))
+                                            .font_weight(FontWeight::MEDIUM)
+                                            .mb(px(16.))
+                                            .child("Tags"),
+                                    )
+                                    .children((1..=50).rev().flat_map(|version| {
+                                        [
+                                            div()
+                                                .text_size(px(14.))
+                                                .child(format!("v1.2.0-beta.{version}"))
+                                                .into_any_element(),
+                                            div()
+                                                .my(px(8.))
+                                                .child(Separator::new())
+                                                .into_any_element(),
+                                        ]
+                                    })),
+                            ),
+                    ),
+            )
+            .child(
+                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal"),
+                // with the docs page's three Unsplash photos embedded as assets.
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
+                    .child(
+                        // Height fits the square figure + caption + 16px padding
+                        // (no explicit h in shadcn; gpui viewport is size_full so
+                        // the root needs a definite height for the track to paint).
+                        ScrollArea::new("scroll-area-artwork")
+                            .w(px(382.))
+                            .h(px(358.))
+                            .horizontal()
+                            .child(
+                                div().flex().flex_row().gap(px(16.)).p(px(16.)).children(
+                                    [
+                                        ("Ornella Binni", crate::assets::PHOTO_ORNELLA_BINNI),
+                                        ("Tom Byrom", crate::assets::PHOTO_TOM_BYROM),
+                                        (
+                                            "Vladimir Malyavko",
+                                            crate::assets::PHOTO_VLADIMIR_MALYAVKO,
+                                        ),
+                                    ]
+                                    .into_iter()
+                                    .map(|(artist, photo)| {
+                                        let theme = theme.clone();
+                                        div()
+                                            .id(photo)
+                                            .flex()
+                                            .flex_col()
+                                            .flex_none()
+                                            .child(
+                                                // Square center-crop, like the
+                                                // docs page's visible framing.
+                                                img(photo)
+                                                    .w(px(300.))
+                                                    .h(px(300.))
+                                                    .rounded(theme.radius_md())
+                                                    .object_fit(ObjectFit::Cover),
+                                            )
+                                            .child(
+                                                div()
+                                                    .pt(px(8.))
+                                                    .text_size(px(12.))
+                                                    .text_color(theme.muted_foreground)
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .child("Photo by ")
+                                                            .child(
+                                                                div()
+                                                                    .font_weight(
+                                                                        FontWeight::SEMIBOLD,
+                                                                    )
+                                                                    .text_color(theme.foreground)
+                                                                    .child(artist),
+                                                            ),
+                                                    ),
+                                            )
+                                            .into_any_element()
+                                    }),
+                                ),
+                            ),
                     ),
             )
     }
@@ -6001,9 +6917,10 @@ impl Storybook {
             )
     }
     fn textarea_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.
         div()
             .w(px(288.))
-            .child(Textarea::new(self.textarea_input.clone()).rows(4))
+            .child(Textarea::new(self.textarea_input.clone()))
     }
     fn field_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         // Port of field-demo.tsx — Payment Method checkout form.
@@ -6020,16 +6937,12 @@ impl Storybook {
                             FieldGroup::new()
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Name on Card"),
-                                        )
+                                        .child(FieldLabel::new().child("Name on Card"))
                                         .child(self.field_name_input.clone()),
                                 )
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Card Number"),
-                                        )
+                                        .child(FieldLabel::new().child("Card Number"))
                                         .child(self.field_card_number.clone())
                                         .child(
                                             FieldDescription::new()
@@ -6045,16 +6958,13 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Month"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Month"))
                                                     .child(
                                                         Select::new("field-month")
                                                             .placeholder("MM")
                                                             .options([
-                                                                "01", "02", "03", "04", "05",
-                                                                "06", "07", "08", "09", "10",
-                                                                "11", "12",
+                                                                "01", "02", "03", "04", "05", "06",
+                                                                "07", "08", "09", "10", "11", "12",
                                                             ])
                                                             .value(self.field_month)
                                                             .open(self.field_month_open)
@@ -6076,9 +6986,7 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Year"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Year"))
                                                     .child(
                                                         Select::new("field-year")
                                                             .placeholder("YYYY")
@@ -6117,9 +7025,10 @@ impl Storybook {
                 .child(
                     FieldSet::new()
                         .legend(FieldLegend::new().child("Billing Address"))
-                        .description(FieldDescription::new().child(
-                            "The billing address associated with your payment method",
-                        ))
+                        .description(
+                            FieldDescription::new()
+                                .child("The billing address associated with your payment method"),
+                        )
                         .child(
                             FieldGroup::new().child(
                                 Field::new()
@@ -6147,9 +7056,7 @@ impl Storybook {
                         FieldGroup::new().child(
                             Field::new()
                                 .child(FieldLabel::new().child("Comments"))
-                                .child(
-                                    Textarea::new(self.field_comments.clone()).rows(3),
-                                ),
+                                .child(Textarea::new(self.field_comments.clone()).rows(3)),
                         ),
                     ),
                 )
@@ -6206,8 +7113,7 @@ impl Storybook {
                         .child(FieldLabel::new().child("Feedback"))
                         .child(Textarea::new(self.field_feedback.clone()).rows(4))
                         .child(
-                            FieldDescription::new()
-                                .child("Share your thoughts about our service."),
+                            FieldDescription::new().child("Share your thoughts about our service."),
                         ),
                 ),
             ),
@@ -6243,10 +7149,7 @@ impl Storybook {
                             cx.notify();
                         })),
                 )
-                .child(
-                    FieldDescription::new()
-                        .child("Select your department or area of work."),
-                ),
+                .child(FieldDescription::new().child("Select your department or area of work.")),
         )
     }
 
@@ -6255,12 +7158,10 @@ impl Storybook {
         div().w(px(320.)).child(
             Field::new()
                 .child(FieldTitle::new().child("Price Range"))
-                .child(
-                    FieldDescription::new().child(format!(
-                        "Set your budget range (${:.0}).",
-                        self.field_slider
-                    )),
-                )
+                .child(FieldDescription::new().child(format!(
+                    "Set your budget range (${:.0}).",
+                    self.field_slider
+                )))
                 .child(
                     Slider::new("field-slider")
                         .min(0.)
@@ -6281,8 +7182,7 @@ impl Storybook {
             FieldSet::new()
                 .legend(FieldLegend::new().child("Address Information"))
                 .description(
-                    FieldDescription::new()
-                        .child("We need your address to deliver your order."),
+                    FieldDescription::new().child("We need your address to deliver your order."),
                 )
                 .child(
                     FieldGroup::new()
@@ -6486,7 +7386,7 @@ impl Storybook {
                 .child(
                     Switch::new("field-2fa")
                         .checked(self.field_switch_2fa)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.field_switch_2fa = *checked;
                             cx.notify();
                         })),
@@ -6521,35 +7421,29 @@ impl Storybook {
                             .child("Select the compute environment for your cluster."),
                     )
                     .gap(px(12.))
-                    .child(
-                        RadioGroup::new().children(envs.into_iter().enumerate().map(
-                            |(index, (id, title, description))| {
-                                FieldLabel::new()
-                                    .choice_card(self.field_compute_env == index)
-                                    .child(
-                                        Field::new()
-                                            .orientation(FieldOrientation::Horizontal)
-                                            .content(
-                                                FieldContent::new()
-                                                    .child(FieldTitle::new().child(title))
-                                                    .child(
-                                                        FieldDescription::new().child(description),
-                                                    ),
-                                            )
-                                            .child(
-                                                RadioGroupItem::new(id)
-                                                    .checked(self.field_compute_env == index)
-                                                    .on_select(cx.listener(
-                                                        move |this, _, _, cx| {
-                                                            this.field_compute_env = index;
-                                                            cx.notify();
-                                                        },
-                                                    )),
-                                            ),
-                                    )
-                            },
-                        )),
-                    ),
+                    .child(RadioGroup::new().children(envs.into_iter().enumerate().map(
+                        |(index, (id, title, description))| {
+                            FieldLabel::new()
+                                .choice_card(self.field_compute_env == index)
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .content(
+                                            FieldContent::new()
+                                                .child(FieldTitle::new().child(title))
+                                                .child(FieldDescription::new().child(description)),
+                                        )
+                                        .child(
+                                            RadioGroupItem::new(id)
+                                                .checked(self.field_compute_env == index)
+                                                .on_select(cx.listener(move |this, _, _, cx| {
+                                                    this.field_compute_env = index;
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                )
+                        },
+                    ))),
             ),
         )
     }
@@ -6693,14 +7587,10 @@ impl Storybook {
                                         .orientation(FieldOrientation::Responsive)
                                         .content(
                                             FieldContent::new()
-                                                .child(
-                                                    FieldLabel::new().child("Name"),
-                                                )
-                                                .child(
-                                                    FieldDescription::new().child(
-                                                        "Provide your full name for identification",
-                                                    ),
-                                                ),
+                                                .child(FieldLabel::new().child("Name"))
+                                                .child(FieldDescription::new().child(
+                                                    "Provide your full name for identification",
+                                                )),
                                         )
                                         .child(self.field_responsive_name.clone()),
                                 )

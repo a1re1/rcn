@@ -221,8 +221,21 @@ const ICONS: &[(&str, &[u8])] = &[
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M4.15.85c.47-.47 1.23-.47 1.7 0l3.3 3.3c.47.47.47 1.23 0 1.7l-3.3 3.3c-.47.47-1.23.47-1.7 0l-3.3-3.3c-.47-.47-.47-1.23 0-1.7l3.3-3.3z"/></svg>"##,
     ),
     (
+        "icons/inbox.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>"##,
+    ),
+    (
+        "icons/shield-alert.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>"##,
+    ),
+    (
         "icons/badge-check.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>"##,
+    ),
+    ("icons/plus.svg", stroked!("M5 12h14M12 5v14")),
+    (
+        "icons/external-link.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>"##,
     ),
     (
         "icons/bookmark.svg",
@@ -241,10 +254,36 @@ const ICONS: &[(&str, &[u8])] = &[
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>"##,
     ),
     (
+        // The native textarea corner resizer: two diagonal grip lines.
+        "icons/resize-grip.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15 15 21"/><path d="M21 9 9 21"/></svg>"##,
+    ),
+    (
         "icons/arrow-up-right.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>"##,
     ),
 ];
+
+/// Embedded photos for the ScrollArea horizontal docs demo (the shadcn demo's
+/// three Unsplash artworks, fetched at `w=300&q=80` like the docs page).
+static PHOTOS: &[(&str, &[u8])] = &[
+    (
+        "photos/ornella-binni.jpg",
+        include_bytes!("../assets/photos/ornella-binni.jpg"),
+    ),
+    (
+        "photos/tom-byrom.jpg",
+        include_bytes!("../assets/photos/tom-byrom.jpg"),
+    ),
+    (
+        "photos/vladimir-malyavko.jpg",
+        include_bytes!("../assets/photos/vladimir-malyavko.jpg"),
+    ),
+];
+
+pub const PHOTO_ORNELLA_BINNI: &str = "photos/ornella-binni.jpg";
+pub const PHOTO_TOM_BYROM: &str = "photos/tom-byrom.jpg";
+pub const PHOTO_VLADIMIR_MALYAVKO: &str = "photos/vladimir-malyavko.jpg";
 
 pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
 pub const ICON_LOADER: &str = "icons/loader.svg";
@@ -253,12 +292,69 @@ pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
 pub const ICON_SAVE: &str = "icons/save.svg";
 pub const ICON_TOOLTIP_ARROW: &str = "icons/tooltip-arrow.svg";
+pub const ICON_INBOX: &str = "icons/inbox.svg";
+pub const ICON_SHIELD_ALERT: &str = "icons/shield-alert.svg";
 pub const ICON_BADGE_CHECK: &str = "icons/badge-check.svg";
+pub const ICON_PLUS: &str = "icons/plus.svg";
+pub const ICON_EXTERNAL_LINK: &str = "icons/external-link.svg";
 pub const ICON_BOOKMARK: &str = "icons/bookmark.svg";
 pub const ICON_BOOKMARK_FILLED: &str = "icons/bookmark-filled.svg";
 pub const ICON_ITALIC: &str = "icons/italic.svg";
 pub const ICON_BOLD: &str = "icons/bold.svg";
 pub const ICON_ARROW_UP_RIGHT: &str = "icons/arrow-up-right.svg";
+pub const ICON_RESIZE_GRIP: &str = "icons/resize-grip.svg";
+
+/// Embedded photos for the storybook docs examples (the same images the
+/// shadcn docs pages use, checked into `assets/images/`, normalized to
+/// baseline PNG).
+const IMAGES: &[(&str, &[u8])] = &[
+    (
+        "images/avatar-shadcn.png",
+        include_bytes!("../assets/images/avatar-shadcn.png"),
+    ),
+    (
+        "images/avatar-maxleiter.png",
+        include_bytes!("../assets/images/avatar-maxleiter.png"),
+    ),
+    (
+        "images/avatar-evilrabbit.png",
+        include_bytes!("../assets/images/avatar-evilrabbit.png"),
+    ),
+    (
+        "images/tile-midnight.png",
+        include_bytes!("../assets/images/tile-midnight.png"),
+    ),
+    (
+        "images/tile-coffee.png",
+        include_bytes!("../assets/images/tile-coffee.png"),
+    ),
+    (
+        "images/tile-digital.png",
+        include_bytes!("../assets/images/tile-digital.png"),
+    ),
+    (
+        "images/header-v0-sm.png",
+        include_bytes!("../assets/images/header-v0-sm.png"),
+    ),
+    (
+        "images/header-v0-lg.png",
+        include_bytes!("../assets/images/header-v0-lg.png"),
+    ),
+    (
+        "images/header-v0-mini.png",
+        include_bytes!("../assets/images/header-v0-mini.png"),
+    ),
+];
+
+pub const IMAGE_AVATAR_SHADCN: &str = "images/avatar-shadcn.png";
+pub const IMAGE_AVATAR_MAXLEITER: &str = "images/avatar-maxleiter.png";
+pub const IMAGE_AVATAR_EVILRABBIT: &str = "images/avatar-evilrabbit.png";
+pub const IMAGE_TILE_MIDNIGHT: &str = "images/tile-midnight.png";
+pub const IMAGE_TILE_COFFEE: &str = "images/tile-coffee.png";
+pub const IMAGE_TILE_DIGITAL: &str = "images/tile-digital.png";
+pub const IMAGE_HEADER_V0_SM: &str = "images/header-v0-sm.png";
+pub const IMAGE_HEADER_V0_LG: &str = "images/header-v0-lg.png";
+pub const IMAGE_HEADER_V0_MINI: &str = "images/header-v0-mini.png";
 
 pub struct Assets;
 
@@ -266,6 +362,8 @@ impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<Cow<'static, [u8]>>> {
         Ok(ICONS
             .iter()
+            .chain(IMAGES.iter())
+            .chain(PHOTOS.iter())
             .find(|(name, _)| *name == path)
             .map(|(_, bytes)| Cow::Borrowed(*bytes)))
     }
@@ -273,6 +371,8 @@ impl AssetSource for Assets {
     fn list(&self, path: &str) -> Result<Vec<SharedString>> {
         Ok(ICONS
             .iter()
+            .chain(IMAGES.iter())
+            .chain(PHOTOS.iter())
             .filter(|(name, _)| name.starts_with(path))
             .map(|(name, _)| SharedString::from(*name))
             .collect())
