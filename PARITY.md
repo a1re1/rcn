@@ -32,18 +32,20 @@ solid before the molecules that compose them.
 ### Tier 1 — atoms
 
 - [x] button — audited in the infrastructure PR (keyboard focus + ring)
+- [x] badge — (static presentation — matches source; focus-visible/aria-invalid omitted; as-child link not ported)
+- [x] label — (matches base-nova source; peer/group disabled via explicit `.disabled` (opacity only — pointer-events/cursor omitted); docs examples: checkbox demo + Label-in-Field in storybook; RTL omitted)
 - [x] badge — (variants, link/interactive badge with focus ring + [a]:hover styles, icon/spinner padding trim, custom color overrides, all docs examples; omitted: RTL, hover transition animation, aria-invalid, underline-offset)
 - [x] label — (static presentation — matches source; peer/group disabled via explicit `.disabled`)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] separator — (static presentation — matches source, no interactive surface)
-- [x] skeleton — animate-pulse (2s opacity breathing)
+- [x] skeleton — Styled sizing passthrough (className equivalent), animate-pulse wired (2s opacity breathing, cosine approx of Tailwind's cubic-bezier(0.4,0,0.6,1)); docs examples: demo, avatar, card, text, form, table (RTL omitted — no direction infra)
 - [x] spinner — (1s rotate animation; matches source spin)
 - [x] aspect-ratio — (static presentation — matches source, no interactive surface)
 - [x] avatar — (static presentation — matches source; image+fallback+group)
 - [x] checkbox — (keyboard focus + ring)
 - [x] radio-group — (keyboard focus + ring)
-- [x] switch — (full base-nova parity: controlled/uncontrolled, read_only, invalid ring, 150ms thumb slide, extended hit area, six docs examples; RTL + form props (name/required/uncheckedValue) omitted)
-- [x] toggle — (keyboard focus + ring)
+- [x] switch — (keyboard focus + ring)
+- [x] toggle — base-nova parity (h-8/h-7/h-9 metrics, rounded-lg + sm radius/text/icon overrides, no outline shadow, full-muted hover, uncontrolled default_pressed, on_pressed_change, icon_inline_start/end padding; all five docs examples incl. pressed bookmark fill; RTL, aria-invalid, group `value`, and hover transition-all omitted)
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
 - [x] input — full focus ring shadow (was border-only)
@@ -82,7 +84,7 @@ solid before the molecules that compose them.
 - [x] menubar — enter animation (100ms ease fade+slide)
 - [x] select — enter animation (100ms ease fade+slide)
 - [x] native-select — enter animation (100ms ease fade+slide)
-- [x] dialog — 200ms enter animation, backdrop fade, Escape closes (storybook root)
+- [x] dialog — base-nova parity (popover surface + foreground/10 ring, no shadow; 100ms enter fade on overlay+content; ghost icon-sm close Button; show_close_button on content+footer; max_w override; uncontrolled default_open + trigger; initial focus on open + Escape closes in-component; all five docs examples in storybook; exit animations, backdrop blur, focus trap, RTL, Input read-only omitted/TODO)
 - [x] alert-dialog — 200ms enter animation
 - [x] sheet — 500ms ease-in-out slide from its edge, Escape closes
 - [x] drawer — 500ms slide-up, Escape closes

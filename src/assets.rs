@@ -217,6 +217,18 @@ const ICONS: &[(&str, &[u8])] = &[
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>"##,
     ),
     (
+        "icons/bookmark-filled.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>"##,
+    ),
+    (
+        "icons/italic.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>"##,
+    ),
+    (
+        "icons/bold.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>"##,
+    ),
+    (
         "icons/arrow-up-right.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>"##,
     ),
@@ -229,6 +241,9 @@ pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
 pub const ICON_BADGE_CHECK: &str = "icons/badge-check.svg";
 pub const ICON_BOOKMARK: &str = "icons/bookmark.svg";
+pub const ICON_BOOKMARK_FILLED: &str = "icons/bookmark-filled.svg";
+pub const ICON_ITALIC: &str = "icons/italic.svg";
+pub const ICON_BOLD: &str = "icons/bold.svg";
 pub const ICON_ARROW_UP_RIGHT: &str = "icons/arrow-up-right.svg";
 
 pub struct Assets;

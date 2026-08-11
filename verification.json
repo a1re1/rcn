@@ -201,8 +201,8 @@
   },
   {
     "name": "Pagination",
-    "verified": null,
-    "by": null
+    "verified": "2026-08-11",
+    "by": "twhitehurst"
   },
   {
     "name": "Popover",
@@ -256,8 +256,8 @@
   },
   {
     "name": "Skeleton",
-    "verified": null,
-    "by": null
+    "verified": "2026-08-11",
+    "by": "twhitehurst"
   },
   {
     "name": "Slider",
@@ -296,8 +296,8 @@
   },
   {
     "name": "Toggle",
-    "verified": null,
-    "by": null
+    "verified": "2026-08-11",
+    "by": "twhitehurst"
   },
   {
     "name": "Toggle Group",
