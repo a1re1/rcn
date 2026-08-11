@@ -38,7 +38,7 @@ solid before the molecules that compose them.
 - [x] label — (static presentation — matches source; peer/group disabled via explicit `.disabled`)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] separator — (static presentation — matches source, no interactive surface)
-- [x] skeleton — animate-pulse (2s opacity breathing)
+- [x] skeleton — Styled sizing passthrough (className equivalent), animate-pulse wired (2s opacity breathing, cosine approx of Tailwind's cubic-bezier(0.4,0,0.6,1)); docs examples: demo, avatar, card, text, form, table (RTL omitted — no direction infra)
 - [x] spinner — (1s rotate animation; matches source spin)
 - [x] aspect-ratio — (static presentation — matches source, no interactive surface)
 - [x] avatar — (static presentation — matches source; image+fallback+group)

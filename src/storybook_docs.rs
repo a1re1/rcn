@@ -2061,30 +2061,13 @@ pub static SIDEBAR_API: &[ApiEntry] = &[
 
 pub static SIDEBAR_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet items = [\"Home\", \"Inbox\", \"Calendar\", \"Search\", \"Settings\"];\ndiv()\n    .w(px(480.))\n    .h(px(320.))\n    .rounded(theme.radius_lg())\n    .border_1()\n    .border_color(theme.border)\n    .overflow_hidden()\n    .child(\n        SidebarProvider::new()\n            .open(self.sidebar_open)\n            .sidebar(\n                Sidebar::new()\n                    .child(\n                        SidebarHeader::new().child(\n                            div()\n                                .px(px(8.))\n                                .text_size(px(14.))\n                                .font_weight(FontWeight::SEMIBOLD)\n                                .child(\"Acme Inc\"),\n                        ),\n                    )\n                    .child(SidebarContent::new().child(\n                        SidebarGroup::new().label(\"Application\").children(\n                            items.into_iter().enumerate().map(|(index, label)| {\n                                SidebarMenuButton::new((\"sidebar-item\", index))\n                                    .active(self.sidebar_active == index)\n                                    .on_click(cx.listener(move |this, _, _, cx| {\n                                        this.sidebar_active = index;\n                                        cx.notify();\n                                    }))\n                                    .child(label)\n                            }),\n                        ),\n                    ))\n                    .child(\n                        SidebarFooter::new().child(\n                            div()\n                                .px(px(8.))\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"evil rabbit\"),\n                        ),\n                    ),\n            )\n            .inset(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .p(px(12.))\n                    .child(SidebarTrigger::new(\"sidebar-trigger\").on_click(cx.listener(\n                        |this, _, _, cx| {\n                            this.sidebar_open = !this.sidebar_open;\n                            cx.notify();\n                        },\n                    )))\n                    .child(\n                        div()\n                            .text_size(px(14.))\n                            .text_color(theme.muted_foreground)\n                            .child(format!(\"Active: {}\", items[self.sidebar_active])),\n                    ),\n            ),\n    )\n    ";
 
-pub static SKELETON_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn w(mut self, width: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn h(mut self, height: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn rounded_full(mut self) -> Self",
-        doc: "",
-    },
-];
+pub static SKELETON_API: &[ApiEntry] = &[ApiEntry {
+    type_name: "Skeleton",
+    signature: "pub fn new() -> Self",
+    doc: "",
+}];
 
-pub static SKELETON_USAGE: &str = "// Mirrors the shadcn docs example: avatar row + card-shaped block.\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(16.))\n            .child(Skeleton::new().w(px(48.)).h(px(48.)).rounded_full())\n            .child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .child(Skeleton::new().w(px(200.)).h(px(16.)))\n                    .child(Skeleton::new().w(px(160.)).h(px(16.))),\n            ),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(Skeleton::new().w(px(200.)).h(px(100.)))\n            .child(Skeleton::new().w(px(200.)).h(px(16.)))\n            .child(Skeleton::new().w(px(160.)).h(px(16.))),\n    )\n    ";
+pub static SKELETON_USAGE: &str = "// skeleton-demo: avatar circle + two text lines.\ndiv()\n    .flex()\n    .items_center()\n    .gap(px(16.))\n    .child(Skeleton::new().h(px(48.)).w(px(48.)).rounded_full())\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(Skeleton::new().h(px(16.)).w(px(250.)))\n            .child(Skeleton::new().h(px(16.)).w(px(200.))),\n    )\n    ";
 
 pub static SLIDER_API: &[ApiEntry] = &[
     ApiEntry {
