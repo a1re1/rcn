@@ -229,6 +229,11 @@ const ICONS: &[(&str, &[u8])] = &[
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>"##,
     ),
     (
+        // The native textarea corner resizer: two diagonal grip lines.
+        "icons/resize-grip.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15 15 21"/><path d="M21 9 9 21"/></svg>"##,
+    ),
+    (
         "icons/arrow-up-right.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>"##,
     ),
@@ -266,6 +271,7 @@ pub const ICON_BOOKMARK_FILLED: &str = "icons/bookmark-filled.svg";
 pub const ICON_ITALIC: &str = "icons/italic.svg";
 pub const ICON_BOLD: &str = "icons/bold.svg";
 pub const ICON_ARROW_UP_RIGHT: &str = "icons/arrow-up-right.svg";
+pub const ICON_RESIZE_GRIP: &str = "icons/resize-grip.svg";
 
 pub struct Assets;
 

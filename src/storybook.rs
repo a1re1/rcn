@@ -738,6 +738,10 @@ pub struct Storybook {
     input_disabled: gpui::Entity<Input>,
     // Textarea story state
     textarea_input: gpui::Entity<Input>,
+    textarea_field_input: gpui::Entity<Input>,
+    textarea_disabled_input: gpui::Entity<Input>,
+    textarea_invalid_input: gpui::Entity<Input>,
+    textarea_button_input: gpui::Entity<Input>,
     // Field story state
     field_input: gpui::Entity<Input>,
     field_error_input: gpui::Entity<Input>,
@@ -865,6 +869,31 @@ impl Storybook {
             input
         });
         let textarea_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_field_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_disabled_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input.set_disabled(true);
+            input
+        });
+        let textarea_invalid_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_button_input = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Type your message here.");
             input.set_bare(true);
@@ -1091,6 +1120,10 @@ impl Storybook {
             input_demo,
             input_disabled,
             textarea_input,
+            textarea_field_input,
+            textarea_disabled_input,
+            textarea_invalid_input,
+            textarea_button_input,
             field_input,
             field_error_input,
             field_name_input,
@@ -3133,6 +3166,70 @@ impl Storybook {
                     ),
                 ),
             ],
+            // RTL docs example intentionally omitted (repo-wide out of scope).
+            Story::TextareaStory => vec![
+                (
+                    "Field",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Enter your message below."),
+                                )
+                                .child(Textarea::new(self.textarea_field_input.clone())),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().disabled(true).child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_disabled_input.clone())
+                                        .disabled(true),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .invalid(true)
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_invalid_input.clone())
+                                        .invalid(true),
+                                )
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Please enter a valid message."),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Button",
+                    div()
+                        .w(px(288.))
+                        .flex()
+                        .flex_col()
+                        .gap(px(8.))
+                        .child(Textarea::new(self.textarea_button_input.clone()))
+                        // Direct flex-col child so the button stretches full
+                        // width, like the docs' `grid w-full gap-2`.
+                        .child(Button::new("textarea-send").child("Send message"))
+                        .into_any_element(),
+                ),
+            ],
             Story::Skeleton => vec![
                 (
                     "Avatar",
@@ -3362,6 +3459,22 @@ impl Storybook {
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
             ),
+            (Story::TextareaStory, "Field") => Some(
+                "Use Field, FieldLabel, and FieldDescription to create a textarea with a \
+                 label and description.",
+            ),
+            (Story::TextareaStory, "Disabled") => Some(
+                "Use .disabled(true) to disable the textarea shell (plus Input::set_disabled \
+                 on the wrapped entity). FieldLabel::disabled(true) mirrors the Field \
+                 data-disabled styling.",
+            ),
+            (Story::TextareaStory, "Invalid") => Some(
+                "Use .invalid(true) to mark the textarea as invalid. Field::invalid(true) \
+                 paints the label destructive.",
+            ),
+            (Story::TextareaStory, "Button") => {
+                Some("Pair with Button to create a textarea with a submit button.")
+            }
             (Story::Badge, "With Icon") => Some(
                 "You can render an icon inside the badge. Use .icon_inline_start() / .icon_inline_end() to trim the padding on the icon side.",
             ),
@@ -6036,9 +6149,10 @@ impl Storybook {
             )
     }
     fn textarea_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.
         div()
             .w(px(288.))
-            .child(Textarea::new(self.textarea_input.clone()).rows(4))
+            .child(Textarea::new(self.textarea_input.clone()))
     }
     fn field_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         // Port of field-demo.tsx — Payment Method checkout form.
