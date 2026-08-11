@@ -156,8 +156,8 @@
   },
   {
     "name": "Item",
-    "verified": null,
-    "by": null
+    "verified": "2026-08-11",
+    "by": "twhitehurst"
   },
   {
     "name": "Kbd",
@@ -286,8 +286,8 @@
   },
   {
     "name": "Textarea",
-    "verified": null,
-    "by": null
+    "verified": "2026-08-11",
+    "by": "twhitehurst"
   },
   {
     "name": "Toast",
