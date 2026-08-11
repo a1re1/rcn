@@ -3331,10 +3331,12 @@ impl Storybook {
                                 .flex_row()
                                 .items_center()
                                 .gap(px(8.))
-                                // RTL logical mapping: inline-start → Right, inline-end → Left
+                                // Logical inline mapping in this LTR storybook:
+                                // inline-start → Left, inline-end → Right
+                                // (matches the shadcn demo rendered in LTR).
                                 .child(
                                     Tooltip::new("tooltip-rtl-start", "Add to library")
-                                        .side(TooltipSide::Right)
+                                        .side(TooltipSide::Left)
                                         .child(
                                             Button::new("tooltip-rtl-start-btn")
                                                 .variant(ButtonVariant::Outline)
@@ -3343,7 +3345,7 @@ impl Storybook {
                                 )
                                 .child(
                                     Tooltip::new("tooltip-rtl-end", "Add to library")
-                                        .side(TooltipSide::Left)
+                                        .side(TooltipSide::Right)
                                         .child(
                                             Button::new("tooltip-rtl-end-btn")
                                                 .variant(ButtonVariant::Outline)
