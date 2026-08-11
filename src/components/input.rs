@@ -26,7 +26,7 @@ use gpui::{
 };
 use unicode_segmentation::UnicodeSegmentation as _;
 
-use crate::theme::{Theme, alpha};
+use crate::theme::{Theme, alpha, composite};
 
 /// Invoked on user edits (typing, paste, cut, IME) — not on `set_text`.
 type ChangeHandler = Rc<dyn Fn(&SharedString, &mut Window, &mut App) + 'static>;
@@ -1145,6 +1145,10 @@ impl Render for Input {
                 } else {
                     theme.input
                 };
+                // Ring-bearing states need an opaque background: gpui box
+                // shadows show through transparent backgrounds (see
+                // `theme::composite`), where CSS rings paint outside only.
+                let ring = invalid || focused;
                 el.h(px(32.))
                     .rounded(theme.radius_lg())
                     .border_1()
@@ -1158,9 +1162,24 @@ impl Render for Input {
                     })
                     .when(disabled, |el| {
                         // disabled:bg-input/50 dark:disabled:bg-input/80 (replaces normal tint)
-                        el.bg(alpha(theme.input, if theme.dark { 0.8 } else { 0.5 }))
+                        el.bg(composite(
+                            theme.background,
+                            alpha(theme.input, if theme.dark { 0.8 } else { 0.5 }),
+                        ))
                     })
-                    .when(!disabled && theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
+                    .when(!disabled, |el| {
+                        if ring {
+                            el.bg(if theme.dark {
+                                composite(theme.background, alpha(theme.input, 0.3))
+                            } else {
+                                theme.background
+                            })
+                        } else if theme.dark {
+                            el.bg(alpha(theme.input, 0.3))
+                        } else {
+                            el
+                        }
+                    })
                     .px(px(10.))
             })
             .when(disabled, |el| el.opacity(0.5))

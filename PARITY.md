@@ -67,9 +67,12 @@ solid before the molecules that compose them.
 - [x] empty — (static presentation — matches source; dashed border approximated solid)
 - [x] item — (static presentation — matches source layout variants)
 - [x] field — base-nova parity (all ten parts incl. FieldLabel/FieldContent/FieldTitle/FieldSeparator; vertical/horizontal orientations + responsive via measured container width (`container_query`, @md 448px); `.invalid()` destructive cascade; choice cards via `FieldLabel::choice_card(checked)` with dark-mode primary tints; `FieldError::errors()` dedup + bullet list; browser-measured legend/description spacing; RTL and aria semantics omitted)
-- [x] input-group — focus ring shadow on the shell
+- [x] input-group — focus ring shadow on the shell; shell chrome tracks
+  base-nova (h-8 rounded-lg, no resting shadow, opaque bg under the ring)
 - [x] input-otp — (slot presentation + click-to-focus; per-slot caret/paste keyboard TODO)
-- [x] button-group — (static presentation — layout wrapper; children own interaction)
+- [x] button-group — (joined corner/border styling for Buttons via
+  group_position; `.input(..)` segment wraps a bare Input in a joined
+  input-chrome shell (`[&>input]:flex-1`); children own interaction)
 - [x] toggle-group — (keyboard focus + ring)
 - [x] tabs — (keyboard focus + ring)
 - [x] collapsible — (200ms animated reveal)

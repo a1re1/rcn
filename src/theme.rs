@@ -167,6 +167,23 @@ pub fn alpha(mut color: Hsla, a: f32) -> Hsla {
     color
 }
 
+/// Source-over composite of a translucent `overlay` on an opaque `base`.
+/// gpui box shadows paint behind the element and show through transparent
+/// backgrounds, so surfaces that carry a ring shadow (focus/invalid) need
+/// an opaque background — this flattens the CSS translucent-bg look into one.
+pub fn composite(base: Hsla, overlay: Hsla) -> Hsla {
+    let b = base.to_rgb();
+    let o = overlay.to_rgb();
+    let a = o.a;
+    Rgba {
+        r: o.r * a + b.r * (1. - a),
+        g: o.g * a + b.g * (1. - a),
+        b: o.b * a + b.b * (1. - a),
+        a: 1.,
+    }
+    .into()
+}
+
 /// Convert an oklch color (shadcn's native token space; hue in degrees) to a
 /// gpui color, clamped into sRGB.
 pub fn oklch(l: f32, c: f32, h_deg: f32) -> Hsla {

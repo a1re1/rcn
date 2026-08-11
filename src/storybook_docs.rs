@@ -409,6 +409,11 @@ pub static BUTTON_GROUP_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "ButtonGroup",
+        signature: "pub fn input(mut self, input: Entity<Input>) -> Self",
+        doc: "A joined input segment (`[&>input]:flex-1`): the group draws the shared border and squared inner corners around a bare [`Input`] (`input.set_bare(true)`), like [`InputGroup`](super::InputGroup).",
+    },
+    ApiEntry {
         type_name: "ButtonGroupText",
         signature: "pub fn new() -> Self",
         doc: "",

@@ -944,6 +944,7 @@ impl Storybook {
         let input_bg_search = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Type to search...");
+            input.set_bare(true); // the ButtonGroup shell draws the chrome
             input
         });
         let input_form_name = cx.new(|cx| {
@@ -3391,7 +3392,7 @@ impl Storybook {
                  component.",
             ),
             (Story::InputStory, "Button Group") => {
-                Some("To add buttons to an input, pair it with adjacent Buttons.")
+                Some("To add buttons to an input, use the ButtonGroup component.")
             }
             (Story::InputStory, "Form") => {
                 Some("A full form example with multiple inputs, a select, and a button.")
@@ -6088,13 +6089,15 @@ impl Storybook {
         )
     }
 
-    /// Port of input-badge.tsx.
+    /// Port of input-badge.tsx — the `ml-auto` badge sits at the label's
+    /// right edge (a flex spacer plays the auto margin).
     fn input_example_badge(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div().w(px(320.)).child(
             Field::new()
                 .child(
                     FieldLabel::new()
                         .child("Webhook URL")
+                        .child(div().flex_1())
                         .child(Badge::new().variant(BadgeVariant::Secondary).child("Beta")),
                 )
                 .child(self.input_badge.clone()),
@@ -6122,25 +6125,16 @@ impl Storybook {
         )
     }
 
-    /// Port of input-button-group.tsx. ButtonGroup only accepts Buttons, so
-    /// the joined input+button row is approximated with an adjacent flex row
-    /// (shared-border grouping is a button-group audit TODO).
+    /// Port of input-button-group.tsx — a joined input + button row.
     fn input_example_button_group(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div().w(px(320.)).child(
             Field::new().child(FieldLabel::new().child("Search")).child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .w_full()
-                    .child(div().flex_1().child(self.input_bg_search.clone()))
-                    .child(
-                        div().ml(px(-1.)).child(
-                            Button::new("input-bg-search")
-                                .variant(ButtonVariant::Outline)
-                                .size(ButtonSize::Sm)
-                                .child("Search"),
-                        ),
-                    ),
+                ButtonGroup::new().input(self.input_bg_search.clone()).item(
+                    Button::new("input-bg-search")
+                        .variant(ButtonVariant::Outline)
+                        .size(ButtonSize::Sm)
+                        .child("Search"),
+                ),
             ),
         )
     }
