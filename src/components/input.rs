@@ -28,7 +28,7 @@ use unicode_segmentation::UnicodeSegmentation as _;
 
 use crate::theme::{Theme, alpha};
 
-/// Invoked whenever the input content changes (`set_text`, replace, IME).
+/// Invoked on user edits (typing, paste, cut, IME) — not on `set_text`.
 type ChangeHandler = Rc<dyn Fn(&SharedString, &mut Window, &mut App) + 'static>;
 
 actions!(
@@ -178,7 +178,8 @@ impl Input {
         self.bare = bare;
     }
 
-    /// Callback invoked whenever content changes.
+    /// Callback invoked on user edits (typing, paste, cut, IME). Programmatic
+    /// [`Input::set_text`] does not fire it, matching React `onChange`.
     #[allow(dead_code)] // part of the shadcn contract; no storybook example uses it
     pub fn on_change(
         &mut self,
@@ -197,17 +198,11 @@ impl Input {
         self.file_name.as_ref().map(|s| s.as_ref())
     }
 
-    pub fn set_text(
-        &mut self,
-        text: impl Into<SharedString>,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
+    pub fn set_text(&mut self, text: impl Into<SharedString>, cx: &mut Context<Self>) {
         self.content = text.into();
         let end = self.content.len();
         self.selected_range = end..end;
         self.marked_range = None;
-        self.emit_change(window, cx);
         cx.notify();
     }
 

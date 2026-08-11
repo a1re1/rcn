@@ -17,7 +17,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, Window, div,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString, Window, div,
     hsla, prelude::*, px, relative, rgb,
 };
 
@@ -42,8 +42,9 @@ use crate::components::{
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
     MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
-    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis,
+    PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle,
     Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
@@ -670,11 +671,14 @@ pub struct Storybook {
     table_selected: Option<usize>,
     // Checkbox controls
     checkbox_checked: bool,
+    // Label story state
+    label_disabled: bool,
+    label_terms_checked: bool,
+    label_email_input: gpui::Entity<Input>,
     // Radio group story state
     radio_selected: usize,
     // Toggle story state
     toggle_pressed: bool,
-    toggle_outline_pressed: bool,
     // Toggle group story state
     toggle_group_on: [bool; 3],
     // Collapsible story state
@@ -687,8 +691,18 @@ pub struct Storybook {
     slider_fine: f32,
     // Pagination story state
     pagination_page: usize,
+    pagination_simple_page: usize,
+    pagination_link_size: ButtonSize,
+    pagination_rows_value: Option<usize>,
+    pagination_rows_open: bool,
     // Dialog story state
     dialog_open: bool,
+    dialog_share_open: bool,
+    dialog_sticky_open: bool,
+    dialog_scroll_open: bool,
+    dialog_name_input: gpui::Entity<Input>,
+    dialog_username_input: gpui::Entity<Input>,
+    dialog_share_input: gpui::Entity<Input>,
     // Alert dialog story state
     alert_dialog_open: bool,
     // Sheet story state
@@ -973,6 +987,23 @@ impl Storybook {
             input.placeholder("Evil Rabbit");
             input
         });
+        let dialog_name_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_text("Pedro Duarte", cx);
+            input
+        });
+        let dialog_username_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_text("@peduarte", cx);
+            input
+        });
+        let dialog_share_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            // shadcn renders this readOnly; Input has no read-only mode yet,
+            // and disabled would dim it to 50% — leave it editable.
+            input.set_text("https://ui.shadcn.com/docs/installation", cx);
+            input
+        });
         let field_card_number = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("1234 5678 9012 3456");
@@ -1072,6 +1103,7 @@ impl Storybook {
             input
         });
         let card_spacing_password = cx.new(|cx| Input::new(cx));
+        let label_email_input = cx.new(|cx| Input::new(cx));
         // Live-refresh stories that derive UI from input text.
         for input in [
             &command_input,
@@ -1117,9 +1149,11 @@ impl Storybook {
             item_size: ItemSize::Default,
             table_selected: Some(1),
             checkbox_checked: true,
+            label_disabled: false,
+            label_terms_checked: false,
+            label_email_input,
             radio_selected: 1,
             toggle_pressed: true,
-            toggle_outline_pressed: false,
             toggle_group_on: [true, false, false],
             collapsible_open: false,
             tabs_active: 0,
@@ -1127,7 +1161,17 @@ impl Storybook {
             slider_value: 50.,
             slider_fine: 0.4,
             pagination_page: 2,
+            pagination_simple_page: 2,
+            pagination_link_size: ButtonSize::Icon,
+            pagination_rows_value: Some(1), // "25"
+            pagination_rows_open: false,
             dialog_open: false,
+            dialog_share_open: false,
+            dialog_sticky_open: false,
+            dialog_scroll_open: false,
+            dialog_name_input,
+            dialog_username_input,
+            dialog_share_input,
             alert_dialog_open: false,
             sheet_open: false,
             sheet_side: SheetSide::Right,
@@ -1413,7 +1457,7 @@ impl Storybook {
             Story::Popover => self.popover_preview(cx).into_any_element(),
             Story::Separator => Self::separator_preview(cx).into_any_element(),
             Story::Skeleton => Self::skeleton_preview().into_any_element(),
-            Story::Label => Self::label_preview().into_any_element(),
+            Story::Label => self.label_preview(cx).into_any_element(),
             Story::Kbd => Self::kbd_preview().into_any_element(),
             Story::Card => self.card_preview(cx).into_any_element(),
             Story::Alert => self.alert_preview().into_any_element(),
@@ -2019,30 +2063,184 @@ impl Storybook {
                         .into_any_element(),
                 ),
             ],
-            Story::Badge => vec![(
-                "Variants",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
-                    .child(
-                        Badge::new()
-                            .variant(BadgeVariant::Secondary)
-                            .child("Secondary"),
-                    )
-                    .child(
-                        Badge::new()
-                            .variant(BadgeVariant::Destructive)
-                            .child("Destructive"),
-                    )
-                    .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
-                    .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
-                    .child(Badge::new().variant(BadgeVariant::Link).child("Link"))
-                    .into_any_element(),
-            )],
+            Story::Badge => vec![
+                (
+                    "Variants",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .child("Secondary"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Destructive)
+                                .child("Destructive"),
+                        )
+                        .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
+                        .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
+                        .into_any_element(),
+                ),
+                (
+                    "With Icon",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .icon_inline_start()
+                                .child(
+                                    Icon::new(crate::assets::ICON_BADGE_CHECK).size(px(12.)),
+                                )
+                                .child("Verified"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Outline)
+                                .icon_inline_end()
+                                .child("Bookmark")
+                                .child(Icon::new(crate::assets::ICON_BOOKMARK).size(px(12.))),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Spinner",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Destructive)
+                                .icon_inline_start()
+                                .child(
+                                    Spinner::new()
+                                        .size(px(12.))
+                                        .color(theme.destructive),
+                                )
+                                .child("Deleting"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .icon_inline_end()
+                                .child("Generating")
+                                .child(
+                                    Spinner::new()
+                                        .size(px(12.))
+                                        .color(theme.secondary_foreground),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Link",
+                    Badge::new()
+                        .variant(BadgeVariant::Default)
+                        .on_click("badge-link-example", |_, _, _| {})
+                        .icon_inline_end()
+                        .child("Open Link")
+                        .child(
+                            Icon::new(crate::assets::ICON_ARROW_UP_RIGHT).size(px(12.)),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Custom Colors",
+                    {
+                        let dark = theme.dark;
+                        div()
+                            .flex()
+                            .flex_row()
+                            .flex_wrap()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x172554).into()
+                                    } else {
+                                        rgb(0xeff6ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x93c5fd).into()
+                                    } else {
+                                        rgb(0x1d4ed8).into()
+                                    })
+                                    .child("Blue"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x052e16).into()
+                                    } else {
+                                        rgb(0xf0fdf4).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x86efac).into()
+                                    } else {
+                                        rgb(0x15803d).into()
+                                    })
+                                    .child("Green"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x082f49).into()
+                                    } else {
+                                        rgb(0xf0f9ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x7dd3fc).into()
+                                    } else {
+                                        rgb(0x0369a1).into()
+                                    })
+                                    .child("Sky"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x3b0764).into()
+                                    } else {
+                                        rgb(0xfaf5ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0xd8b4fe).into()
+                                    } else {
+                                        rgb(0x7e22ce).into()
+                                    })
+                                    .child("Purple"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x450a0a).into()
+                                    } else {
+                                        rgb(0xfef2f2).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0xfca5a5).into()
+                                    } else {
+                                        rgb(0xb91c1c).into()
+                                    })
+                                    .child("Red"),
+                            )
+                            .into_any_element()
+                    },
+                ),
+            ],
             Story::Switch => vec![(
                 "Sizes",
                 div()
@@ -2112,46 +2310,108 @@ impl Storybook {
                     )
                     .into_any_element(),
             )],
-            Story::Toggle => vec![(
-                "Variants and sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Toggle::new("ex-toggle-default")
-                            .variant(ToggleVariant::Default)
-                            .pressed(true)
-                            .child("Default"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-outline")
-                            .variant(ToggleVariant::Outline)
-                            .pressed(true)
-                            .child("Outline"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-sm")
-                            .size(ToggleSize::Sm)
-                            .pressed(true)
-                            .child("Small"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-md")
-                            .size(ToggleSize::Default)
-                            .pressed(true)
-                            .child("Default"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-lg")
-                            .size(ToggleSize::Lg)
-                            .pressed(true)
-                            .child("Large"),
-                    )
-                    .into_any_element(),
-            )],
+            Story::Toggle => vec![
+                (
+                    "Outline",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Toggle::new("ex-toggle-outline-italic")
+                                .variant(ToggleVariant::Outline)
+                                .default_pressed(false)
+                                .icon_inline_start()
+                                .child(
+                                    gpui::svg()
+                                        .path(crate::assets::ICON_ITALIC)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                )
+                                .child("Italic"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-outline-bold")
+                                .variant(ToggleVariant::Outline)
+                                .default_pressed(false)
+                                .icon_inline_start()
+                                .child(
+                                    gpui::svg()
+                                        .path(crate::assets::ICON_BOLD)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                )
+                                .child("Bold"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Text",
+                    Toggle::new("ex-toggle-with-text")
+                        .default_pressed(false)
+                        .icon_inline_start()
+                        .child(
+                            gpui::svg()
+                                .path(crate::assets::ICON_ITALIC)
+                                .size(px(16.))
+                                .text_color(theme.foreground),
+                        )
+                        .child("Italic")
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(8.))
+                        .child(
+                            Toggle::new("ex-toggle-sm")
+                                .variant(ToggleVariant::Outline)
+                                .size(ToggleSize::Sm)
+                                .default_pressed(false)
+                                .child("Small"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-md")
+                                .variant(ToggleVariant::Outline)
+                                .size(ToggleSize::Default)
+                                .default_pressed(false)
+                                .child("Default"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-lg")
+                                .variant(ToggleVariant::Outline)
+                                .size(ToggleSize::Lg)
+                                .default_pressed(false)
+                                .child("Large"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(8.))
+                        .child(
+                            Toggle::new("ex-toggle-disabled-default")
+                                .disabled(true)
+                                .default_pressed(false)
+                                .child("Disabled"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-disabled-outline")
+                                .variant(ToggleVariant::Outline)
+                                .disabled(true)
+                                .default_pressed(false)
+                                .child("Disabled"),
+                        )
+                        .into_any_element(),
+                ),
+            ],
             Story::Alert => vec![(
                 "Destructive",
                 Alert::new()
@@ -2802,6 +3062,25 @@ impl Storybook {
                     self.field_example_validation(cx).into_any_element(),
                 ),
             ],
+            // Docs "Label in Field" section: the usage snippet, then the
+            // embedded field-demo (the same Payment Method form as the
+            // Field story's main preview).
+            Story::Label => vec![(
+                "Label in Field",
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(24.))
+                    .child(
+                        div().w(px(448.)).child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Your email address"))
+                                .child(self.label_email_input.clone()),
+                        ),
+                    )
+                    .child(self.field_preview(cx))
+                    .into_any_element(),
+            )],
             Story::ResizableStory => vec![
                 (
                     "Vertical",
@@ -2865,6 +3144,199 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::Skeleton => vec![
+                (
+                    "Avatar",
+                    div()
+                        .flex()
+                        .w_auto()
+                        .items_center()
+                        .gap(px(16.))
+                        .child(
+                            Skeleton::new()
+                                .w(px(40.))
+                                .h(px(40.))
+                                .flex_shrink_0()
+                                .rounded_full(),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(8.))
+                                .child(Skeleton::new().h(px(16.)).w(px(150.)))
+                                .child(Skeleton::new().h(px(16.)).w(px(100.))),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Card",
+                    div()
+                        .w(px(320.))
+                        .child(
+                            Card::new()
+                                .child(
+                                    CardHeader::new()
+                                        .child(Skeleton::new().h(px(16.)).w(relative(2. / 3.)))
+                                        .child(Skeleton::new().h(px(16.)).w(relative(0.5))),
+                                )
+                                .child(
+                                    CardContent::new()
+                                        .child(Skeleton::new().w_full().aspect_ratio(16. / 9.)),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Text",
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(320.))
+                        .gap(px(8.))
+                        .child(Skeleton::new().h(px(16.)).w_full())
+                        .child(Skeleton::new().h(px(16.)).w_full())
+                        .child(Skeleton::new().h(px(16.)).w(relative(0.75)))
+                        .into_any_element(),
+                ),
+                (
+                    "Form",
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(320.))
+                        .gap(px(28.))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(12.))
+                                .child(Skeleton::new().h(px(16.)).w(px(80.)))
+                                .child(Skeleton::new().h(px(32.)).w_full()),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .gap(px(12.))
+                                .child(Skeleton::new().h(px(16.)).w(px(96.)))
+                                .child(Skeleton::new().h(px(32.)).w_full()),
+                        )
+                        .child(Skeleton::new().h(px(32.)).w(px(96.)))
+                        .into_any_element(),
+                ),
+                (
+                    "Table",
+                    div()
+                        .flex()
+                        .flex_col()
+                        .w(px(384.))
+                        .gap(px(8.))
+                        .children((0..5).map(|_| {
+                            div()
+                                .flex()
+                                .gap(px(16.))
+                                .child(Skeleton::new().h(px(16.)).flex_1())
+                                .child(Skeleton::new().h(px(16.)).w(px(96.)))
+                                .child(Skeleton::new().h(px(16.)).w(px(80.)))
+                        }))
+                        .into_any_element(),
+                ),
+            ],
+            Story::PaginationStory => {
+                let link_size = self.pagination_link_size;
+                vec![
+                    (
+                        "Simple",
+                        // pagination-simple: links 1–5 only, page 2 active by default
+                        Pagination::new()
+                            .child(
+                                PaginationContent::new().children((1..=5).map(|page| {
+                                    PaginationItem::new().child(
+                                        PaginationLink::new(
+                                            ("page-simple", page),
+                                            page.to_string(),
+                                        )
+                                        .size(link_size)
+                                        .active(self.pagination_simple_page == page)
+                                        .on_click(cx.listener(move |this, _, _, cx| {
+                                            this.pagination_simple_page = page;
+                                            cx.notify();
+                                        })),
+                                    )
+                                })),
+                            )
+                            .into_any_element(),
+                    ),
+                    (
+                        "Icons Only",
+                        // pagination-icons-only: Rows-per-page Field+Select left,
+                        // Prev/Next-only w_auto Pagination right
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .justify_between()
+                            .gap(px(16.))
+                            .w_full()
+                            .child(
+                                // width fit — horizontal Field does not stretch full row
+                                div().child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(FieldLabel::new().child("Rows per page"))
+                                        .child(
+                                            Select::new("pagination-rows")
+                                                .options(["10", "25", "50", "100"])
+                                                .value(self.pagination_rows_value)
+                                                .open(self.pagination_rows_open)
+                                                .on_change(cx.listener(
+                                                    |this, value: &usize, _, cx| {
+                                                        this.pagination_rows_value = Some(*value);
+                                                        cx.notify();
+                                                    },
+                                                ))
+                                                .on_open_change(cx.listener(
+                                                    |this, open: &bool, _, cx| {
+                                                        this.pagination_rows_open = *open;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        ),
+                                ),
+                            )
+                            .child(
+                                Pagination::new().w_auto().child(
+                                    PaginationContent::new()
+                                        .child(
+                                            PaginationItem::new().child(
+                                                PaginationPrevious::new("page-icons-prev")
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.pagination_page = this
+                                                            .pagination_page
+                                                            .saturating_sub(1)
+                                                            .max(1);
+                                                        cx.notify();
+                                                    })),
+                                            ),
+                                        )
+                                        .child(
+                                            PaginationItem::new().child(
+                                                PaginationNext::new("page-icons-next").on_click(
+                                                    cx.listener(|this, _, _, cx| {
+                                                        this.pagination_page =
+                                                            (this.pagination_page + 1).min(3);
+                                                        cx.notify();
+                                                    }),
+                                                ),
+                                            ),
+                                        ),
+                                ),
+                            )
+                            .into_any_element(),
+                    ),
+                ]
+            }
             _ => Vec::new(),
         }
     }
@@ -2937,6 +3409,18 @@ impl Storybook {
                  .min_size(..) snap the panel closed to its .collapsed_size(..). Drag the \
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
+            ),
+            (Story::Badge, "With Icon") => Some(
+                "You can render an icon inside the badge. Use .icon_inline_start() / .icon_inline_end() to trim the padding on the icon side.",
+            ),
+            (Story::Badge, "With Spinner") => Some(
+                "You can render a spinner inside the badge. Remember to add .icon_inline_start() or .icon_inline_end() to trim the padding.",
+            ),
+            (Story::Badge, "Link") => Some(
+                "Use .on_click(id, handler) to render an interactive badge: it becomes focusable, shows the focus ring, and picks up the link hover styles.",
+            ),
+            (Story::Badge, "Custom Colors") => Some(
+                "You can customize the colors of a badge with the .bg(..) and .text_color(..) overrides.",
             ),
             _ => None,
         }
@@ -3196,7 +3680,20 @@ impl Storybook {
                 &theme,
             )],
             Story::SliderStory => Vec::new(),
-            Story::PaginationStory => Vec::new(),
+            Story::PaginationStory => vec![Self::control_row(
+                "size",
+                Self::choices(
+                    "pagination-link-size",
+                    &BUTTON_SIZES,
+                    self.pagination_link_size,
+                    cx,
+                    |this, v, cx| {
+                        this.pagination_link_size = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             Story::ScrollArea => Vec::new(),
             Story::TooltipStory => Vec::new(),
             Story::HoverCardStory => Vec::new(),
@@ -3299,7 +3796,18 @@ impl Storybook {
                 &theme,
             )],
             Story::Skeleton => Vec::new(),
-            Story::Label => Vec::new(),
+            Story::Label => vec![Self::control_row(
+                "disabled",
+                Switch::new("ctl-label-disabled")
+                    .checked(self.label_disabled)
+                    .size(SwitchSize::Sm)
+                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        this.label_disabled = *checked;
+                        cx.notify();
+                    }))
+                    .into_any_element(),
+                &theme,
+            )],
             Story::Kbd => Vec::new(),
             Story::Card => vec![Self::control_row(
                 "size",
@@ -3984,53 +4492,43 @@ impl Storybook {
     }
 
     fn skeleton_preview() -> impl IntoElement + use<> {
-        // Mirrors the shadcn docs example: avatar row + card-shaped block.
+        // skeleton-demo: avatar circle + two text lines.
         div()
             .flex()
-            .flex_col()
-            .gap(px(24.))
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(16.))
-                    .child(Skeleton::new().w(px(48.)).h(px(48.)).rounded_full())
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap(px(8.))
-                            .child(Skeleton::new().w(px(200.)).h(px(16.)))
-                            .child(Skeleton::new().w(px(160.)).h(px(16.))),
-                    ),
-            )
+            .items_center()
+            .gap(px(16.))
+            .child(Skeleton::new().h(px(48.)).w(px(48.)).rounded_full())
             .child(
                 div()
                     .flex()
                     .flex_col()
                     .gap(px(8.))
-                    .child(Skeleton::new().w(px(200.)).h(px(100.)))
-                    .child(Skeleton::new().w(px(200.)).h(px(16.)))
-                    .child(Skeleton::new().w(px(160.)).h(px(16.))),
+                    .child(Skeleton::new().h(px(16.)).w(px(250.)))
+                    .child(Skeleton::new().h(px(16.)).w(px(200.))),
             )
     }
 
-    fn label_preview() -> impl IntoElement + use<> {
+    fn label_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of label-demo.tsx — Checkbox + Label.
         div()
             .flex()
-            .flex_col()
-            .gap(px(12.))
+            .flex_row()
+            .items_center()
+            .gap(px(8.))
             .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(Switch::new("label-switch").checked(true))
-                    .child(Label::new().child("Airplane Mode")),
+                Checkbox::new("label-terms")
+                    .checked(self.label_terms_checked)
+                    .disabled(self.label_disabled)
+                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        this.label_terms_checked = *checked;
+                        cx.notify();
+                    })),
             )
-            .child(Label::new().disabled(true).child("Disabled label"))
+            .child(
+                Label::new()
+                    .disabled(self.label_disabled)
+                    .child("Accept terms and conditions"),
+            )
     }
 
     fn kbd_preview() -> impl IntoElement + use<> {
@@ -4403,51 +4901,27 @@ impl Storybook {
     }
     fn toggle_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        div()
-            .flex()
-            .flex_row()
-            .items_center()
-            .gap(px(8.))
+        let icon_path = if self.toggle_pressed {
+            crate::assets::ICON_BOOKMARK_FILLED
+        } else {
+            crate::assets::ICON_BOOKMARK
+        };
+        Toggle::new("toggle-bookmark")
+            .size(ToggleSize::Sm)
+            .variant(ToggleVariant::Outline)
+            .icon_inline_start()
+            .pressed(self.toggle_pressed)
+            .on_pressed_change(cx.listener(|this, pressed: &bool, _, cx| {
+                this.toggle_pressed = *pressed;
+                cx.notify();
+            }))
             .child(
-                Toggle::new("toggle-italic")
-                    .pressed(self.toggle_pressed)
-                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
-                        this.toggle_pressed = *pressed;
-                        cx.notify();
-                    }))
-                    .child("Italic"),
+                gpui::svg()
+                    .path(icon_path)
+                    .size(px(14.))
+                    .text_color(theme.foreground),
             )
-            .child(
-                Toggle::new("toggle-outline")
-                    .variant(ToggleVariant::Outline)
-                    .pressed(self.toggle_outline_pressed)
-                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
-                        this.toggle_outline_pressed = *pressed;
-                        cx.notify();
-                    }))
-                    .child("Outline"),
-            )
-            .child(
-                Toggle::new("toggle-icon")
-                    .size(ToggleSize::Sm)
-                    .pressed(self.toggle_pressed)
-                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
-                        this.toggle_pressed = *pressed;
-                        cx.notify();
-                    }))
-                    .child(
-                        gpui::svg()
-                            .path(theme.icons.chevron_down())
-                            .size(px(16.))
-                            .text_color(theme.foreground),
-                    ),
-            )
-            .child(
-                Toggle::new("toggle-disabled")
-                    .size(ToggleSize::Lg)
-                    .disabled(true)
-                    .child("Disabled"),
-            )
+            .child("Bookmark")
     }
     fn toggle_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let labels = ["Bold", "Italic", "Underline"];
@@ -4698,28 +5172,44 @@ impl Storybook {
             .child(Slider::new("slider-disabled").value(30.).disabled(true))
     }
     fn pagination_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        Pagination::new()
-            .child(
-                PaginationPrevious::new("page-prev").on_click(cx.listener(|this, _, _, cx| {
-                    this.pagination_page = this.pagination_page.saturating_sub(1).max(1);
-                    cx.notify();
-                })),
-            )
-            .children((1..=3).map(|page| {
-                PaginationLink::new(("page-link", page), page.to_string())
-                    .active(self.pagination_page == page)
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        this.pagination_page = page;
-                        cx.notify();
-                    }))
-            }))
-            .child(PaginationEllipsis::new())
-            .child(
-                PaginationNext::new("page-next").on_click(cx.listener(|this, _, _, cx| {
-                    this.pagination_page = (this.pagination_page + 1).min(3);
-                    cx.notify();
-                })),
-            )
+        // shadcn pagination-demo: Prev / 1 / 2-active / 3 / ellipsis / Next
+        let link_size = self.pagination_link_size;
+        Pagination::new().child(
+            PaginationContent::new()
+                .child(
+                    PaginationItem::new().child(
+                        PaginationPrevious::new("page-prev")
+                            .text("Previous")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.pagination_page =
+                                    this.pagination_page.saturating_sub(1).max(1);
+                                cx.notify();
+                            })),
+                    ),
+                )
+                .children((1..=3).map(|page| {
+                    PaginationItem::new().child(
+                        PaginationLink::new(("page-link", page), page.to_string())
+                            .size(link_size)
+                            .active(self.pagination_page == page)
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                this.pagination_page = page;
+                                cx.notify();
+                            })),
+                    )
+                }))
+                .child(PaginationItem::new().child(PaginationEllipsis::new()))
+                .child(
+                    PaginationItem::new().child(
+                        PaginationNext::new("page-next")
+                            .text("Next")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.pagination_page = (this.pagination_page + 1).min(3);
+                                cx.notify();
+                            })),
+                    ),
+                ),
+        )
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
@@ -4828,60 +5318,244 @@ impl Storybook {
         )
     }
     fn dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let theme = Theme::of(cx).clone();
+        const LOREM: &str = concat!(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do ",
+            "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut ",
+            "enim ad minim veniam, quis nostrud exercitation ullamco laboris ",
+            "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in ",
+            "reprehenderit in voluptate velit esse cillum dolore eu fugiat ",
+            "nulla pariatur. Excepteur sint occaecat cupidatat non proident, ",
+            "sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        );
+
+        let scroll_body = |id: SharedString| {
+            div()
+                .id(id.clone())
+                .max_h(px(320.))
+                .overflow_y_scroll()
+                .children((0..10).map(move |i| {
+                    div()
+                        .id(ElementId::Name(format!("{id}-p-{i}").into()))
+                        .mb(px(16.))
+                        .line_height(px(21.))
+                        .child(LOREM)
+                }))
+        };
+
+        let sticky_entity = cx.entity();
+
         div()
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            // a. Edit profile (demo) — controlled; controls-panel "open" switch
             .child(
-                Button::new("dialog-trigger")
-                    .variant(ButtonVariant::Outline)
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.dialog_open = true;
-                        cx.notify();
-                    }))
-                    .child("Edit Profile"),
-            )
-            .child(
-                Dialog::new("dialog-demo")
-                    .open(self.dialog_open)
-                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {
-                        this.dialog_open = *open;
-                        cx.notify();
-                    }))
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
                     .child(
-                        DialogHeader::new()
-                            .child(DialogTitle::new().child("Edit profile"))
-                            .child(DialogDescription::new().child(
-                                "Make changes to your profile here. Click save when you're done.",
-                            )),
+                        Button::new("dialog-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_open = true;
+                                cx.notify();
+                            }))
+                            .child("Open Dialog"),
                     )
                     .child(
-                        div()
-                            .h(px(80.))
-                            .w_full()
-                            .rounded(theme.radius_md())
-                            .bg(theme.muted),
-                    )
-                    .child(
-                        DialogFooter::new()
+                        Dialog::new("dialog-demo")
+                            .open(self.dialog_open)
+                            .max_w(px(384.))
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_open = *open;
+                                cx.notify();
+                            }))
                             .child(
-                                Button::new("dialog-cancel")
-                                    .variant(ButtonVariant::Outline)
-                                    .on_click(cx.listener(|this, _, _, cx| {
-                                        this.dialog_open = false;
-                                        cx.notify();
-                                    }))
-                                    .child("Cancel"),
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Edit profile"))
+                                    .child(DialogDescription::new().child(
+                                        "Make changes to your profile here. Click save when you're done.",
+                                    )),
                             )
                             .child(
-                                Button::new("dialog-save")
-                                    .on_click(cx.listener(|this, _, _, cx| {
-                                        this.dialog_open = false;
-                                        cx.notify();
-                                    }))
-                                    .child("Save changes"),
+                                FieldGroup::new()
+                                    .child(
+                                        Field::new()
+                                            .child(Label::new().child("Name"))
+                                            .child(self.dialog_name_input.clone()),
+                                    )
+                                    .child(
+                                        Field::new()
+                                            .child(Label::new().child("Username"))
+                                            .child(self.dialog_username_input.clone()),
+                                    ),
+                            )
+                            .child(
+                                DialogFooter::new()
+                                    .child(
+                                        Button::new("dialog-cancel")
+                                            .variant(ButtonVariant::Outline)
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Cancel"),
+                                    )
+                                    .child(
+                                        Button::new("dialog-save")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Save changes"),
+                                    ),
                             ),
                     ),
             )
+            // b. Share link — custom close / justify_start footer
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-share-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_share_open = true;
+                                cx.notify();
+                            }))
+                            .child("Share"),
+                    )
+                    .child(
+                        Dialog::new("dialog-share")
+                            .open(self.dialog_share_open)
+                            .max_w(px(448.))
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_share_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Share link"))
+                                    .child(DialogDescription::new().child(
+                                        "Anyone who has this link will be able to view this.",
+                                    )),
+                            )
+                            .child(self.dialog_share_input.clone())
+                            .child(
+                                DialogFooter::new()
+                                    .justify_start()
+                                    .child(
+                                        Button::new("dialog-share-close")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_share_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Close"),
+                                    ),
+                            ),
+                    ),
+            )
+            // c. No close button — fully uncontrolled: built-in .trigger()
+            // + default_open, no external open flag (backdrop/Escape close).
+            .child(
+                Dialog::new("dialog-no-close")
+                    .default_open(false)
+                    .show_close_button(false)
+                    .trigger(
+                        Button::new("dialog-no-close-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .child("No Close Button"),
+                    )
+                    .child(
+                        DialogHeader::new()
+                            .child(DialogTitle::new().child("No Close Button"))
+                            .child(DialogDescription::new().child(
+                                "This dialog doesn't have a close button in the top-right corner.",
+                            )),
+                    ),
+            )
+            // d. Sticky footer — DialogFooter::show_close_button
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-sticky-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_sticky_open = true;
+                                cx.notify();
+                            }))
+                            .child("Sticky Footer"),
+                    )
+                    .child(
+                        Dialog::new("dialog-sticky")
+                            .open(self.dialog_sticky_open)
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_sticky_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Sticky Footer"))
+                                    .child(DialogDescription::new().child(
+                                        "This dialog has a sticky footer that stays visible while the content scrolls.",
+                                    )),
+                            )
+                            .child(scroll_body("dialog-sticky-scroll".into()))
+                            .child(
+                                DialogFooter::new()
+                                    .show_close_button(true)
+                                    .on_close({
+                                        let entity = sticky_entity.clone();
+                                        move |_window, cx| {
+                                            entity.update(cx, |this, cx| {
+                                                this.dialog_sticky_open = false;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }),
+                            ),
+                    ),
+            )
+            // e. Scrollable content — same body, no footer
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-scroll-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_scroll_open = true;
+                                cx.notify();
+                            }))
+                            .child("Scrollable Content"),
+                    )
+                    .child(
+                        Dialog::new("dialog-scroll")
+                            .open(self.dialog_scroll_open)
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_scroll_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Scrollable Content"))
+                                    .child(DialogDescription::new().child(
+                                        "This is a dialog with scrollable content.",
+                                    )),
+                            )
+                            .child(scroll_body("dialog-scroll-scroll".into())),
+                    ),
+            )
     }
+
     fn alert_dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div()
             .child(
@@ -6320,9 +6994,9 @@ impl Storybook {
                         .item(CommandItem::new("cmd-emoji", "Search Emoji"))
                         .item(
                             CommandItem::new("cmd-calc", "Calculator").on_select(cx.listener(
-                                |this, _, window, cx| {
+                                |this, _, _, cx| {
                                     this.command_input.update(cx, |input, cx| {
-                                        input.set_text("", window, cx);
+                                        input.set_text("", cx);
                                     });
                                     cx.notify();
                                 },
@@ -6977,7 +7651,6 @@ impl Render for Storybook {
                 // close on Escape; component-level focus traps are a TODO,
                 // so the demo handles it at the root).
                 if event.keystroke.key == "escape" {
-                    this.dialog_open = false;
                     this.alert_dialog_open = false;
                     this.sheet_open = false;
                     this.drawer_open = false;

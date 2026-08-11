@@ -15,86 +15,22 @@ pub struct ComponentDocs {
 }
 
 pub static ACCORDION_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn multiple(mut self, multiple: bool) -> Self",
-        doc: "When true, more than one item may be open (Base UI `multiple`). Default **false** — single-open, matching the shadcn docs.",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "Disables every item (half opacity, no pointer events, unfocusable).",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn bordered(mut self, bordered: bool) -> Self",
-        doc: "Outer border + rounded shell with horizontal item padding (`border`, `rounded-lg`, item `px-4`).",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn default_value(mut self, ids: impl IntoIterator<Item = impl Into<ElementId>>) -> Self",
-        doc: "Uncontrolled initial open set (`defaultValue`).",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn value(mut self, ids: impl IntoIterator<Item = impl Into<ElementId>>) -> Self",
-        doc: "Controlled open set (`value`). When set, the root does not store state.",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn on_value_change( mut self, handler: impl Fn(&[ElementId], &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "Controlled-mode toggle reporter (`onValueChange`).",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn child(mut self, item: AccordionItem) -> Self",
-        doc: "Append a typed item (inherent — not [`ParentElement`]).",
-    },
-    ApiEntry {
-        type_name: "Accordion",
-        signature: "pub fn children(mut self, items: impl IntoIterator<Item = AccordionItem>) -> Self",
-        doc: "Append typed items (inherent — not [`ParentElement`]).",
-    },
-    ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn child(mut self, part: impl Into<AccordionPart>) -> Self",
-        doc: "Append a typed trigger or content part.",
-    },
-    ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn trigger(self, trigger: impl IntoElement) -> Self",
-        doc: "Sugar: wrap `trigger` into an [`AccordionTrigger`].",
-    },
-    ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn content(self, content: impl IntoElement) -> Self",
-        doc: "Sugar: wrap `content` into an [`AccordionContent`].",
-    },
-    ApiEntry {
-        type_name: "AccordionItem",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "aria-disabled: half opacity, no pointer events, unfocusable.",
-    },
-    ApiEntry {
-        type_name: "AccordionTrigger",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "AccordionContent",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Accordion", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Accordion", signature: "pub fn multiple(mut self, multiple: bool) -> Self", doc: "When true, more than one item may be open (Base UI `multiple`). Default **false** — single-open, matching the shadcn docs." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "Disables every item (half opacity, no pointer events, unfocusable)." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn bordered(mut self, bordered: bool) -> Self", doc: "Outer border + rounded shell with horizontal item padding (`border`, `rounded-lg`, item `px-4`)." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn default_value(mut self, ids: impl IntoIterator<Item = impl Into<ElementId>>) -> Self", doc: "Uncontrolled initial open set (`defaultValue`)." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn value(mut self, ids: impl IntoIterator<Item = impl Into<ElementId>>) -> Self", doc: "Controlled open set (`value`). When set, the root does not store state." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn on_value_change( mut self, handler: impl Fn(&[ElementId], &mut Window, &mut App) + 'static, ) -> Self", doc: "Controlled-mode toggle reporter (`onValueChange`)." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn child(mut self, item: AccordionItem) -> Self", doc: "Append a typed item (inherent — not [`ParentElement`])." },
+    ApiEntry { type_name: "Accordion", signature: "pub fn children(mut self, items: impl IntoIterator<Item = AccordionItem>) -> Self", doc: "Append typed items (inherent — not [`ParentElement`])." },
+    ApiEntry { type_name: "AccordionItem", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "AccordionItem", signature: "pub fn child(mut self, part: impl Into<AccordionPart>) -> Self", doc: "Append a typed trigger or content part." },
+    ApiEntry { type_name: "AccordionItem", signature: "pub fn trigger(self, trigger: impl IntoElement) -> Self", doc: "Sugar: wrap `trigger` into an [`AccordionTrigger`]." },
+    ApiEntry { type_name: "AccordionItem", signature: "pub fn content(self, content: impl IntoElement) -> Self", doc: "Sugar: wrap `content` into an [`AccordionContent`]." },
+    ApiEntry { type_name: "AccordionItem", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "aria-disabled: half opacity, no pointer events, unfocusable." },
+    ApiEntry { type_name: "AccordionTrigger", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "AccordionContent", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static ACCORDION_USAGE: &str = "div().w(px(384.)).child(\n    Accordion::new(\"accordion-demo\")\n        .default_value([\"item-1\"])\n        .multiple(self.accordion_multiple)\n        .disabled(self.accordion_root_disabled)\n        .child(\n            AccordionItem::new(\"item-1\")\n                .child(AccordionTrigger::new().child(\"Product Information\"))\n                .child(AccordionContent::new().child(\n                    \"Our flagship product combines cutting-edge technology with sleek \\\n                     design. Built with premium materials, it offers unparalleled \\\n                     performance and reliability.\",\n                )),\n        )\n        .child(\n            AccordionItem::new(\"item-2\")\n                .child(AccordionTrigger::new().child(\"Shipping Details\"))\n                .child(AccordionContent::new().child(\n                    \"We offer worldwide shipping through trusted courier partners. \\\n                     Standard delivery takes 3-5 business days, while express shipping \\\n                     ensures delivery within 1-2 business days.\",\n                )),\n        )\n        .child(\n            AccordionItem::new(\"item-3\")\n                .child(AccordionTrigger::new().child(\"Return Policy\"))\n                .child(AccordionContent::new().child(\n                    \"We stand behind our products with a comprehensive 30-day return \\\n                     policy. If you're not completely satisfied, simply return the item \\\n                     in its original condition.\",\n                ))\n                .disabled(self.accordion_disable_third),\n        ),\n)\n    ";
@@ -153,31 +89,11 @@ pub static ASPECT_RATIO_API: &[ApiEntry] = &[ApiEntry {
 pub static ASPECT_RATIO_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv().w(px(384.)).child(\n    AspectRatio::new(16. / 9.).child(\n        div()\n            .size_full()\n            .rounded(theme.radius_lg())\n            .bg(theme.muted)\n            .flex()\n            .items_center()\n            .justify_center()\n            .text_size(px(13.))\n            .text_color(theme.muted_foreground)\n            .child(\"16 : 9\"),\n    ),\n)\n    ";
 
 pub static ATTACHMENT_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Attachment",
-        signature: "pub fn new(id: impl Into<ElementId>, name: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Attachment",
-        signature: "pub fn description(mut self, description: impl Into<SharedString>) -> Self",
-        doc: "Secondary line (size, type, or upload status).",
-    },
-    ApiEntry {
-        type_name: "Attachment",
-        signature: "pub fn state(mut self, state: AttachmentState) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Attachment",
-        signature: "pub fn media(mut self, media: impl IntoElement) -> Self",
-        doc: "Custom media tile content (defaults to a file glyph).",
-    },
-    ApiEntry {
-        type_name: "Attachment",
-        signature: "pub fn on_remove( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Attachment", signature: "pub fn new(id: impl Into<ElementId>, name: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Attachment", signature: "pub fn description(mut self, description: impl Into<SharedString>) -> Self", doc: "Secondary line (size, type, or upload status)." },
+    ApiEntry { type_name: "Attachment", signature: "pub fn state(mut self, state: AttachmentState) -> Self", doc: "" },
+    ApiEntry { type_name: "Attachment", signature: "pub fn media(mut self, media: impl IntoElement) -> Self", doc: "Custom media tile content (defaults to a file glyph)." },
+    ApiEntry { type_name: "Attachment", signature: "pub fn on_remove( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static ATTACHMENT_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .items_start()\n    .gap(px(12.))\n    .when(self.attachment_visible, |el| {\n        el.child(\n            Attachment::new(\"attachment-report\", \"quarterly-report.pdf\")\n                .description(\"1.2 MB \\u{00b7} PDF\")\n                .on_remove(cx.listener(|this, _, _, cx| {\n                    this.attachment_visible = false;\n                    cx.notify();\n                })),\n        )\n    })\n    .child(\n        Attachment::new(\"attachment-uploading\", \"screenshot.png\")\n            .description(\"Uploading\\u{2026}\")\n            .state(AttachmentState::Uploading)\n            .media(Spinner::new().size(px(16.))),\n    )\n    .child(\n        Attachment::new(\"attachment-error\", \"huge-video.mov\")\n            .description(\"File exceeds the 25 MB limit\")\n            .state(AttachmentState::Error),\n    )\n    .when(!self.attachment_visible, |el| {\n        el.child(\n            Button::new(\"attachment-restore\")\n                .variant(ButtonVariant::Outline)\n                .size(ButtonSize::Sm)\n                .on_click(cx.listener(|this, _, _, cx| {\n                    this.attachment_visible = true;\n                    cx.notify();\n                }))\n                .child(\"Restore attachment\"),\n        )\n    })\n    ";
@@ -223,61 +139,26 @@ pub static AVATAR_API: &[ApiEntry] = &[
 pub static AVATAR_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .items_center()\n    .gap(px(24.))\n    .child(Avatar::new(\"CN\").size(self.avatar_size))\n    .child(\n        AvatarGroup::new()\n            .size(self.avatar_size)\n            .child(Avatar::new(\"CN\").size(self.avatar_size))\n            .child(Avatar::new(\"ER\").size(self.avatar_size))\n            .child(Avatar::new(\"LR\").size(self.avatar_size))\n            .child(AvatarGroupCount::new(3).size(self.avatar_size)),\n    )\n    ";
 
 pub static BADGE_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Badge",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Badge",
-        signature: "pub fn variant(mut self, variant: BadgeVariant) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Badge", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "Badge", signature: "pub fn variant(mut self, variant: BadgeVariant) -> Self", doc: "" },
+    ApiEntry { type_name: "Badge", signature: "pub fn on_click( mut self, id: impl Into<ElementId>, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "Interactive/link badge (`render={<a/>}`). Sets the element id (required by gpui's StatefulInteractiveElement), makes the badge focusable, and attaches the click handler. Also enables focus-ring and `[a]:hover` styles for the active variant." },
+    ApiEntry { type_name: "Badge", signature: "pub fn icon_inline_start(mut self) -> Self", doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-1.5`)." },
+    ApiEntry { type_name: "Badge", signature: "pub fn icon_inline_end(mut self) -> Self", doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-1.5`)." },
+    ApiEntry { type_name: "Badge", signature: "pub fn bg(mut self, color: Hsla) -> Self", doc: "`className` color-override port — background color applied after the variant styles (e.g. `className=\"bg-blue-50\"`)." },
+    ApiEntry { type_name: "Badge", signature: "pub fn text_color(mut self, color: Hsla) -> Self", doc: "`className` color-override port — text color applied after the variant styles (e.g. `className=\"text-blue-700\"`)." },
 ];
 
 pub static BADGE_USAGE: &str = "Badge::new().variant(self.badge_variant).child(\"Badge\")\n    ";
 
 pub static BREADCRUMB_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Breadcrumb",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbList",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbItem",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbLink",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbLink",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbPage",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbSeparator",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BreadcrumbEllipsis",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Breadcrumb", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbList", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbItem", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbLink", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbLink", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbPage", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbSeparator", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "BreadcrumbEllipsis", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static BREADCRUMB_USAGE: &str = "Breadcrumb::new().child(\n    BreadcrumbList::new()\n        .child(\n            BreadcrumbItem::new().child(\n                BreadcrumbLink::new(\"bc-home\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.story = Story::Tokens;\n                        cx.notify();\n                    }))\n                    .child(\"Home\"),\n            ),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))\n        .child(BreadcrumbSeparator::new())\n        .child(\n            BreadcrumbItem::new()\n                .child(BreadcrumbLink::new(\"bc-components\").child(\"Components\")),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbPage::new().child(\"Breadcrumb\"))),\n)\n    ";
@@ -318,56 +199,16 @@ pub static BUBBLE_API: &[ApiEntry] = &[
 pub static BUBBLE_USAGE: &str = "div().w(px(384.)).child(\n    MessageGroup::new()\n        .child(\n            Message::new().child(\n                MessageContent::new().child(\n                    Bubble::new()\n                        .variant(self.bubble_variant)\n                        .content(\"This bubble follows the variant control.\")\n                        .child(\n                            BubbleReactions::new()\n                                .side(BubbleSide::Bottom)\n                                .align(BubbleAlign::End)\n                                .child(\"\\u{2764}\\u{fe0f} 2\"),\n                        ),\n                ),\n            ),\n        )\n        .child(\n            Message::new().align(MessageAlign::End).child(\n                MessageContent::new().align(MessageAlign::End).child(\n                    Bubble::new()\n                        .variant(BubbleVariant::Default)\n                        .content(\"And this one is the sender side.\")\n                        .child(\n                            BubbleReactions::new()\n                                .side(BubbleSide::Top)\n                                .align(BubbleAlign::Start)\n                                .child(\"\\u{1f44d}\"),\n                        ),\n                ),\n            ),\n        ),\n)\n    ";
 
 pub static BUTTON_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn variant(mut self, variant: ButtonVariant) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn size(mut self, size: ButtonSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn rounded_full(mut self) -> Self",
-        doc: "`rounded-full` — pill corners (px(9999.)).",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn icon_inline_start(mut self) -> Self",
-        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Xs/Sm).",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn icon_inline_end(mut self) -> Self",
-        doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-2` / `pr-1.5` for Xs/Sm).",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub fn tooltip_rich( mut self, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self",
-        doc: "Attach a rich hover tooltip (mirrors shadcn's `<TooltipTrigger render={<Button/>}>` composition). Needed because [`crate::components::ButtonGroup`] takes typed [`Button`] items, so a wrapping [`crate::components::Tooltip`] div cannot sit inside a group.",
-    },
-    ApiEntry {
-        type_name: "Button",
-        signature: "pub(crate) fn group_position(mut self, position: GroupPosition) -> Self",
-        doc: "Used by ButtonGroup to join neighboring buttons.",
-    },
+    ApiEntry { type_name: "Button", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Button", signature: "pub fn variant(mut self, variant: ButtonVariant) -> Self", doc: "" },
+    ApiEntry { type_name: "Button", signature: "pub fn size(mut self, size: ButtonSize) -> Self", doc: "" },
+    ApiEntry { type_name: "Button", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Button", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "Button", signature: "pub fn rounded_full(mut self) -> Self", doc: "`rounded-full` — pill corners (px(9999.))." },
+    ApiEntry { type_name: "Button", signature: "pub fn icon_inline_start(mut self) -> Self", doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Xs/Sm)." },
+    ApiEntry { type_name: "Button", signature: "pub fn icon_inline_end(mut self) -> Self", doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-2` / `pr-1.5` for Xs/Sm)." },
+    ApiEntry { type_name: "Button", signature: "pub fn tooltip_rich( mut self, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self", doc: "Attach a rich hover tooltip (mirrors shadcn's `<TooltipTrigger render={<Button/>}>` composition). Needed because [`crate::components::ButtonGroup`] takes typed [`Button`] items, so a wrapping [`crate::components::Tooltip`] div cannot sit inside a group." },
+    ApiEntry { type_name: "Button", signature: "pub(crate) fn group_position(mut self, position: GroupPosition) -> Self", doc: "Used by ButtonGroup to join neighboring buttons." },
 ];
 
 pub static BUTTON_USAGE: &str = "let theme = Theme::of(cx);\nlet icon_only = matches!(\n    self.button_size,\n    ButtonSize::Icon | ButtonSize::IconXs | ButtonSize::IconSm | ButtonSize::IconLg\n);\nlet button = Button::new(\"preview-button\")\n    .variant(self.button_variant)\n    .size(self.button_size)\n    .disabled(self.button_disabled);\nif icon_only {\n    button.child(Icon::new(theme.icons.chevron_right()))\n} else {\n    button.child(\"Button\")\n}\n    ";
@@ -403,561 +244,172 @@ pub static BUTTON_GROUP_API: &[ApiEntry] = &[
 pub static BUTTON_GROUP_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .flex()\n    .flex_col()\n    .items_start()\n    .gap(px(16.))\n    .child(\n        ButtonGroup::new()\n            .item(\n                Button::new(\"bg-archive\")\n                    .variant(ButtonVariant::Outline)\n                    .child(\"Archive\"),\n            )\n            .item(\n                Button::new(\"bg-report\")\n                    .variant(ButtonVariant::Outline)\n                    .child(\"Report\"),\n            )\n            .item(\n                Button::new(\"bg-snooze\")\n                    .variant(ButtonVariant::Outline)\n                    .child(\"Snooze\"),\n            ),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(\n                ButtonGroup::new()\n                    .item(\n                        Button::new(\"bg-follow\")\n                            .variant(ButtonVariant::Outline)\n                            .child(\"Follow\"),\n                    )\n                    .item(\n                        Button::new(\"bg-follow-more\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::Icon)\n                            .child(\n                                gpui::svg()\n                                    .path(theme.icons.chevron_down())\n                                    .size(px(16.))\n                                    .text_color(theme.foreground),\n                            ),\n                    ),\n            )\n            .child(ButtonGroupSeparator::new())\n            .child(ButtonGroupText::new().child(\"12 followers\")),\n    )\n    ";
 
 pub static CALENDAR_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "CalendarDate",
-        signature: "pub fn new(year: i32, month: u32, day: u32) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CalendarDate",
-        signature: "pub(crate) fn days_in_month(year: i32, month: u32) -> u32",
-        doc: "Days in a Gregorian month.",
-    },
-    ApiEntry {
-        type_name: "CalendarDate",
-        signature: "pub(crate) fn first_weekday(year: i32, month: u32) -> u32",
-        doc: "Weekday of the first day of a month; 0 = Sunday (Zeller's congruence).",
-    },
-    ApiEntry {
-        type_name: "Calendar",
-        signature: "pub fn new(year: i32, month: u32) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Calendar",
-        signature: "pub fn selected(mut self, selected: Option<CalendarDate>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Calendar",
-        signature: "pub fn on_month_change( mut self, handler: impl Fn(&(i32, u32), &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "Fired by the prev/next buttons with the new (year, month).",
-    },
-    ApiEntry {
-        type_name: "Calendar",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&CalendarDate, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "CalendarDate", signature: "pub fn new(year: i32, month: u32, day: u32) -> Self", doc: "" },
+    ApiEntry { type_name: "CalendarDate", signature: "pub(crate) fn days_in_month(year: i32, month: u32) -> u32", doc: "Days in a Gregorian month." },
+    ApiEntry { type_name: "CalendarDate", signature: "pub(crate) fn first_weekday(year: i32, month: u32) -> u32", doc: "Weekday of the first day of a month; 0 = Sunday (Zeller's congruence)." },
+    ApiEntry { type_name: "Calendar", signature: "pub fn new(year: i32, month: u32) -> Self", doc: "" },
+    ApiEntry { type_name: "Calendar", signature: "pub fn selected(mut self, selected: Option<CalendarDate>) -> Self", doc: "" },
+    ApiEntry { type_name: "Calendar", signature: "pub fn on_month_change( mut self, handler: impl Fn(&(i32, u32), &mut Window, &mut App) + 'static, ) -> Self", doc: "Fired by the prev/next buttons with the new (year, month)." },
+    ApiEntry { type_name: "Calendar", signature: "pub fn on_select( mut self, handler: impl Fn(&CalendarDate, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static CALENDAR_USAGE: &str = "Calendar::new(self.calendar_month.0, self.calendar_month.1)\n    .selected(self.calendar_selected)\n    .on_month_change(cx.listener(|this, month: &(i32, u32), _, cx| {\n        this.calendar_month = *month;\n        cx.notify();\n    }))\n    .on_select(cx.listener(|this, date: &CalendarDate, _, cx| {\n        this.calendar_selected = Some(*date);\n        cx.notify();\n    }))\n    ";
 
 pub static CARD_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Card",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Card",
-        signature: "pub fn size(mut self, size: CardSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Card",
-        signature: "pub fn spacing(mut self, spacing: Pixels) -> Self",
-        doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`).",
-    },
-    ApiEntry {
-        type_name: "Card",
-        signature: "pub fn flush_top(mut self) -> Self",
-        doc: "Drop top padding for a full-bleed leading image (`has-[>img:first-child]:pt-0`). Corner rounding of the media comes free from the card's `overflow_hidden` + rounded shell.",
-    },
-    ApiEntry {
-        type_name: "CardHeader",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardHeader",
-        signature: "pub fn size(mut self, size: CardSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardHeader",
-        signature: "pub fn spacing(mut self, spacing: Pixels) -> Self",
-        doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`).",
-    },
-    ApiEntry {
-        type_name: "CardHeader",
-        signature: "pub fn action(mut self, action: impl IntoElement) -> Self",
-        doc: "Slot for a trailing header action (button, badge, …). Mirrors nova's `has-data-[slot=card-action]:grid-cols-[1fr_auto]` layout: children sit in a flex-1 column, action is self-start at the row end.",
-    },
-    ApiEntry {
-        type_name: "CardTitle",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardTitle",
-        signature: "pub fn size(mut self, size: CardSize) -> Self",
-        doc: "Title size follows the parent card's `data-size` (`group-data-[size=sm]/card:text-sm`). Default = 16px / 22px (leading-snug); Sm = 14px / 19px.",
-    },
-    ApiEntry {
-        type_name: "CardDescription",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardAction",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardContent",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardContent",
-        signature: "pub fn size(mut self, size: CardSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardContent",
-        signature: "pub fn spacing(mut self, spacing: Pixels) -> Self",
-        doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`).",
-    },
-    ApiEntry {
-        type_name: "CardContent",
-        signature: "pub fn flush_bottom(mut self) -> Self",
-        doc: "Negative bottom margin equal to the card spacing (`-mb-(--card-spacing)`) so content can run edge-to-edge above a footer.",
-    },
-    ApiEntry {
-        type_name: "CardFooter",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardFooter",
-        signature: "pub fn size(mut self, size: CardSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CardFooter",
-        signature: "pub fn spacing(mut self, spacing: Pixels) -> Self",
-        doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`).",
-    },
+    ApiEntry { type_name: "Card", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "Card", signature: "pub fn size(mut self, size: CardSize) -> Self", doc: "" },
+    ApiEntry { type_name: "Card", signature: "pub fn spacing(mut self, spacing: Pixels) -> Self", doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`)." },
+    ApiEntry { type_name: "Card", signature: "pub fn flush_top(mut self) -> Self", doc: "Drop top padding for a full-bleed leading image (`has-[>img:first-child]:pt-0`). Corner rounding of the media comes free from the card's `overflow_hidden` + rounded shell." },
+    ApiEntry { type_name: "CardHeader", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "CardHeader", signature: "pub fn size(mut self, size: CardSize) -> Self", doc: "" },
+    ApiEntry { type_name: "CardHeader", signature: "pub fn spacing(mut self, spacing: Pixels) -> Self", doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`)." },
+    ApiEntry { type_name: "CardHeader", signature: "pub fn action(mut self, action: impl IntoElement) -> Self", doc: "Slot for a trailing header action (button, badge, …). Mirrors nova's `has-data-[slot=card-action]:grid-cols-[1fr_auto]` layout: children sit in a flex-1 column, action is self-start at the row end." },
+    ApiEntry { type_name: "CardTitle", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "CardTitle", signature: "pub fn size(mut self, size: CardSize) -> Self", doc: "Title size follows the parent card's `data-size` (`group-data-[size=sm]/card:text-sm`). Default = 16px / 22px (leading-snug); Sm = 14px / 19px." },
+    ApiEntry { type_name: "CardDescription", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "CardAction", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "CardContent", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "CardContent", signature: "pub fn size(mut self, size: CardSize) -> Self", doc: "" },
+    ApiEntry { type_name: "CardContent", signature: "pub fn spacing(mut self, spacing: Pixels) -> Self", doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`)." },
+    ApiEntry { type_name: "CardContent", signature: "pub fn flush_bottom(mut self) -> Self", doc: "Negative bottom margin equal to the card spacing (`-mb-(--card-spacing)`) so content can run edge-to-edge above a footer." },
+    ApiEntry { type_name: "CardFooter", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "CardFooter", signature: "pub fn size(mut self, size: CardSize) -> Self", doc: "" },
+    ApiEntry { type_name: "CardFooter", signature: "pub fn spacing(mut self, spacing: Pixels) -> Self", doc: "Override the size preset spacing (shadcn `[--card-spacing:*]`)." },
 ];
 
 pub static CARD_USAGE: &str = "let size = self.card_size;\n// Card is RenderOnce+ParentElement (not Styled); width goes on a wrapper.\ndiv().w(px(384.)).child(\n    Card::new()\n        .size(size)\n        .child(\n            CardHeader::new()\n                .size(size)\n                .action(\n                    Button::new(\"card-sign-up\")\n                        .variant(ButtonVariant::Link)\n                        .child(\"Sign Up\"),\n                )\n                .child(CardTitle::new().size(size).child(\"Login to your account\"))\n                .child(\n                    CardDescription::new()\n                        .child(\"Enter your email below to login to your account\"),\n                ),\n        )\n        .child(\n            CardContent::new().size(size).child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(24.))\n                    .child(\n                        div()\n                            .flex()\n                            .flex_col()\n                            .gap(px(8.))\n                            .child(Label::new().child(\"Email\"))\n                            .child(self.card_email_input.clone()),\n                    )\n                    .child(\n                        div()\n                            .flex()\n                            .flex_col()\n                            .gap(px(8.))\n                            .child(\n                                div()\n                                    .flex()\n                                    .flex_row()\n                                    .items_center()\n                                    .child(Label::new().child(\"Password\"))\n                                    .child(\n                                        div()\n                                            .id(\"card-forgot-password\")\n                                            .ml_auto()\n                                            .text_size(px(14.))\n                                            .line_height(px(20.))\n                                            .cursor_pointer()\n                                            .hover(|s| s.underline())\n                                            .child(\"Forgot your password?\"),\n                                    ),\n                            )\n                            .child(self.card_password_input.clone()),\n                    ),\n            ),\n        )\n        .child(\n            CardFooter::new().size(size).child(\n                div()\n                    .w_full()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .child(\n                        div().w_full().child(\n                            Button::new(\"card-login\")\n                                .variant(ButtonVariant::Default)\n                                .child(\"Login\"),\n                        ),\n                    )\n                    .child(\n                        div().w_full().child(\n                            Button::new(\"card-login-google\")\n                                .variant(ButtonVariant::Outline)\n                                .child(\"Login with Google\"),\n                        ),\n                    ),\n            ),\n        ),\n)\n    ";
 
 pub static CAROUSEL_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Carousel",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Carousel",
-        signature: "pub fn index(mut self, index: usize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Carousel",
-        signature: "pub fn on_index_change( mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Carousel", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Carousel", signature: "pub fn index(mut self, index: usize) -> Self", doc: "" },
+    ApiEntry { type_name: "Carousel", signature: "pub fn on_index_change( mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static CAROUSEL_USAGE: &str = "let theme = Theme::of(cx).clone();\nCarousel::new(\"carousel-demo\")\n    .index(self.carousel_index)\n    .on_index_change(cx.listener(|this, index: &usize, _, cx| {\n        this.carousel_index = *index;\n        cx.notify();\n    }))\n    .children((1..=5).map(|number| {\n        Card::new().size(CardSize::Sm).child(\n            CardContent::new().size(CardSize::Sm).child(\n                div()\n                    .flex()\n                    .size(px(160.))\n                    .items_center()\n                    .justify_center()\n                    .text_size(px(36.))\n                    .font_weight(FontWeight::SEMIBOLD)\n                    .text_color(theme.foreground)\n                    .child(number.to_string()),\n            ),\n        )\n    }))\n    ";
 
 pub static CHART_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "ChartSeries",
-        signature: "pub fn new(label: impl Into<SharedString>, values: impl IntoIterator<Item = f32>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BarChart",
-        signature: "pub fn new(categories: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BarChart",
-        signature: "pub fn series(mut self, series: ChartSeries) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "BarChart",
-        signature: "pub fn height(mut self, height: f32) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "ChartSeries", signature: "pub fn new(label: impl Into<SharedString>, values: impl IntoIterator<Item = f32>) -> Self", doc: "" },
+    ApiEntry { type_name: "BarChart", signature: "pub fn new(categories: impl IntoIterator<Item = impl Into<SharedString>>) -> Self", doc: "" },
+    ApiEntry { type_name: "BarChart", signature: "pub fn series(mut self, series: ChartSeries) -> Self", doc: "" },
+    ApiEntry { type_name: "BarChart", signature: "pub fn height(mut self, height: f32) -> Self", doc: "" },
 ];
 
 pub static CHART_USAGE: &str = "div().w(px(420.)).child(\n    BarChart::new([\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"])\n        .height(180.)\n        .series(ChartSeries::new(\n            \"Desktop\",\n            [186., 305., 237., 73., 209., 214.],\n        ))\n        .series(ChartSeries::new(\n            \"Mobile\",\n            [80., 200., 120., 190., 130., 140.],\n        )),\n)\n    ";
 
 pub static CHECKBOX_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Checkbox",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Checkbox",
-        signature: "pub fn checked(mut self, checked: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Checkbox",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Checkbox",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Checkbox", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Checkbox", signature: "pub fn checked(mut self, checked: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Checkbox", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Checkbox", signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self", doc: "" },
 ];
 
 pub static CHECKBOX_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(12.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(\n                Checkbox::new(\"checkbox-terms\")\n                    .checked(self.checkbox_checked)\n                    .on_change(cx.listener(|this, checked: &bool, _, cx| {\n                        this.checkbox_checked = *checked;\n                        cx.notify();\n                    })),\n            )\n            .child(Label::new().child(\"Accept terms and conditions\")),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(Checkbox::new(\"checkbox-disabled\").disabled(true))\n            .child(Label::new().disabled(true).child(\"Disabled\")),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(\n                Checkbox::new(\"checkbox-disabled-checked\")\n                    .checked(true)\n                    .disabled(true),\n            )\n            .child(Label::new().disabled(true).child(\"Disabled checked\")),\n    )\n    ";
 
 pub static COLLAPSIBLE_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Collapsible",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Collapsible",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Collapsible",
-        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
-        doc: "The always-visible row that toggles the content.",
-    },
-    ApiEntry {
-        type_name: "Collapsible",
-        signature: "pub fn content(mut self, content: impl IntoElement) -> Self",
-        doc: "The collapsible body.",
-    },
-    ApiEntry {
-        type_name: "Collapsible",
-        signature: "pub fn on_toggle( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Collapsible", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Collapsible", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Collapsible", signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self", doc: "The always-visible row that toggles the content." },
+    ApiEntry { type_name: "Collapsible", signature: "pub fn content(mut self, content: impl IntoElement) -> Self", doc: "The collapsible body." },
+    ApiEntry { type_name: "Collapsible", signature: "pub fn on_toggle( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static COLLAPSIBLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet repo_row = |text: &'static str| {\n    div()\n        .rounded(theme.radius_md())\n        .border_1()\n        .border_color(theme.border)\n        .px(px(16.))\n        .py(px(8.))\n        .text_size(px(14.))\n        .line_height(px(20.))\n        .child(text)\n};\ndiv().w(px(350.)).child(\n    Collapsible::new(\"collapsible-repos\")\n        .open(self.collapsible_open)\n        .on_toggle(cx.listener(|this, _, _, cx| {\n            this.collapsible_open = !this.collapsible_open;\n            cx.notify();\n        }))\n        .trigger(\n            div()\n                .flex()\n                .flex_row()\n                .items_center()\n                .justify_between()\n                .gap(px(16.))\n                .child(\n                    div()\n                        .text_size(px(14.))\n                        .font_weight(FontWeight::MEDIUM)\n                        .child(\"@peduarte starred 3 repositories\"),\n                )\n                .child(\n                    gpui::svg()\n                        .path(if self.collapsible_open {\n                            theme.icons.chevron_up()\n                        } else {\n                            theme.icons.chevron_down()\n                        })\n                        .size(px(16.))\n                        .text_color(theme.muted_foreground),\n                ),\n        )\n        .content(\n            div()\n                .flex()\n                .flex_col()\n                .gap(px(8.))\n                .child(repo_row(\"@radix-ui/primitives\"))\n                .child(repo_row(\"@radix-ui/colors\"))\n                .child(repo_row(\"@stitches/react\")),\n        ),\n)\n    ";
 
 pub static COMBOBOX_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn new(id: impl Into<ElementId>, search: Entity<Input>) -> Self",
-        doc: "`search` is a bare [`Input`] entity used for filtering.",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn options(mut self, options: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn value(mut self, value: Option<usize>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn placeholder(mut self, placeholder: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn empty_message(mut self, message: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Combobox",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Combobox", signature: "pub fn new(id: impl Into<ElementId>, search: Entity<Input>) -> Self", doc: "`search` is a bare [`Input`] entity used for filtering." },
+    ApiEntry { type_name: "Combobox", signature: "pub fn options(mut self, options: impl IntoIterator<Item = impl Into<SharedString>>) -> Self", doc: "" },
+    ApiEntry { type_name: "Combobox", signature: "pub fn value(mut self, value: Option<usize>) -> Self", doc: "" },
+    ApiEntry { type_name: "Combobox", signature: "pub fn placeholder(mut self, placeholder: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Combobox", signature: "pub fn empty_message(mut self, message: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Combobox", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Combobox", signature: "pub fn on_change(mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static) -> Self", doc: "" },
+    ApiEntry { type_name: "Combobox", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static COMBOBOX_USAGE: &str = "Combobox::new(\"combobox-framework\", self.combobox_search.clone())\n    .placeholder(\"Select framework...\")\n    .empty_message(\"No framework found.\")\n    .options([\"Next.js\", \"SvelteKit\", \"Nuxt.js\", \"Remix\", \"Astro\"])\n    .value(self.combobox_value)\n    .open(self.combobox_open)\n    .on_change(cx.listener(|this, value: &usize, _, cx| {\n        this.combobox_value = Some(*value);\n        cx.notify();\n    }))\n    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n        this.combobox_open = *open;\n        cx.notify();\n    }))\n    ";
 
 pub static COMMAND_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "CommandItem",
-        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CommandItem",
-        signature: "pub fn shortcut(mut self, shortcut: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CommandItem",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CommandGroup",
-        signature: "pub fn new(heading: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "CommandGroup",
-        signature: "pub fn item(mut self, item: CommandItem) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Command",
-        signature: "pub fn new(input: Entity<Input>) -> Self",
-        doc: "Wraps a bare [`Input`] used as the search box.",
-    },
-    ApiEntry {
-        type_name: "Command",
-        signature: "pub fn group(mut self, group: CommandGroup) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Command",
-        signature: "pub fn empty_message(mut self, message: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "CommandItem", signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "CommandItem", signature: "pub fn shortcut(mut self, shortcut: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "CommandItem", signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "CommandGroup", signature: "pub fn new(heading: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "CommandGroup", signature: "pub fn item(mut self, item: CommandItem) -> Self", doc: "" },
+    ApiEntry { type_name: "Command", signature: "pub fn new(input: Entity<Input>) -> Self", doc: "Wraps a bare [`Input`] used as the search box." },
+    ApiEntry { type_name: "Command", signature: "pub fn group(mut self, group: CommandGroup) -> Self", doc: "" },
+    ApiEntry { type_name: "Command", signature: "pub fn empty_message(mut self, message: impl Into<SharedString>) -> Self", doc: "" },
 ];
 
-pub static COMMAND_USAGE: &str = "div().w(px(360.)).child(\n    Command::new(self.command_input.clone())\n        .empty_message(\"No results found.\")\n        .group(\n            CommandGroup::new(\"Suggestions\")\n                .item(CommandItem::new(\"cmd-calendar\", \"Calendar\"))\n                .item(CommandItem::new(\"cmd-emoji\", \"Search Emoji\"))\n                .item(\n                    CommandItem::new(\"cmd-calc\", \"Calculator\").on_select(cx.listener(\n                        |this, _, window, cx| {\n                            this.command_input.update(cx, |input, cx| {\n                                input.set_text(\"\", window, cx);\n                            });\n                            cx.notify();\n                        },\n                    )),\n                ),\n        )\n        .group(\n            CommandGroup::new(\"Settings\")\n                .item(CommandItem::new(\"cmd-profile\", \"Profile\").shortcut(\"\\u{2318}P\"))\n                .item(CommandItem::new(\"cmd-billing\", \"Billing\").shortcut(\"\\u{2318}B\"))\n                .item(CommandItem::new(\"cmd-settings\", \"Settings\").shortcut(\"\\u{2318}S\")),\n        ),\n)\n    ";
+pub static COMMAND_USAGE: &str = "div().w(px(360.)).child(\n    Command::new(self.command_input.clone())\n        .empty_message(\"No results found.\")\n        .group(\n            CommandGroup::new(\"Suggestions\")\n                .item(CommandItem::new(\"cmd-calendar\", \"Calendar\"))\n                .item(CommandItem::new(\"cmd-emoji\", \"Search Emoji\"))\n                .item(\n                    CommandItem::new(\"cmd-calc\", \"Calculator\").on_select(cx.listener(\n                        |this, _, _, cx| {\n                            this.command_input.update(cx, |input, cx| {\n                                input.set_text(\"\", cx);\n                            });\n                            cx.notify();\n                        },\n                    )),\n                ),\n        )\n        .group(\n            CommandGroup::new(\"Settings\")\n                .item(CommandItem::new(\"cmd-profile\", \"Profile\").shortcut(\"\\u{2318}P\"))\n                .item(CommandItem::new(\"cmd-billing\", \"Billing\").shortcut(\"\\u{2318}B\"))\n                .item(CommandItem::new(\"cmd-settings\", \"Settings\").shortcut(\"\\u{2318}S\")),\n        ),\n)\n    ";
 
 pub static CONTEXT_MENU_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn open_at(mut self, position: Option<Point<Pixels>>) -> Self",
-        doc: "The window position to show the menu at (`None` = closed).",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
-        doc: "The right-clickable area.",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn item(mut self, item: ContextMenuItem) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn label(mut self, label: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn separator(mut self) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn on_request_open( mut self, handler: impl Fn(&Point<Pixels>, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "Fired on right-click with the pointer position.",
-    },
-    ApiEntry {
-        type_name: "ContextMenu",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "Fired with `false` when the menu wants to close.",
-    },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn open_at(mut self, position: Option<Point<Pixels>>) -> Self", doc: "The window position to show the menu at (`None` = closed)." },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self", doc: "The right-clickable area." },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn item(mut self, item: ContextMenuItem) -> Self", doc: "" },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn label(mut self, label: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn separator(mut self) -> Self", doc: "" },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn on_request_open( mut self, handler: impl Fn(&Point<Pixels>, &mut Window, &mut App) + 'static, ) -> Self", doc: "Fired on right-click with the pointer position." },
+    ApiEntry { type_name: "ContextMenu", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "Fired with `false` when the menu wants to close." },
 ];
 
 pub static CONTEXT_MENU_USAGE: &str = "let theme = Theme::of(cx).clone();\nContextMenu::new(\"context-menu-demo\")\n    .open_at(self.context_menu_at)\n    .on_request_open(\n        cx.listener(|this, position: &gpui::Point<gpui::Pixels>, _, cx| {\n            this.context_menu_at = Some(*position);\n            cx.notify();\n        }),\n    )\n    .on_open_change(cx.listener(|this, _open: &bool, _, cx| {\n        this.context_menu_at = None;\n        cx.notify();\n    }))\n    .trigger(\n        div()\n            .flex()\n            .h(px(150.))\n            .w(px(300.))\n            .items_center()\n            .justify_center()\n            .rounded(theme.radius_md())\n            .border_1()\n            .border_color(theme.border)\n            .text_size(px(14.))\n            .child(\"Right click here\"),\n    )\n    .label(\"Navigation\")\n    .item(\n        ContextMenuItem::new(\"cm-back\")\n            .shortcut(\"\\u{2318}[\")\n            .child(\"Back\"),\n    )\n    .item(\n        ContextMenuItem::new(\"cm-forward\")\n            .disabled(true)\n            .shortcut(\"\\u{2318}]\")\n            .child(\"Forward\"),\n    )\n    .item(\n        ContextMenuItem::new(\"cm-reload\")\n            .shortcut(\"\\u{2318}R\")\n            .child(\"Reload\"),\n    )\n    .separator()\n    .item(\n        ContextMenuItem::new(\"cm-bookmarks\")\n            .checked(true)\n            .child(\"Show Bookmarks\"),\n    )\n    .item(\n        ContextMenuItem::new(\"cm-fullurls\")\n            .checked(false)\n            .child(\"Show Full URLs\"),\n    )\n    ";
 
 pub static DATE_PICKER_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn new(id: impl Into<ElementId>, month: (i32, u32)) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn value(mut self, value: Option<CalendarDate>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn placeholder(mut self, placeholder: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&CalendarDate, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn on_month_change( mut self, handler: impl Fn(&(i32, u32), &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DatePicker",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn new(id: impl Into<ElementId>, month: (i32, u32)) -> Self", doc: "" },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn value(mut self, value: Option<CalendarDate>) -> Self", doc: "" },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn placeholder(mut self, placeholder: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn on_select( mut self, handler: impl Fn(&CalendarDate, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn on_month_change( mut self, handler: impl Fn(&(i32, u32), &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "DatePicker", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static DATE_PICKER_USAGE: &str = "DatePicker::new(\"date-picker-demo\", self.date_picker_month)\n    .placeholder(\"Pick a date\")\n    .value(self.date_picker_value)\n    .open(self.date_picker_open)\n    .on_select(cx.listener(|this, date: &CalendarDate, _, cx| {\n        this.date_picker_value = Some(*date);\n        cx.notify();\n    }))\n    .on_month_change(cx.listener(|this, month: &(i32, u32), _, cx| {\n        this.date_picker_month = *month;\n        cx.notify();\n    }))\n    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n        this.date_picker_open = *open;\n        cx.notify();\n    }))\n    ";
 
 pub static DIALOG_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Dialog",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Dialog",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Dialog",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DialogHeader",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DialogTitle",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DialogDescription",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DialogFooter",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Dialog", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Dialog", signature: "pub fn open(mut self, open: bool) -> Self", doc: "Controlled open state. Distinguishes \"never set\" (`None`) from `open(false)` so uncontrolled keyed state can take over." },
+    ApiEntry { type_name: "Dialog", signature: "pub fn default_open(mut self, open: bool) -> Self", doc: "Initial open state when uncontrolled (default `false`)." },
+    ApiEntry { type_name: "Dialog", signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self", doc: "Inline trigger element. Clicking it toggles open in uncontrolled mode (and notifies `on_open_change` when set)." },
+    ApiEntry { type_name: "Dialog", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "Dialog", signature: "pub fn show_close_button(mut self, show: bool) -> Self", doc: "Show the top-right close button (default `true`, matching shadcn)." },
+    ApiEntry { type_name: "Dialog", signature: "pub fn max_w(mut self, width: gpui::Pixels) -> Self", doc: "Override the content panel max width (default 448px / `sm:max-w-md`)." },
+    ApiEntry { type_name: "DialogHeader", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "DialogTitle", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "DialogDescription", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "DialogFooter", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "DialogFooter", signature: "pub fn show_close_button(mut self, show: bool) -> Self", doc: "Append an outline \"Close\" button after children (default false)." },
+    ApiEntry { type_name: "DialogFooter", signature: "pub fn on_close( mut self, handler: impl Fn(&mut Window, &mut App) + 'static, ) -> Self", doc: "Handler invoked when the footer's Close button is clicked." },
+    ApiEntry { type_name: "DialogFooter", signature: "pub fn justify_start(mut self) -> Self", doc: "Use `justify-start` instead of the default `justify-end`." },
 ];
 
-pub static DIALOG_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .child(\n        Button::new(\"dialog-trigger\")\n            .variant(ButtonVariant::Outline)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.dialog_open = true;\n                cx.notify();\n            }))\n            .child(\"Edit Profile\"),\n    )\n    .child(\n        Dialog::new(\"dialog-demo\")\n            .open(self.dialog_open)\n            .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                this.dialog_open = *open;\n                cx.notify();\n            }))\n            .child(\n                DialogHeader::new()\n                    .child(DialogTitle::new().child(\"Edit profile\"))\n                    .child(DialogDescription::new().child(\n                        \"Make changes to your profile here. Click save when you're done.\",\n                    )),\n            )\n            .child(\n                div()\n                    .h(px(80.))\n                    .w_full()\n                    .rounded(theme.radius_md())\n                    .bg(theme.muted),\n            )\n            .child(\n                DialogFooter::new()\n                    .child(\n                        Button::new(\"dialog-cancel\")\n                            .variant(ButtonVariant::Outline)\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.dialog_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Cancel\"),\n                    )\n                    .child(\n                        Button::new(\"dialog-save\")\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.dialog_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Save changes\"),\n                    ),\n            ),\n    )\n    ";
+pub static DIALOG_USAGE: &str = "const LOREM: &str = concat!(\n    \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do \",\n    \"eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut \",\n    \"enim ad minim veniam, quis nostrud exercitation ullamco laboris \",\n    \"nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in \",\n    \"reprehenderit in voluptate velit esse cillum dolore eu fugiat \",\n    \"nulla pariatur. Excepteur sint occaecat cupidatat non proident, \",\n    \"sunt in culpa qui officia deserunt mollit anim id est laborum.\",\n);\n\nlet scroll_body = |id: SharedString| {\n    div()\n        .id(id.clone())\n        .max_h(px(320.))\n        .overflow_y_scroll()\n        .children((0..10).map(move |i| {\n            div()\n                .id(ElementId::Name(format!(\"{id}-p-{i}\").into()))\n                .mb(px(16.))\n                .line_height(px(21.))\n                .child(LOREM)\n        }))\n};\n\nlet sticky_entity = cx.entity();\n\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    // a. Edit profile (demo) — controlled; controls-panel \"open\" switch\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Open Dialog\"),\n            )\n            .child(\n                Dialog::new(\"dialog-demo\")\n                    .open(self.dialog_open)\n                    .max_w(px(384.))\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Edit profile\"))\n                            .child(DialogDescription::new().child(\n                                \"Make changes to your profile here. Click save when you're done.\",\n                            )),\n                    )\n                    .child(\n                        FieldGroup::new()\n                            .child(\n                                Field::new()\n                                    .child(Label::new().child(\"Name\"))\n                                    .child(self.dialog_name_input.clone()),\n                            )\n                            .child(\n                                Field::new()\n                                    .child(Label::new().child(\"Username\"))\n                                    .child(self.dialog_username_input.clone()),\n                            ),\n                    )\n                    .child(\n                        DialogFooter::new()\n                            .child(\n                                Button::new(\"dialog-cancel\")\n                                    .variant(ButtonVariant::Outline)\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Cancel\"),\n                            )\n                            .child(\n                                Button::new(\"dialog-save\")\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Save changes\"),\n                            ),\n                    ),\n            ),\n    )\n    // b. Share link — custom close / justify_start footer\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-share-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_share_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Share\"),\n            )\n            .child(\n                Dialog::new(\"dialog-share\")\n                    .open(self.dialog_share_open)\n                    .max_w(px(448.))\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_share_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Share link\"))\n                            .child(DialogDescription::new().child(\n                                \"Anyone who has this link will be able to view this.\",\n                            )),\n                    )\n                    .child(self.dialog_share_input.clone())\n                    .child(\n                        DialogFooter::new()\n                            .justify_start()\n                            .child(\n                                Button::new(\"dialog-share-close\")\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_share_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Close\"),\n                            ),\n                    ),\n            ),\n    )\n    // c. No close button — fully uncontrolled: built-in .trigger()\n    // + default_open, no external open flag (backdrop/Escape close).\n    .child(\n        Dialog::new(\"dialog-no-close\")\n            .default_open(false)\n            .show_close_button(false)\n            .trigger(\n                Button::new(\"dialog-no-close-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .child(\"No Close Button\"),\n            )\n            .child(\n                DialogHeader::new()\n                    .child(DialogTitle::new().child(\"No Close Button\"))\n                    .child(DialogDescription::new().child(\n                        \"This dialog doesn't have a close button in the top-right corner.\",\n                    )),\n            ),\n    )\n    // d. Sticky footer — DialogFooter::show_close_button\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-sticky-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_sticky_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Sticky Footer\"),\n            )\n            .child(\n                Dialog::new(\"dialog-sticky\")\n                    .open(self.dialog_sticky_open)\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_sticky_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Sticky Footer\"))\n                            .child(DialogDescription::new().child(\n                                \"This dialog has a sticky footer that stays visible while the content scrolls.\",\n                            )),\n                    )\n                    .child(scroll_body(\"dialog-sticky-scroll\".into()))\n                    .child(\n                        DialogFooter::new()\n                            .show_close_button(true)\n                            .on_close({\n                                let entity = sticky_entity.clone();\n                                move |_window, cx| {\n                                    entity.update(cx, |this, cx| {\n                                        this.dialog_sticky_open = false;\n                                        cx.notify();\n                                    });\n                                }\n                            }),\n                    ),\n            ),\n    )\n    // e. Scrollable content — same body, no footer\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-scroll-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_scroll_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Scrollable Content\"),\n            )\n            .child(\n                Dialog::new(\"dialog-scroll\")\n                    .open(self.dialog_scroll_open)\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_scroll_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Scrollable Content\"))\n                            .child(DialogDescription::new().child(\n                                \"This is a dialog with scrollable content.\",\n                            )),\n                    )\n                    .child(scroll_body(\"dialog-scroll-scroll\".into())),\n            ),\n    )\n    ";
 
 pub static DRAWER_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Drawer",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Drawer",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Drawer",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DrawerHeader",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Drawer", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Drawer", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Drawer", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "DrawerHeader", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static DRAWER_USAGE: &str = "div()\n    .child(\n        Button::new(\"drawer-trigger\")\n            .variant(ButtonVariant::Outline)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.drawer_open = true;\n                cx.notify();\n            }))\n            .child(\"Open Drawer\"),\n    )\n    .child(\n        Drawer::new(\"drawer-demo\")\n            .open(self.drawer_open)\n            .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                this.drawer_open = *open;\n                cx.notify();\n            }))\n            .child(\n                DrawerHeader::new()\n                    .child(DrawerTitle::new().child(\"Move Goal\"))\n                    .child(DrawerDescription::new().child(\"Set your daily activity goal.\")),\n            )\n            .child(\n                DrawerFooter::new()\n                    .child(\n                        Button::new(\"drawer-cancel\")\n                            .variant(ButtonVariant::Outline)\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.drawer_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Cancel\"),\n                    )\n                    .child(\n                        Button::new(\"drawer-submit\")\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.drawer_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Submit\"),\n                    ),\n            ),\n    )\n    ";
 
 pub static DROPDOWN_MENU_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn destructive(mut self, destructive: bool) -> Self",
-        doc: "The source's `variant=\"destructive\"`.",
-    },
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn checked(mut self, checked: bool) -> Self",
-        doc: "Renders as a checkbox item with a leading check slot.",
-    },
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn shortcut(mut self, shortcut: impl Into<gpui::SharedString>) -> Self",
-        doc: "Right-aligned muted shortcut text (`DropdownMenuShortcut`).",
-    },
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenuItem",
-        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn item(mut self, item: DropdownMenuItem) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn label(mut self, label: impl IntoElement) -> Self",
-        doc: "px-2 py-1.5 text-sm font-medium — a non-interactive heading.",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn separator(mut self) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "DropdownMenu",
-        signature: "pub(crate) fn menu_panel( entries: Vec<DropdownMenuEntry>, on_open_change: Option<OpenChangeHandler>, cx: &App, ) -> impl IntoElement + use<>",
-        doc: "Renders the shared menu panel; also used by context-menu and menubar.",
-    },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn destructive(mut self, destructive: bool) -> Self", doc: "The source's `variant=\"destructive\"`." },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn checked(mut self, checked: bool) -> Self", doc: "Renders as a checkbox item with a leading check slot." },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn shortcut(mut self, shortcut: impl Into<gpui::SharedString>) -> Self", doc: "Right-aligned muted shortcut text (`DropdownMenuShortcut`)." },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenuItem", signature: "pub fn child(mut self, child: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn item(mut self, item: DropdownMenuItem) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn label(mut self, label: impl IntoElement) -> Self", doc: "px-2 py-1.5 text-sm font-medium — a non-interactive heading." },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn separator(mut self) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "DropdownMenu", signature: "pub(crate) fn menu_panel( entries: Vec<DropdownMenuEntry>, on_open_change: Option<OpenChangeHandler>, cx: &App, ) -> impl IntoElement + use<>", doc: "Renders the shared menu panel; also used by context-menu and menubar." },
 ];
 
 pub static DROPDOWN_MENU_USAGE: &str = "DropdownMenu::new(\"dropdown-demo\")\n    .open(self.dropdown_open)\n    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n        this.dropdown_open = *open;\n        cx.notify();\n    }))\n    .trigger(\n        Button::new(\"dropdown-trigger\")\n            .variant(ButtonVariant::Outline)\n            .child(\"Open Menu\"),\n    )\n    .label(\"My Account\")\n    .separator()\n    .item(\n        DropdownMenuItem::new(\"dd-profile\")\n            .shortcut(\"\\u{2318}P\")\n            .child(\"Profile\"),\n    )\n    .item(\n        DropdownMenuItem::new(\"dd-billing\")\n            .shortcut(\"\\u{2318}B\")\n            .child(\"Billing\"),\n    )\n    .item(\n        DropdownMenuItem::new(\"dd-status\")\n            .checked(self.dropdown_status_checked)\n            .on_select(cx.listener(|this, _, _, cx| {\n                this.dropdown_status_checked = !this.dropdown_status_checked;\n                cx.notify();\n            }))\n            .child(\"Show Status Bar\"),\n    )\n    .item(\n        DropdownMenuItem::new(\"dd-disabled\")\n            .disabled(true)\n            .child(\"API (disabled)\"),\n    )\n    .separator()\n    .item(\n        DropdownMenuItem::new(\"dd-logout\")\n            .destructive(true)\n            .shortcut(\"\\u{21e7}\\u{2318}Q\")\n            .child(\"Log out\"),\n    )\n    ";
@@ -1003,129 +455,33 @@ pub static EMPTY_API: &[ApiEntry] = &[
 pub static EMPTY_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv().w(px(420.)).child(\n    Empty::new()\n        .child(\n            EmptyHeader::new()\n                .child(\n                    EmptyMedia::new().variant(EmptyMediaVariant::Icon).child(\n                        gpui::svg()\n                            .path(theme.icons.chevron_right())\n                            .size(px(24.))\n                            .text_color(theme.foreground),\n                    ),\n                )\n                .child(EmptyTitle::new().child(\"No Projects Yet\"))\n                .child(EmptyDescription::new().child(\n                    \"You haven't created any projects yet. Get started by creating your first project.\",\n                )),\n        )\n        .child(\n            EmptyContent::new().child(\n                div()\n                    .flex()\n                    .flex_row()\n                    .gap(px(8.))\n                    .child(Button::new(\"empty-create\").child(\"Create Project\"))\n                    .child(\n                        Button::new(\"empty-import\")\n                            .variant(ButtonVariant::Outline)\n                            .child(\"Import Project\"),\n                    ),\n            ),\n        ),\n)\n    ";
 
 pub static FIELD_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
-        doc: "Distinguishes this field's measured width state from siblings'. Only responsive fields with different widths under one parent need it.",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn orientation(mut self, orientation: FieldOrientation) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
-        doc: "data-invalid — paints inherited text (the label) destructive.",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn content(mut self, content: FieldContent) -> Self",
-        doc: "Add a [`FieldContent`] child. In horizontal/responsive-horizontal layouts this also start-aligns the row, the ported `has-[>[data-slot=field-content]]:items-start`.",
-    },
-    ApiEntry {
-        type_name: "FieldLabel",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldLabel",
-        signature: "pub fn choice_card(mut self, checked: bool) -> Self",
-        doc: "has-[>[data-slot=field]] — render as a selectable choice card: bordered, rounded-lg, padded, tinted primary while checked.",
-    },
-    ApiEntry {
-        type_name: "FieldLabel",
-        signature: "pub fn font_normal(mut self) -> Self",
-        doc: "The docs' `className=\"font-normal\"` on checkbox/radio row labels.",
-    },
-    ApiEntry {
-        type_name: "FieldLabel",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldContent",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldTitle",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldDescription",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldError",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldError",
-        signature: "pub fn errors(mut self, errors: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
-        doc: "The TSX `errors={...}` prop: explicit children win over it, one unique message renders plain, several render as a bullet list.",
-    },
-    ApiEntry {
-        type_name: "FieldGroup",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldGroup",
-        signature: "pub fn gap(mut self, gap: Pixels) -> Self",
-        doc: "Overrides the 20px stack gap (the docs use 12px — `data-[slot=checkbox-group]:gap-3` — for checkbox stacks).",
-    },
-    ApiEntry {
-        type_name: "FieldSet",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldSet",
-        signature: "pub fn legend(mut self, legend: FieldLegend) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldSet",
-        signature: "pub fn description(mut self, description: FieldDescription) -> Self",
-        doc: "The description line under the legend.",
-    },
-    ApiEntry {
-        type_name: "FieldSet",
-        signature: "pub fn gap(mut self, gap: Pixels) -> Self",
-        doc: "Overrides the 16px gap (the docs' checkbox/radio fieldsets tighten to 12px — `has-[>[data-slot=radio-group]]:gap-3`).",
-    },
-    ApiEntry {
-        type_name: "FieldLegend",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldLegend",
-        signature: "pub fn variant(mut self, variant: FieldLegendVariant) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "FieldSeparator",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Field", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "Field", signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self", doc: "Distinguishes this field's measured width state from siblings'. Only responsive fields with different widths under one parent need it." },
+    ApiEntry { type_name: "Field", signature: "pub fn orientation(mut self, orientation: FieldOrientation) -> Self", doc: "" },
+    ApiEntry { type_name: "Field", signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self", doc: "" },
+    ApiEntry { type_name: "Field", signature: "pub fn invalid(mut self, invalid: bool) -> Self", doc: "data-invalid — paints inherited text (the label) destructive." },
+    ApiEntry { type_name: "Field", signature: "pub fn content(mut self, content: FieldContent) -> Self", doc: "Add a [`FieldContent`] child. In horizontal/responsive-horizontal layouts this also start-aligns the row, the ported `has-[>[data-slot=field-content]]:items-start`." },
+    ApiEntry { type_name: "FieldLabel", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldLabel", signature: "pub fn choice_card(mut self, checked: bool) -> Self", doc: "has-[>[data-slot=field]] — render as a selectable choice card: bordered, rounded-lg, padded, tinted primary while checked." },
+    ApiEntry { type_name: "FieldLabel", signature: "pub fn font_normal(mut self) -> Self", doc: "The docs' `className=\"font-normal\"` on checkbox/radio row labels." },
+    ApiEntry { type_name: "FieldLabel", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "FieldContent", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldTitle", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldDescription", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldError", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldError", signature: "pub fn errors(mut self, errors: impl IntoIterator<Item = impl Into<SharedString>>) -> Self", doc: "The TSX `errors={...}` prop: explicit children win over it, one unique message renders plain, several render as a bullet list." },
+    ApiEntry { type_name: "FieldGroup", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldGroup", signature: "pub fn gap(mut self, gap: Pixels) -> Self", doc: "Overrides the 20px stack gap (the docs use 12px — `data-[slot=checkbox-group]:gap-3` — for checkbox stacks)." },
+    ApiEntry { type_name: "FieldSet", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldSet", signature: "pub fn legend(mut self, legend: FieldLegend) -> Self", doc: "" },
+    ApiEntry { type_name: "FieldSet", signature: "pub fn description(mut self, description: FieldDescription) -> Self", doc: "The description line under the legend." },
+    ApiEntry { type_name: "FieldSet", signature: "pub fn gap(mut self, gap: Pixels) -> Self", doc: "Overrides the 16px gap (the docs' checkbox/radio fieldsets tighten to 12px — `has-[>[data-slot=radio-group]]:gap-3`)." },
+    ApiEntry { type_name: "FieldLegend", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "FieldLegend", signature: "pub fn variant(mut self, variant: FieldLegendVariant) -> Self", doc: "" },
+    ApiEntry { type_name: "FieldSeparator", signature: "pub fn new() -> Self", doc: "" },
 ];
 
-pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(\n                                    FieldLabel::new().child(\"Name on Card\"),\n                                )\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(\n                                    FieldLabel::new().child(\"Card Number\"),\n                                )\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(\n                                                FieldLabel::new().child(\"Month\"),\n                                            )\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\",\n                                                        \"06\", \"07\", \"08\", \"09\", \"10\",\n                                                        \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(\n                                                FieldLabel::new().child(\"Year\"),\n                                            )\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(FieldDescription::new().child(\n                    \"The billing address associated with your payment method\",\n                ))\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(\n                            Textarea::new(self.field_comments.clone()).rows(3),\n                        ),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
+pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Name on Card\"))\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Card Number\"))\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Month\"))\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\", \"06\",\n                                                        \"07\", \"08\", \"09\", \"10\", \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Year\"))\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"The billing address associated with your payment method\"),\n                )\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(Textarea::new(self.field_comments.clone()).rows(3)),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
 
 pub static HOVER_CARD_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1135,7 +491,8 @@ pub static HOVER_CARD_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "HoverCard",
-        signature: "pub fn content(mut self, content: impl Fn(&mut App) -> AnyElement + 'static) -> Self",
+        signature:
+            "pub fn content(mut self, content: impl Fn(&mut App) -> AnyElement + 'static) -> Self",
         doc: "Builds the panel content each time the card opens.",
     },
 ];
@@ -1143,89 +500,29 @@ pub static HOVER_CARD_API: &[ApiEntry] = &[
 pub static HOVER_CARD_USAGE: &str = "div().child(\n    HoverCard::new(\"hover-card-demo\")\n        .content(|cx| {\n            let theme = Theme::of(cx).clone();\n            div()\n                .flex()\n                .flex_row()\n                .gap(px(12.))\n                .child(Avatar::new(\"VC\"))\n                .child(\n                    div()\n                        .flex()\n                        .flex_col()\n                        .gap(px(4.))\n                        .child(\n                            div()\n                                .text_size(px(14.))\n                                .font_weight(FontWeight::SEMIBOLD)\n                                .child(\"@nextjs\"),\n                        )\n                        .child(div().text_size(px(14.)).child(\n                            \"The React Framework - created and maintained by @vercel.\",\n                        ))\n                        .child(\n                            div()\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"Joined December 2021\"),\n                        ),\n                )\n                .into_any_element()\n        })\n        .child(\n            Button::new(\"hover-card-trigger\")\n                .variant(ButtonVariant::Link)\n                .child(\"@nextjs\"),\n        ),\n)\n    ";
 
 pub static ICON_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Icon",
-        signature: "pub fn new(path: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Icon",
-        signature: "pub fn rotate(mut self, angle: impl Into<Radians>) -> Self",
-        doc: "Rotate the drawing about its center (the svg `transform: rotate(..)` used by spinner animations).",
-    },
+    ApiEntry { type_name: "Icon", signature: "pub fn new(path: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Icon", signature: "pub fn rotate(mut self, angle: impl Into<Radians>) -> Self", doc: "Rotate the drawing about its center (the svg `transform: rotate(..)` used by spinner animations)." },
 ];
 
 pub static ICON_USAGE: &str = "";
 
 pub static INPUT_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn new(cx: &mut Context<Self>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn register_key_bindings(cx: &mut App)",
-        doc: "Register the editing key bindings; call once from `main`.",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn placeholder(&mut self, placeholder: impl Into<SharedString>) -> &mut Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_disabled(&mut self, disabled: bool)",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_invalid(&mut self, invalid: bool)",
-        doc: "Mirrors `aria-invalid`: destructive border + always-on destructive ring.",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_read_only(&mut self, read_only: bool)",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_masked(&mut self, masked: bool)",
-        doc: "`type=\"password\"`: one bullet per grapheme; copy/cut are no-ops.",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_file(&mut self, file: bool)",
-        doc: "`type=\"file\"`: non-editable chrome with Choose File + selected name.",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_bare(&mut self, bare: bool)",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn on_change( &mut self, handler: impl Fn(&SharedString, &mut Window, &mut App) + 'static, ) -> &mut Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn text(&self) -> &str",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn file_name(&self) -> Option<&str>",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Input",
-        signature: "pub fn set_text( &mut self, text: impl Into<SharedString>, window: &mut Window, cx: &mut Context<Self>, )",
-        doc: "",
-    },
+    ApiEntry { type_name: "Input", signature: "pub fn new(cx: &mut Context<Self>) -> Self", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn register_key_bindings(cx: &mut App)", doc: "Register the editing key bindings; call once from `main`." },
+    ApiEntry { type_name: "Input", signature: "pub fn placeholder(&mut self, placeholder: impl Into<SharedString>) -> &mut Self", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn set_disabled(&mut self, disabled: bool)", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn set_invalid(&mut self, invalid: bool)", doc: "Mirrors `aria-invalid`: destructive border + always-on destructive ring." },
+    ApiEntry { type_name: "Input", signature: "pub fn set_read_only(&mut self, read_only: bool)", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn set_masked(&mut self, masked: bool)", doc: "`type=\"password\"`: one bullet per grapheme; copy/cut are no-ops." },
+    ApiEntry { type_name: "Input", signature: "pub fn set_file(&mut self, file: bool)", doc: "`type=\"file\"`: non-editable chrome with Choose File + selected name." },
+    ApiEntry { type_name: "Input", signature: "pub fn set_bare(&mut self, bare: bool)", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn on_change( &mut self, handler: impl Fn(&SharedString, &mut Window, &mut App) + 'static, ) -> &mut Self", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn text(&self) -> &str", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn file_name(&self) -> Option<&str>", doc: "" },
+    ApiEntry { type_name: "Input", signature: "pub fn set_text(&mut self, text: impl Into<SharedString>, cx: &mut Context<Self>)", doc: "" },
 ];
 
-pub static INPUT_USAGE: &str = "div().w(px(320.)).child(\n    Field::new()\n        .child(FieldLabel::new().child(\"API Key\"))\n        .child(self.input_demo.clone())\n        .child(\n            FieldDescription::new()\n                .child(\"Your API key is encrypted and stored securely.\"),\n        ),\n)\n    ";
+pub static INPUT_USAGE: &str = "div().w(px(320.)).child(\n    Field::new()\n        .child(FieldLabel::new().child(\"API Key\"))\n        .child(self.input_demo.clone())\n        .child(\n            FieldDescription::new().child(\"Your API key is encrypted and stored securely.\"),\n        ),\n)\n    ";
 
 pub static INPUT_GROUP_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1343,21 +640,9 @@ pub static ITEM_API: &[ApiEntry] = &[
 pub static ITEM_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv().w(px(420.)).child(\n    ItemGroup::new()\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .size(self.item_size)\n                .child(\n                    ItemMedia::new().variant(ItemMediaVariant::Icon).child(\n                        gpui::svg()\n                            .path(theme.icons.chevron_right())\n                            .size(px(16.))\n                            .text_color(theme.foreground),\n                    ),\n                )\n                .child(\n                    ItemContent::new()\n                        .child(ItemTitle::new().child(\"Basic Item\"))\n                        .child(\n                            ItemDescription::new()\n                                .child(\"A simple item with title and description.\"),\n                        ),\n                )\n                .child(\n                    ItemActions::new().child(\n                        Button::new(\"item-action\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::Sm)\n                            .child(\"Action\"),\n                    ),\n                ),\n        )\n        .child(ItemSeparator::new())\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .child(ItemMedia::new().child(Avatar::new(\"CN\")))\n                .child(\n                    ItemContent::new()\n                        .child(ItemTitle::new().child(\"Evil Rabbit\"))\n                        .child(ItemDescription::new().child(\"Last seen 5 months ago\")),\n                )\n                .child(\n                    ItemActions::new().child(\n                        Button::new(\"item-add\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::IconSm)\n                            .child(\n                                gpui::svg()\n                                    .path(theme.icons.chevron_right())\n                                    .size(px(16.))\n                                    .text_color(theme.foreground),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            Item::new()\n                .variant(self.item_variant)\n                .size(self.item_size)\n                .child(\n                    ItemHeader::new()\n                        .child(ItemTitle::new().child(\"Deployment\"))\n                        .child(Badge::new().variant(BadgeVariant::Secondary).child(\"Live\")),\n                )\n                .child(ItemContent::new().child(\n                    ItemDescription::new().child(\"Deployed 2 hours ago by evil rabbit.\"),\n                ))\n                .child(\n                    ItemFooter::new()\n                        .child(\n                            div()\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"main / a1b2c3d\"),\n                        )\n                        .child(\n                            Button::new(\"item-rollback\")\n                                .variant(ButtonVariant::Ghost)\n                                .size(ButtonSize::Xs)\n                                .child(\"Rollback\"),\n                        ),\n                ),\n        ),\n)\n    ";
 
 pub static KBD_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Kbd",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Kbd",
-        signature: "pub fn in_tooltip(mut self) -> Self",
-        doc: "Explicit port of the `in-data-[slot=tooltip-content]` context styles (`bg-background/20 text-background`, dark `bg-background/10`). gpui has no CSS context selectors, so callers opt in when rendering a Kbd inside tooltip content.",
-    },
-    ApiEntry {
-        type_name: "KbdGroup",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Kbd", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "Kbd", signature: "pub fn in_tooltip(mut self) -> Self", doc: "Explicit port of the `in-data-[slot=tooltip-content]` context styles (`bg-background/20 text-background`, dark `bg-background/10`). gpui has no CSS context selectors, so callers opt in when rendering a Kbd inside tooltip content." },
+    ApiEntry { type_name: "KbdGroup", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static KBD_USAGE: &str = "// kbd-demo: ⌘⇧⌥⌃ group + Ctrl + B group\ndiv()\n    .flex()\n    .flex_col()\n    .items_center()\n    .gap(px(16.))\n    .child(\n        KbdGroup::new()\n            .child(Kbd::new().child(\"⌘\"))\n            .child(Kbd::new().child(\"⇧\"))\n            .child(Kbd::new().child(\"⌥\"))\n            .child(Kbd::new().child(\"⌃\")),\n    )\n    .child(\n        KbdGroup::new()\n            .child(Kbd::new().child(\"Ctrl\"))\n            .child(\"+\")\n            .child(Kbd::new().child(\"B\")),\n    )\n    ";
@@ -1375,7 +660,7 @@ pub static LABEL_API: &[ApiEntry] = &[
     },
 ];
 
-pub static LABEL_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(12.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(Switch::new(\"label-switch\").checked(true))\n            .child(Label::new().child(\"Airplane Mode\")),\n    )\n    .child(Label::new().disabled(true).child(\"Disabled label\"))\n    ";
+pub static LABEL_USAGE: &str = "// Port of label-demo.tsx — Checkbox + Label.\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Checkbox::new(\"label-terms\")\n            .checked(self.label_terms_checked)\n            .disabled(self.label_disabled)\n            .on_change(cx.listener(|this, checked: &bool, _, cx| {\n                this.label_terms_checked = *checked;\n                cx.notify();\n            })),\n    )\n    .child(\n        Label::new()\n            .disabled(self.label_disabled)\n            .child(\"Accept terms and conditions\"),\n    )\n    ";
 
 pub static MARKER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1393,41 +678,13 @@ pub static MARKER_API: &[ApiEntry] = &[
 pub static MARKER_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(16.))\n    .w(px(384.))\n    .child(Marker::new().child(\"Yesterday\"))\n    .child(\n        Marker::new()\n            .variant(MarkerVariant::Separator)\n            .child(\"Today\"),\n    )\n    .child(\n        Marker::new()\n            .variant(MarkerVariant::Border)\n            .child(\"Alex joined the conversation\"),\n    )\n    ";
 
 pub static MENUBAR_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "MenubarMenu",
-        signature: "pub fn new(label: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "MenubarMenu",
-        signature: "pub fn item(mut self, item: MenubarItem) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "MenubarMenu",
-        signature: "pub fn separator(mut self) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Menubar",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Menubar",
-        signature: "pub fn open(mut self, open: Option<usize>) -> Self",
-        doc: "Which menu is open (`None` = closed).",
-    },
-    ApiEntry {
-        type_name: "Menubar",
-        signature: "pub fn menu(mut self, menu: MenubarMenu) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Menubar",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&Option<usize>, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "MenubarMenu", signature: "pub fn new(label: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "MenubarMenu", signature: "pub fn item(mut self, item: MenubarItem) -> Self", doc: "" },
+    ApiEntry { type_name: "MenubarMenu", signature: "pub fn separator(mut self) -> Self", doc: "" },
+    ApiEntry { type_name: "Menubar", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Menubar", signature: "pub fn open(mut self, open: Option<usize>) -> Self", doc: "Which menu is open (`None` = closed)." },
+    ApiEntry { type_name: "Menubar", signature: "pub fn menu(mut self, menu: MenubarMenu) -> Self", doc: "" },
+    ApiEntry { type_name: "Menubar", signature: "pub fn on_open_change( mut self, handler: impl Fn(&Option<usize>, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static MENUBAR_USAGE: &str = "Menubar::new(\"menubar-demo\")\n    .open(self.menubar_open)\n    .on_open_change(cx.listener(|this, open: &Option<usize>, _, cx| {\n        this.menubar_open = *open;\n        cx.notify();\n    }))\n    .menu(\n        MenubarMenu::new(\"File\")\n            .item(\n                MenubarItem::new(\"mb-new-tab\")\n                    .shortcut(\"\\u{2318}T\")\n                    .child(\"New Tab\"),\n            )\n            .item(\n                MenubarItem::new(\"mb-new-window\")\n                    .shortcut(\"\\u{2318}N\")\n                    .child(\"New Window\"),\n            )\n            .separator()\n            .item(\n                MenubarItem::new(\"mb-print\")\n                    .shortcut(\"\\u{2318}P\")\n                    .child(\"Print...\"),\n            ),\n    )\n    .menu(\n        MenubarMenu::new(\"Edit\")\n            .item(\n                MenubarItem::new(\"mb-undo\")\n                    .shortcut(\"\\u{2318}Z\")\n                    .child(\"Undo\"),\n            )\n            .item(\n                MenubarItem::new(\"mb-redo\")\n                    .shortcut(\"\\u{21e7}\\u{2318}Z\")\n                    .child(\"Redo\"),\n            ),\n    )\n    .menu(\n        MenubarMenu::new(\"View\")\n            .item(\n                MenubarItem::new(\"mb-reload\")\n                    .checked(true)\n                    .child(\"Always Show Bookmarks\"),\n            )\n            .item(MenubarItem::new(\"mb-fullscreen\").child(\"Toggle Fullscreen\")),\n    )\n    ";
@@ -1497,146 +754,48 @@ pub static NATIVE_SELECT_API: &[ApiEntry] = &[];
 pub static NATIVE_SELECT_USAGE: &str = "NativeSelect::new(\"native-select-status\")\n    .disabled(false)\n    .placeholder(\"Select status\")\n    .options([\"Todo\", \"In Progress\", \"Done\", \"Cancelled\"])\n    .value(self.native_select_value)\n    .open(self.native_select_open)\n    .on_change(cx.listener(|this, value: &usize, _, cx| {\n        this.native_select_value = Some(*value);\n        cx.notify();\n    }))\n    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n        this.native_select_open = *open;\n        cx.notify();\n    }))\n    ";
 
 pub static NAVIGATION_MENU_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "NavigationMenuEntry",
-        signature: "pub fn new(label: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenuEntry",
-        signature: "pub fn content(mut self, content: impl IntoElement) -> Self",
-        doc: "The panel shown while this entry is open.",
-    },
-    ApiEntry {
-        type_name: "NavigationMenu",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenu",
-        signature: "pub fn open(mut self, open: Option<usize>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenu",
-        signature: "pub fn entry(mut self, entry: NavigationMenuEntry) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenu",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&Option<usize>, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenuLink",
-        signature: "pub fn new(id: impl Into<ElementId>, title: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenuLink",
-        signature: "pub fn description(mut self, description: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "NavigationMenuLink",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "NavigationMenuEntry", signature: "pub fn new(label: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenuEntry", signature: "pub fn content(mut self, content: impl IntoElement) -> Self", doc: "The panel shown while this entry is open." },
+    ApiEntry { type_name: "NavigationMenu", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenu", signature: "pub fn open(mut self, open: Option<usize>) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenu", signature: "pub fn entry(mut self, entry: NavigationMenuEntry) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenu", signature: "pub fn on_open_change( mut self, handler: impl Fn(&Option<usize>, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenuLink", signature: "pub fn new(id: impl Into<ElementId>, title: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenuLink", signature: "pub fn description(mut self, description: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "NavigationMenuLink", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static NAVIGATION_MENU_USAGE: &str = "NavigationMenu::new(\"nav-menu-demo\")\n    .open(self.nav_menu_open)\n    .on_open_change(cx.listener(|this, open: &Option<usize>, _, cx| {\n        this.nav_menu_open = *open;\n        cx.notify();\n    }))\n    .entry(\n        NavigationMenuEntry::new(\"Getting started\").content(\n            div()\n                .flex()\n                .flex_col()\n                .w(px(288.))\n                .gap(px(2.))\n                .child(\n                    NavigationMenuLink::new(\"nav-intro\", \"Introduction\")\n                        .on_click(cx.listener(|this, _, _, cx| {\n                            this.nav_menu_open = None;\n                            cx.notify();\n                        }))\n                        .description(\"Copy-paste components for gpui apps.\"),\n                )\n                .child(\n                    NavigationMenuLink::new(\"nav-install\", \"Installation\")\n                        .description(\"How to vendor components into your project.\"),\n                ),\n        ),\n    )\n    .entry(\n        NavigationMenuEntry::new(\"Components\").content(\n            div()\n                .flex()\n                .flex_col()\n                .w(px(288.))\n                .gap(px(2.))\n                .child(\n                    NavigationMenuLink::new(\"nav-button\", \"Button\")\n                        .description(\"Displays a button.\"),\n                )\n                .child(\n                    NavigationMenuLink::new(\"nav-badge\", \"Badge\")\n                        .description(\"Displays a badge.\"),\n                ),\n        ),\n    )\n    .entry(NavigationMenuEntry::new(\"Docs\"))\n    ";
 
 pub static PAGINATION_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Pagination",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationLink",
-        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationLink",
-        signature: "pub fn active(mut self, active: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationLink",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationPrevious",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationPrevious",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationNext",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationNext",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PaginationEllipsis",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Pagination", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "Pagination", signature: "pub fn w_auto(mut self) -> Self", doc: "`w-auto` instead of the default `w-full` (ports Icons Only `className=\"mx-0 w-auto\"`)." },
+    ApiEntry { type_name: "PaginationContent", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationItem", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationLink", signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationLink", signature: "pub fn active(mut self, active: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationLink", signature: "pub fn size(mut self, size: ButtonSize) -> Self", doc: "Button size — shadcn default `\"icon\"`." },
+    ApiEntry { type_name: "PaginationLink", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationPrevious", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationPrevious", signature: "pub fn text(mut self, text: impl Into<SharedString>) -> Self", doc: "Label text — shadcn `text` prop, default `\"Previous\"`." },
+    ApiEntry { type_name: "PaginationPrevious", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationNext", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationNext", signature: "pub fn text(mut self, text: impl Into<SharedString>) -> Self", doc: "Label text — shadcn `text` prop, default `\"Next\"`." },
+    ApiEntry { type_name: "PaginationNext", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "PaginationEllipsis", signature: "pub fn new() -> Self", doc: "" },
 ];
 
-pub static PAGINATION_USAGE: &str = "Pagination::new()\n    .child(\n        PaginationPrevious::new(\"page-prev\").on_click(cx.listener(|this, _, _, cx| {\n            this.pagination_page = this.pagination_page.saturating_sub(1).max(1);\n            cx.notify();\n        })),\n    )\n    .children((1..=3).map(|page| {\n        PaginationLink::new((\"page-link\", page), page.to_string())\n            .active(self.pagination_page == page)\n            .on_click(cx.listener(move |this, _, _, cx| {\n                this.pagination_page = page;\n                cx.notify();\n            }))\n    }))\n    .child(PaginationEllipsis::new())\n    .child(\n        PaginationNext::new(\"page-next\").on_click(cx.listener(|this, _, _, cx| {\n            this.pagination_page = (this.pagination_page + 1).min(3);\n            cx.notify();\n        })),\n    )\n    ";
+pub static PAGINATION_USAGE: &str = "// shadcn pagination-demo: Prev / 1 / 2-active / 3 / ellipsis / Next\nlet link_size = self.pagination_link_size;\nPagination::new().child(\n    PaginationContent::new()\n        .child(\n            PaginationItem::new().child(\n                PaginationPrevious::new(\"page-prev\")\n                    .text(\"Previous\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.pagination_page =\n                            this.pagination_page.saturating_sub(1).max(1);\n                        cx.notify();\n                    })),\n            ),\n        )\n        .children((1..=3).map(|page| {\n            PaginationItem::new().child(\n                PaginationLink::new((\"page-link\", page), page.to_string())\n                    .size(link_size)\n                    .active(self.pagination_page == page)\n                    .on_click(cx.listener(move |this, _, _, cx| {\n                        this.pagination_page = page;\n                        cx.notify();\n                    })),\n            )\n        }))\n        .child(PaginationItem::new().child(PaginationEllipsis::new()))\n        .child(\n            PaginationItem::new().child(\n                PaginationNext::new(\"page-next\")\n                    .text(\"Next\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.pagination_page = (this.pagination_page + 1).min(3);\n                        cx.notify();\n                    })),\n            ),\n        ),\n)\n    ";
 
 pub static POPOVER_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Popover",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Popover",
-        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
-        doc: "The element that toggles the popover (any element; wrap interactivity is added here, so a plain `Button` without `on_click` works).",
-    },
-    ApiEntry {
-        type_name: "Popover",
-        signature: "pub fn content(mut self, content: impl IntoElement) -> Self",
-        doc: "The panel content shown when open.",
-    },
-    ApiEntry {
-        type_name: "Popover",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Popover",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PopoverHeader",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PopoverTitle",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "PopoverDescription",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Popover", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Popover", signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self", doc: "The element that toggles the popover (any element; wrap interactivity is added here, so a plain `Button` without `on_click` works)." },
+    ApiEntry { type_name: "Popover", signature: "pub fn content(mut self, content: impl IntoElement) -> Self", doc: "The panel content shown when open." },
+    ApiEntry { type_name: "Popover", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Popover", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "PopoverHeader", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "PopoverTitle", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "PopoverDescription", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static POPOVER_USAGE: &str = "Popover::new(\"preview-popover\")\n    .trigger(\n        Button::new(\"popover-trigger\")\n            .variant(ButtonVariant::Outline)\n            .child(\"Open popover\"),\n    )\n    .open(self.popover_open)\n    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n        this.popover_open = *open;\n        cx.notify();\n    }))\n    .content(\n        PopoverHeader::new()\n            .child(PopoverTitle::new().child(\"Dimensions\"))\n            .child(PopoverDescription::new().child(\"Set the dimensions for the layer.\")),\n    )\n    ";
@@ -1662,171 +821,47 @@ pub static PROGRESS_API: &[ApiEntry] = &[
 pub static PROGRESS_USAGE: &str = "div().w(px(288.)).child(\n    Progress::new(self.progress_value)\n        .label(\"Uploading\\u{2026}\")\n        .show_value(),\n)\n    ";
 
 pub static QUESTIONNAIRE_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Questionnaire",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireProgress",
-        signature: "pub fn new(current: usize, total: usize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireTitle",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireDescription",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireChoices",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireChoice",
-        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireChoice",
-        signature: "pub fn description(mut self, description: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireChoice",
-        signature: "pub fn checked(mut self, checked: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireChoice",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireActions",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireActions",
-        signature: "pub fn previous(mut self, previous: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "QuestionnaireActions",
-        signature: "pub fn action(mut self, action: impl IntoElement) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Questionnaire", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireProgress", signature: "pub fn new(current: usize, total: usize) -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireTitle", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireDescription", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireChoices", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireChoice", signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireChoice", signature: "pub fn description(mut self, description: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireChoice", signature: "pub fn checked(mut self, checked: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireChoice", signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireActions", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireActions", signature: "pub fn previous(mut self, previous: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "QuestionnaireActions", signature: "pub fn action(mut self, action: impl IntoElement) -> Self", doc: "" },
 ];
 
 pub static QUESTIONNAIRE_USAGE: &str = "let options = [\n    (\"Daily\", \"I use it every day\"),\n    (\"Weekly\", \"A few times a week\"),\n    (\"Rarely\", \"Once in a while\"),\n];\ndiv().w(px(384.)).child(\n    Questionnaire::new()\n        .child(QuestionnaireProgress::new(2, 5))\n        .child(QuestionnaireTitle::new().child(\"How often do you use rcn?\"))\n        .child(\n            QuestionnaireDescription::new()\n                .child(\"This helps us prioritize what to build next.\"),\n        )\n        .child(\n            QuestionnaireChoices::new().children(options.into_iter().enumerate().map(\n                |(index, (label, description))| {\n                    QuestionnaireChoice::new((\"questionnaire-choice\", index), label)\n                        .description(description)\n                        .checked(self.questionnaire_selected == Some(index))\n                        .on_select(cx.listener(move |this, _, _, cx| {\n                            this.questionnaire_selected = Some(index);\n                            cx.notify();\n                        }))\n                },\n            )),\n        )\n        .child(\n            QuestionnaireActions::new()\n                .previous(\n                    Button::new(\"questionnaire-previous\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Previous\"),\n                )\n                .action(\n                    Button::new(\"questionnaire-skip\")\n                        .variant(ButtonVariant::Ghost)\n                        .child(\"Skip\"),\n                )\n                .action(Button::new(\"questionnaire-next\").child(\"Next\")),\n        ),\n)\n    ";
 
 pub static RADIO_GROUP_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "RadioGroup",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "RadioGroupItem",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "RadioGroupItem",
-        signature: "pub fn checked(mut self, checked: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "RadioGroupItem",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "RadioGroupItem",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "RadioGroup", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "RadioGroupItem", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "RadioGroupItem", signature: "pub fn checked(mut self, checked: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "RadioGroupItem", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "RadioGroupItem", signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static RADIO_GROUP_USAGE: &str = "let options = [\"Default\", \"Comfortable\", \"Compact\"];\nRadioGroup::new()\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(RadioGroupItem::new(\"radio-disabled\").disabled(true))\n            .child(Label::new().disabled(true).child(\"Disabled option\")),\n    )\n    .children(options.into_iter().enumerate().map(|(index, label)| {\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(\n                RadioGroupItem::new((\"radio-item\", index))\n                    .checked(self.radio_selected == index)\n                    .on_select(cx.listener(move |this, _, _, cx| {\n                        this.radio_selected = index;\n                        cx.notify();\n                    })),\n            )\n            .child(Label::new().child(label))\n    }))\n    ";
 
 pub static RESIZABLE_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "ResizablePanelGroup",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanelGroup",
-        signature: "pub fn direction(mut self, direction: ResizableDirection) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanelGroup",
-        signature: "pub fn panel(mut self, panel: ResizablePanel) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanelGroup",
-        signature: "pub fn handle(mut self, handle: ResizableHandle) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanelGroup",
-        signature: "pub fn on_layout_change( mut self, handler: impl Fn(&Vec<f32>, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn default_size(mut self, size: f32) -> Self",
-        doc: "Initial fraction of the group (e.g. `0.25`). Panels without a default split the remainder equally.",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn min_size(mut self, size: f32) -> Self",
-        doc: "Minimum fraction while expanded (default `0.10`).",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn max_size(mut self, size: f32) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn collapsible(mut self, collapsible: bool) -> Self",
-        doc: "When true, dragging past the halfway threshold snaps to [`collapsed_size`](Self::collapsed_size).",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn collapsed_size(mut self, size: f32) -> Self",
-        doc: "Size while collapsed (default `0.0`).",
-    },
-    ApiEntry {
-        type_name: "ResizablePanel",
-        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
-        doc: "Append panel content. May be called multiple times.",
-    },
-    ApiEntry {
-        type_name: "ResizableHandle",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ResizableHandle",
-        signature: "pub fn with_handle(mut self, with_handle: bool) -> Self",
-        doc: "Show the centered grip pill (shadcn `withHandle`).",
-    },
+    ApiEntry { type_name: "ResizablePanelGroup", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanelGroup", signature: "pub fn direction(mut self, direction: ResizableDirection) -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanelGroup", signature: "pub fn panel(mut self, panel: ResizablePanel) -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanelGroup", signature: "pub fn handle(mut self, handle: ResizableHandle) -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanelGroup", signature: "pub fn on_layout_change( mut self, handler: impl Fn(&Vec<f32>, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn default_size(mut self, size: f32) -> Self", doc: "Initial fraction of the group (e.g. `0.25`). Panels without a default split the remainder equally." },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn min_size(mut self, size: f32) -> Self", doc: "Minimum fraction while expanded (default `0.10`)." },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn max_size(mut self, size: f32) -> Self", doc: "" },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn collapsible(mut self, collapsible: bool) -> Self", doc: "When true, dragging past the halfway threshold snaps to [`collapsed_size`](Self::collapsed_size)." },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn collapsed_size(mut self, size: f32) -> Self", doc: "Size while collapsed (default `0.0`)." },
+    ApiEntry { type_name: "ResizablePanel", signature: "pub fn child(mut self, child: impl IntoElement) -> Self", doc: "Append panel content. May be called multiple times." },
+    ApiEntry { type_name: "ResizableHandle", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "ResizableHandle", signature: "pub fn with_handle(mut self, with_handle: bool) -> Self", doc: "Show the centered grip pill (shadcn `withHandle`)." },
 ];
 
 pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label| Self::resizable_label(&theme, label);\nSelf::resizable_frame(\n    &theme,\n    ResizablePanelGroup::new(\"resizable-demo\")\n        .panel(ResizablePanel::new().default_size(0.5).child(panel(\"One\")))\n        .handle(ResizableHandle::new().with_handle(true))\n        .panel(\n            ResizablePanel::new().default_size(0.5).child(\n                ResizablePanelGroup::new(\"resizable-demo-nested\")\n                    .direction(ResizableDirection::Vertical)\n                    .panel(ResizablePanel::new().default_size(0.25).child(panel(\"Two\")))\n                    .handle(ResizableHandle::new().with_handle(true))\n                    .panel(\n                        ResizablePanel::new()\n                            .default_size(0.75)\n                            .child(panel(\"Three\")),\n                    ),\n            ),\n        )\n        .into_any_element(),\n)\n    ";
@@ -1852,51 +887,15 @@ pub static SCROLL_AREA_API: &[ApiEntry] = &[
 pub static SCROLL_AREA_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .rounded(theme.radius_md())\n    .border_1()\n    .border_color(theme.border)\n    .child(\n        ScrollArea::new(\"scroll-area-tags\")\n            .h(px(200.))\n            .w(px(192.))\n            .child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .p(px(16.))\n                    .child(\n                        div()\n                            .text_size(px(14.))\n                            .font_weight(FontWeight::MEDIUM)\n                            .pb(px(8.))\n                            .child(\"Tags\"),\n                    )\n                    .children((1..=20).flat_map(|version| {\n                        [\n                            div()\n                                .py(px(6.))\n                                .text_size(px(13.))\n                                .child(format!(\"v1.2.0-beta.{version}\"))\n                                .into_any_element(),\n                            Separator::new().into_any_element(),\n                        ]\n                    })),\n            ),\n    )\n    ";
 
 pub static SELECT_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn option(mut self, option: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn options(mut self, options: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn value(mut self, value: Option<usize>) -> Self",
-        doc: "The selected option index.",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn placeholder(mut self, placeholder: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Select",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Select", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn option(mut self, option: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn options(mut self, options: impl IntoIterator<Item = impl Into<SharedString>>) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn value(mut self, value: Option<usize>) -> Self", doc: "The selected option index." },
+    ApiEntry { type_name: "Select", signature: "pub fn placeholder(mut self, placeholder: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn on_change(mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static) -> Self", doc: "" },
+    ApiEntry { type_name: "Select", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static SELECT_USAGE: &str = "Select::new(\"select-fruit\")\n    .placeholder(\"Select a fruit\")\n    .option(\"Apple\")\n    .options([\"Banana\", \"Blueberry\", \"Grapes\", \"Pineapple\"])\n    .value(self.select_value)\n    .open(self.select_open)\n    .on_change(cx.listener(|this, value: &usize, _, cx| {\n        this.select_value = Some(*value);\n        cx.notify();\n    }))\n    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n        this.select_open = *open;\n        cx.notify();\n    }))\n    ";
@@ -1922,181 +921,52 @@ pub static SEPARATOR_API: &[ApiEntry] = &[
 pub static SEPARATOR_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(16.))\n    .w(px(288.))\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(4.))\n            .child(\n                div()\n                    .text_size(px(14.))\n                    .line_height(px(20.))\n                    .font_weight(FontWeight::MEDIUM)\n                    .child(\"rcn\"),\n            )\n            .child(\n                div()\n                    .text_size(px(14.))\n                    .line_height(px(20.))\n                    .text_color(theme.muted_foreground)\n                    .child(\"A copy-paste component library for gpui.\"),\n            ),\n    )\n    .child(Separator::new())\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(16.))\n            .h(px(20.))\n            .text_size(px(14.))\n            .child(\"Blog\")\n            .child(Separator::vertical())\n            .child(\"Docs\")\n            .child(Separator::vertical())\n            .child(\"Source\"),\n    )\n    ";
 
 pub static SHEET_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Sheet",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Sheet",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Sheet",
-        signature: "pub fn side(mut self, side: SheetSide) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Sheet",
-        signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SheetHeader",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SheetFooter",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Sheet", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Sheet", signature: "pub fn open(mut self, open: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Sheet", signature: "pub fn side(mut self, side: SheetSide) -> Self", doc: "" },
+    ApiEntry { type_name: "Sheet", signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "SheetHeader", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SheetFooter", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static SHEET_USAGE: &str = "div()\n    .child(\n        Button::new(\"sheet-trigger\")\n            .variant(ButtonVariant::Outline)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.sheet_open = true;\n                cx.notify();\n            }))\n            .child(\"Open Sheet\"),\n    )\n    .child(\n        Sheet::new(\"sheet-demo\")\n            .open(self.sheet_open)\n            .side(self.sheet_side)\n            .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                this.sheet_open = *open;\n                cx.notify();\n            }))\n            .child(\n                SheetHeader::new()\n                    .child(SheetTitle::new().child(\"Edit profile\"))\n                    .child(SheetDescription::new().child(\n                        \"Make changes to your profile here. Click save when you're done.\",\n                    )),\n            )\n            .child(\n                SheetFooter::new().child(\n                    Button::new(\"sheet-save\")\n                        .on_click(cx.listener(|this, _, _, cx| {\n                            this.sheet_open = false;\n                            cx.notify();\n                        }))\n                        .child(\"Save changes\"),\n                ),\n            ),\n    )\n    ";
 
 pub static SIDEBAR_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "SidebarProvider",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarProvider",
-        signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "Whether the sidebar rail is visible.",
-    },
-    ApiEntry {
-        type_name: "SidebarProvider",
-        signature: "pub fn sidebar(mut self, sidebar: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarProvider",
-        signature: "pub fn inset(mut self, inset: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Sidebar",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarHeader",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarContent",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarFooter",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarGroup",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarGroup",
-        signature: "pub fn label(mut self, label: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarMenuButton",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarMenuButton",
-        signature: "pub fn active(mut self, active: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarMenuButton",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarTrigger",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "SidebarTrigger",
-        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "SidebarProvider", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarProvider", signature: "pub fn open(mut self, open: bool) -> Self", doc: "Whether the sidebar rail is visible." },
+    ApiEntry { type_name: "SidebarProvider", signature: "pub fn sidebar(mut self, sidebar: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarProvider", signature: "pub fn inset(mut self, inset: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "Sidebar", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarHeader", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarContent", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarFooter", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarGroup", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarGroup", signature: "pub fn label(mut self, label: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarMenuButton", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarMenuButton", signature: "pub fn active(mut self, active: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarMenuButton", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarTrigger", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "SidebarTrigger", signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static SIDEBAR_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet items = [\"Home\", \"Inbox\", \"Calendar\", \"Search\", \"Settings\"];\ndiv()\n    .w(px(480.))\n    .h(px(320.))\n    .rounded(theme.radius_lg())\n    .border_1()\n    .border_color(theme.border)\n    .overflow_hidden()\n    .child(\n        SidebarProvider::new()\n            .open(self.sidebar_open)\n            .sidebar(\n                Sidebar::new()\n                    .child(\n                        SidebarHeader::new().child(\n                            div()\n                                .px(px(8.))\n                                .text_size(px(14.))\n                                .font_weight(FontWeight::SEMIBOLD)\n                                .child(\"Acme Inc\"),\n                        ),\n                    )\n                    .child(SidebarContent::new().child(\n                        SidebarGroup::new().label(\"Application\").children(\n                            items.into_iter().enumerate().map(|(index, label)| {\n                                SidebarMenuButton::new((\"sidebar-item\", index))\n                                    .active(self.sidebar_active == index)\n                                    .on_click(cx.listener(move |this, _, _, cx| {\n                                        this.sidebar_active = index;\n                                        cx.notify();\n                                    }))\n                                    .child(label)\n                            }),\n                        ),\n                    ))\n                    .child(\n                        SidebarFooter::new().child(\n                            div()\n                                .px(px(8.))\n                                .text_size(px(12.))\n                                .text_color(theme.muted_foreground)\n                                .child(\"evil rabbit\"),\n                        ),\n                    ),\n            )\n            .inset(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .p(px(12.))\n                    .child(SidebarTrigger::new(\"sidebar-trigger\").on_click(cx.listener(\n                        |this, _, _, cx| {\n                            this.sidebar_open = !this.sidebar_open;\n                            cx.notify();\n                        },\n                    )))\n                    .child(\n                        div()\n                            .text_size(px(14.))\n                            .text_color(theme.muted_foreground)\n                            .child(format!(\"Active: {}\", items[self.sidebar_active])),\n                    ),\n            ),\n    )\n    ";
 
-pub static SKELETON_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn w(mut self, width: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn h(mut self, height: Pixels) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Skeleton",
-        signature: "pub fn rounded_full(mut self) -> Self",
-        doc: "",
-    },
-];
+pub static SKELETON_API: &[ApiEntry] = &[ApiEntry {
+    type_name: "Skeleton",
+    signature: "pub fn new() -> Self",
+    doc: "",
+}];
 
-pub static SKELETON_USAGE: &str = "// Mirrors the shadcn docs example: avatar row + card-shaped block.\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(16.))\n            .child(Skeleton::new().w(px(48.)).h(px(48.)).rounded_full())\n            .child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .gap(px(8.))\n                    .child(Skeleton::new().w(px(200.)).h(px(16.)))\n                    .child(Skeleton::new().w(px(160.)).h(px(16.))),\n            ),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(Skeleton::new().w(px(200.)).h(px(100.)))\n            .child(Skeleton::new().w(px(200.)).h(px(16.)))\n            .child(Skeleton::new().w(px(160.)).h(px(16.))),\n    )\n    ";
+pub static SKELETON_USAGE: &str = "// skeleton-demo: avatar circle + two text lines.\ndiv()\n    .flex()\n    .items_center()\n    .gap(px(16.))\n    .child(Skeleton::new().h(px(48.)).w(px(48.)).rounded_full())\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(Skeleton::new().h(px(16.)).w(px(250.)))\n            .child(Skeleton::new().h(px(16.)).w(px(200.))),\n    )\n    ";
 
 pub static SLIDER_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn value(mut self, value: f32) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn min(mut self, min: f32) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn max(mut self, max: f32) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn step(mut self, step: f32) -> Self",
-        doc: "Snap increment (default 1; use e.g. 0.01 for continuous feel).",
-    },
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Slider",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&f32, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Slider", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Slider", signature: "pub fn value(mut self, value: f32) -> Self", doc: "" },
+    ApiEntry { type_name: "Slider", signature: "pub fn min(mut self, min: f32) -> Self", doc: "" },
+    ApiEntry { type_name: "Slider", signature: "pub fn max(mut self, max: f32) -> Self", doc: "" },
+    ApiEntry { type_name: "Slider", signature: "pub fn step(mut self, step: f32) -> Self", doc: "Snap increment (default 1; use e.g. 0.01 for continuous feel)." },
+    ApiEntry { type_name: "Slider", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Slider", signature: "pub fn on_change(mut self, handler: impl Fn(&f32, &mut Window, &mut App) + 'static) -> Self", doc: "" },
 ];
 
 pub static SLIDER_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    .w(px(288.))\n    .child(\n        Slider::new(\"slider-demo\")\n            .value(self.slider_value)\n            .on_change(cx.listener(|this, value: &f32, _, cx| {\n                this.slider_value = *value;\n                cx.notify();\n            })),\n    )\n    .child(\n        div()\n            .text_size(px(13.))\n            .text_color(Theme::of(cx).muted_foreground)\n            .child(format!(\"value: {:.0}\", self.slider_value)),\n    )\n    .child(\n        Slider::new(\"slider-fine\")\n            .min(0.)\n            .max(1.)\n            .step(0.01)\n            .value(self.slider_fine)\n            .on_change(cx.listener(|this, value: &f32, _, cx| {\n                this.slider_fine = *value;\n                cx.notify();\n            })),\n    )\n    .child(Slider::new(\"slider-disabled\").value(30.).disabled(true))\n    ";
@@ -2122,31 +992,11 @@ pub static SPINNER_API: &[ApiEntry] = &[
 pub static SPINNER_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(16.))\n    .child(Spinner::new())\n    .child(Spinner::new().size(px(24.)))\n    .child(Spinner::new().size(px(32.)).color(theme.muted_foreground))\n    .child(\n        Button::new(\"spinner-button\")\n            .disabled(true)\n            .child(Spinner::new().size(px(16.)).color(theme.primary_foreground))\n            .child(\"Please wait\"),\n    )\n    ";
 
 pub static SWITCH_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Switch",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Switch",
-        signature: "pub fn checked(mut self, checked: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Switch",
-        signature: "pub fn size(mut self, size: SwitchSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Switch",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Switch",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Switch", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Switch", signature: "pub fn checked(mut self, checked: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Switch", signature: "pub fn size(mut self, size: SwitchSize) -> Self", doc: "" },
+    ApiEntry { type_name: "Switch", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Switch", signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self", doc: "" },
 ];
 
 pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .on_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
@@ -2222,56 +1072,16 @@ pub static TABLE_API: &[ApiEntry] = &[
 pub static TABLE_USAGE: &str = "let invoices = [\n    (\"INV001\", \"Paid\", \"Credit Card\", \"$250.00\"),\n    (\"INV002\", \"Pending\", \"PayPal\", \"$150.00\"),\n    (\"INV003\", \"Unpaid\", \"Bank Transfer\", \"$350.00\"),\n    (\"INV004\", \"Paid\", \"Credit Card\", \"$450.00\"),\n];\nlet count = invoices.len();\ndiv()\n    .w(px(480.))\n    .child(\n        Table::new()\n            .child(\n                TableHeader::new().child(\n                    TableRow::new()\n                        .child(TableHead::new().w(px(100.)).child(\"Invoice\"))\n                        .child(TableHead::new().child(\"Status\"))\n                        .child(TableHead::new().child(\"Method\"))\n                        .child(TableHead::new().w(px(100.)).child(\"Amount\")),\n                ),\n            )\n            .child(\n                TableBody::new().children(invoices.into_iter().enumerate().map(\n                    |(index, (invoice, status, method, amount))| {\n                        TableRow::new()\n                            .id((\"table-row\", index))\n                            .selected(self.table_selected == Some(index))\n                            .last(index + 1 == count)\n                            .child(TableCell::new().w(px(100.)).child(invoice))\n                            .child(TableCell::new().child(status))\n                            .child(TableCell::new().child(method))\n                            .child(TableCell::new().w(px(100.)).child(amount))\n                            .into_any_element()\n                    },\n                )),\n            )\n            .child(\n                TableFooter::new().child(\n                    TableRow::new()\n                        .last(true)\n                        .child(TableCell::new().child(\"Total\"))\n                        .child(TableCell::new().w(px(100.)).child(\"$1,200.00\")),\n                ),\n            )\n            .child(TableCaption::new().child(\"A list of your recent invoices.\")),\n    )\n    .id(\"table-click-catcher\")\n    .on_click(cx.listener(|this, _, _, cx| {\n        this.table_selected = match this.table_selected {\n            Some(i) => Some((i + 1) % 4),\n            None => Some(0),\n        };\n        cx.notify();\n    }))\n    ";
 
 pub static TABS_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Tabs",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsTrigger",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsTrigger",
-        signature: "pub fn active(mut self, active: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsTrigger",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsTrigger",
-        signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsTrigger",
-        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsList",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsList",
-        signature: "pub fn variant(mut self, variant: TabsVariant) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsList",
-        signature: "pub fn trigger(mut self, trigger: TabsTrigger) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TabsContent",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Tabs", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "TabsTrigger", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsTrigger", signature: "pub fn active(mut self, active: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsTrigger", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsTrigger", signature: "pub fn on_select( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsTrigger", signature: "pub fn child(mut self, child: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsList", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "TabsList", signature: "pub fn variant(mut self, variant: TabsVariant) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsList", signature: "pub fn trigger(mut self, trigger: TabsTrigger) -> Self", doc: "" },
+    ApiEntry { type_name: "TabsContent", signature: "pub fn new() -> Self", doc: "" },
 ];
 
 pub static TABS_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |title: &'static str, body: &'static str| {\n    Card::new()\n        .size(CardSize::Sm)\n        .child(\n            CardHeader::new()\n                .size(CardSize::Sm)\n                .child(CardTitle::new().child(title))\n                .child(CardDescription::new().child(body)),\n        )\n        .child(\n            CardContent::new().size(CardSize::Sm).child(\n                div()\n                    .h(px(48.))\n                    .w_full()\n                    .rounded(theme.radius_md())\n                    .bg(theme.muted),\n            ),\n        )\n};\ndiv().w(px(400.)).child(\n    Tabs::new()\n        .child(\n            TabsList::new()\n                .variant(self.tabs_variant)\n                .trigger(\n                    TabsTrigger::new(\"tab-account\")\n                        .active(self.tabs_active == 0)\n                        .on_select(cx.listener(|this, _, _, cx| {\n                            this.tabs_active = 0;\n                            cx.notify();\n                        }))\n                        .child(\"Account\"),\n                )\n                .trigger(\n                    TabsTrigger::new(\"tab-billing\")\n                        .disabled(true)\n                        .child(\"Billing\"),\n                )\n                .trigger(\n                    TabsTrigger::new(\"tab-password\")\n                        .active(self.tabs_active == 1)\n                        .on_select(cx.listener(|this, _, _, cx| {\n                            this.tabs_active = 1;\n                            cx.notify();\n                        }))\n                        .child(\"Password\"),\n                ),\n        )\n        .child(TabsContent::new().child(if self.tabs_active == 0 {\n            panel(\n                \"Account\",\n                \"Make changes to your account here. Click save when you're done.\",\n            )\n        } else {\n            panel(\n                \"Password\",\n                \"Change your password here. After saving, you'll be logged out.\",\n            )\n        })),\n)\n    ";
@@ -2293,141 +1103,48 @@ pub static TEXTAREA_USAGE: &str =
     "div()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()).rows(4))\n    ";
 
 pub static TOAST_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "ToastViewport",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toast",
-        signature: "pub fn new(id: impl Into<ElementId>, title: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toast",
-        signature: "pub fn description(mut self, description: impl Into<gpui::SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toast",
-        signature: "pub fn action(mut self, action: impl IntoElement) -> Self",
-        doc: "Trailing action element (usually an xs outline Button).",
-    },
-    ApiEntry {
-        type_name: "Toast",
-        signature: "pub fn on_close( mut self, handler: impl Fn(&gpui::ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "ToastViewport", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "Toast", signature: "pub fn new(id: impl Into<ElementId>, title: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Toast", signature: "pub fn description(mut self, description: impl Into<gpui::SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Toast", signature: "pub fn action(mut self, action: impl IntoElement) -> Self", doc: "Trailing action element (usually an xs outline Button)." },
+    ApiEntry { type_name: "Toast", signature: "pub fn on_close( mut self, handler: impl Fn(&gpui::ClickEvent, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
 pub static TOAST_USAGE: &str = "div()\n    .child(\n        Button::new(\"toast-trigger\")\n            .variant(ButtonVariant::Outline)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.toast_visible = true;\n                cx.notify();\n            }))\n            .child(\"Show Toast\"),\n    )\n    .when(self.toast_visible, |el| {\n        el.child(\n            ToastViewport::new().child(\n                Toast::new(\"toast-demo\", \"Event has been created\")\n                    .description(\"Sunday, December 03, 2023 at 9:00 AM\")\n                    .action(\n                        Button::new(\"toast-undo\")\n                            .variant(ButtonVariant::Outline)\n                            .size(ButtonSize::Xs)\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.toast_visible = false;\n                                cx.notify();\n                            }))\n                            .child(\"Undo\"),\n                    )\n                    .on_close(cx.listener(|this, _: &ClickEvent, _, cx| {\n                        this.toast_visible = false;\n                        cx.notify();\n                    })),\n            ),\n        )\n    })\n    ";
 
 pub static TOGGLE_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "Toggle",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toggle",
-        signature: "pub fn variant(mut self, variant: ToggleVariant) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toggle",
-        signature: "pub fn size(mut self, size: ToggleSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toggle",
-        signature: "pub fn pressed(mut self, pressed: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toggle",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Toggle",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "Toggle", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "Toggle", signature: "pub fn variant(mut self, variant: ToggleVariant) -> Self", doc: "" },
+    ApiEntry { type_name: "Toggle", signature: "pub fn size(mut self, size: ToggleSize) -> Self", doc: "" },
+    ApiEntry { type_name: "Toggle", signature: "pub fn pressed(mut self, pressed: bool) -> Self", doc: "Controlled pressed state. Takes precedence over `default_pressed`." },
+    ApiEntry { type_name: "Toggle", signature: "pub fn default_pressed(mut self, pressed: bool) -> Self", doc: "Uncontrolled initial pressed state (Base UI `defaultPressed`). Default false. Ignored when `.pressed(bool)` is set." },
+    ApiEntry { type_name: "Toggle", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "Toggle", signature: "pub fn icon_inline_start(mut self) -> Self", doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Sm)." },
+    ApiEntry { type_name: "Toggle", signature: "pub fn icon_inline_end(mut self) -> Self", doc: "" },
+    ApiEntry { type_name: "Toggle", signature: "pub fn on_pressed_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self", doc: "" },
 ];
 
-pub static TOGGLE_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Toggle::new(\"toggle-italic\")\n            .pressed(self.toggle_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\"Italic\"),\n    )\n    .child(\n        Toggle::new(\"toggle-outline\")\n            .variant(ToggleVariant::Outline)\n            .pressed(self.toggle_outline_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_outline_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\"Outline\"),\n    )\n    .child(\n        Toggle::new(\"toggle-icon\")\n            .size(ToggleSize::Sm)\n            .pressed(self.toggle_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\n                gpui::svg()\n                    .path(theme.icons.chevron_down())\n                    .size(px(16.))\n                    .text_color(theme.foreground),\n            ),\n    )\n    .child(\n        Toggle::new(\"toggle-disabled\")\n            .size(ToggleSize::Lg)\n            .disabled(true)\n            .child(\"Disabled\"),\n    )\n    ";
+pub static TOGGLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet icon_path = if self.toggle_pressed {\n    crate::assets::ICON_BOOKMARK_FILLED\n} else {\n    crate::assets::ICON_BOOKMARK\n};\nToggle::new(\"toggle-bookmark\")\n    .size(ToggleSize::Sm)\n    .variant(ToggleVariant::Outline)\n    .icon_inline_start()\n    .pressed(self.toggle_pressed)\n    .on_pressed_change(cx.listener(|this, pressed: &bool, _, cx| {\n        this.toggle_pressed = *pressed;\n        cx.notify();\n    }))\n    .child(\n        gpui::svg()\n            .path(icon_path)\n            .size(px(14.))\n            .text_color(theme.foreground),\n    )\n    .child(\"Bookmark\")\n    ";
 
 pub static TOGGLE_GROUP_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "ToggleGroupItem",
-        signature: "pub fn new(id: impl Into<ElementId>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroupItem",
-        signature: "pub fn pressed(mut self, pressed: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroupItem",
-        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroupItem",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroupItem",
-        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroup",
-        signature: "pub fn new() -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroup",
-        signature: "pub fn variant(mut self, variant: ToggleVariant) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroup",
-        signature: "pub fn size(mut self, size: ToggleSize) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "ToggleGroup",
-        signature: "pub fn item(mut self, item: ToggleGroupItem) -> Self",
-        doc: "",
-    },
+    ApiEntry { type_name: "ToggleGroupItem", signature: "pub fn new(id: impl Into<ElementId>) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroupItem", signature: "pub fn pressed(mut self, pressed: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroupItem", signature: "pub fn disabled(mut self, disabled: bool) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroupItem", signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroupItem", signature: "pub fn child(mut self, child: impl IntoElement) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroup", signature: "pub fn new() -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroup", signature: "pub fn variant(mut self, variant: ToggleVariant) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroup", signature: "pub fn size(mut self, size: ToggleSize) -> Self", doc: "" },
+    ApiEntry { type_name: "ToggleGroup", signature: "pub fn item(mut self, item: ToggleGroupItem) -> Self", doc: "" },
 ];
 
 pub static TOGGLE_GROUP_USAGE: &str = "let labels = [\"Bold\", \"Italic\", \"Underline\"];\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(16.))\n    .child(\n        ToggleGroup::new()\n            .variant(ToggleVariant::Outline)\n            .size(ToggleSize::Sm)\n            .item(ToggleGroupItem::new(\"tg-sm-a\").pressed(true).child(\"Sm\"))\n            .item(\n                ToggleGroupItem::new(\"tg-sm-b\")\n                    .disabled(true)\n                    .child(\"Disabled\"),\n            ),\n    )\n    .children(\n        [ToggleVariant::Default, ToggleVariant::Outline].map(|variant| {\n            let mut group = ToggleGroup::new().variant(variant);\n            for (index, label) in labels.into_iter().enumerate() {\n                let on = self.toggle_group_on[index];\n                group = group.item(\n                    ToggleGroupItem::new((\n                        if variant == ToggleVariant::Outline {\n                            \"tg-outline\"\n                        } else {\n                            \"tg-default\"\n                        },\n                        index,\n                    ))\n                    .pressed(on)\n                    .on_change(cx.listener(move |this, pressed: &bool, _, cx| {\n                        this.toggle_group_on[index] = *pressed;\n                        cx.notify();\n                    }))\n                    .child(label),\n                );\n            }\n            group\n        }),\n    )\n    ";
 
 pub static TOOLTIP_API: &[ApiEntry] = &[
-    ApiEntry {
-        type_name: "TooltipView",
-        signature: "pub fn new(text: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "TooltipView",
-        signature: "pub fn rich(content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self",
-        doc: "Rich element content built on each render (shadcn's `TooltipContent` accepts arbitrary children).",
-    },
-    ApiEntry {
-        type_name: "Tooltip",
-        signature: "pub fn new(id: impl Into<ElementId>, text: impl Into<SharedString>) -> Self",
-        doc: "",
-    },
-    ApiEntry {
-        type_name: "Tooltip",
-        signature: "pub fn rich( id: impl Into<ElementId>, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self",
-        doc: "Rich counterpart of [`Tooltip::new`]: the closure builds the bubble body on each render (arbitrary elements, not just a string).",
-    },
+    ApiEntry { type_name: "TooltipView", signature: "pub fn new(text: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "TooltipView", signature: "pub fn rich(content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self", doc: "Rich element content built on each render (shadcn's `TooltipContent` accepts arbitrary children)." },
+    ApiEntry { type_name: "Tooltip", signature: "pub fn new(id: impl Into<ElementId>, text: impl Into<SharedString>) -> Self", doc: "" },
+    ApiEntry { type_name: "Tooltip", signature: "pub fn rich( id: impl Into<ElementId>, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> Self", doc: "Rich counterpart of [`Tooltip::new`]: the closure builds the bubble body on each render (arbitrary elements, not just a string)." },
 ];
 
 pub static TOOLTIP_USAGE: &str = "div()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(12.))\n    .child(\n        Tooltip::new(\"tooltip-demo\", \"Add to library\").child(\n            Button::new(\"tooltip-trigger\")\n                .variant(ButtonVariant::Outline)\n                .child(\"Hover me\"),\n        ),\n    )\n    .child(\n        Tooltip::rich(\"tooltip-rich-demo\", |_, _| {\n            div()\n                .flex()\n                .flex_row()\n                .items_center()\n                .gap(px(4.))\n                .child(\"Save Changes\")\n                .child(Kbd::new().in_tooltip().child(\"S\"))\n                .into_any_element()\n        })\n        .child(\n            Button::new(\"tooltip-rich-trigger\")\n                .variant(ButtonVariant::Outline)\n                .child(\"Rich tooltip\"),\n        ),\n    )\n    ";
