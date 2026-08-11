@@ -35,10 +35,16 @@ pub fn ease_out() -> impl Fn(f32) -> f32 {
 }
 
 /// Tailwind's default transition curve — cubic-bezier(0.4, 0, 0.2, 1).
-// Part of the motion primitive set; no component uses it yet.
-#[allow(dead_code)]
 pub fn ease_transition() -> impl Fn(f32) -> f32 {
     cubic_bezier(0.4, 0., 0.2, 1.)
+}
+
+/// Clock shared by [`transition`] and the switch's post-toggle settle timer.
+pub const TRANSITION_DURATION: Duration = Duration::from_millis(150);
+
+/// Tailwind `transition-*` utilities: 150ms [`ease_transition`].
+pub fn transition() -> Animation {
+    Animation::new(TRANSITION_DURATION).with_easing(ease_transition())
 }
 
 /// `animate-in` (tw-animate-css enter keyframes): 150ms `ease`.

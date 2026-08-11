@@ -42,7 +42,7 @@ solid before the molecules that compose them.
 - [x] avatar — (static presentation — matches source; image+fallback+group)
 - [x] checkbox — (keyboard focus + ring)
 - [x] radio-group — (keyboard focus + ring)
-- [x] switch — (keyboard focus + ring)
+- [x] switch — (full base-nova parity: controlled/uncontrolled, read_only, invalid ring, 150ms thumb slide, extended hit area, six docs examples; RTL + form props (name/required/uncheckedValue) omitted)
 - [x] toggle — (keyboard focus + ring)
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
