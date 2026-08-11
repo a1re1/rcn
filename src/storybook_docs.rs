@@ -826,12 +826,32 @@ pub static DIALOG_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Dialog",
         signature: "pub fn open(mut self, open: bool) -> Self",
-        doc: "",
+        doc: "Controlled open state. Distinguishes \"never set\" (`None`) from `open(false)` so uncontrolled keyed state can take over.",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn default_open(mut self, open: bool) -> Self",
+        doc: "Initial open state when uncontrolled (default `false`).",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn trigger(mut self, trigger: impl IntoElement) -> Self",
+        doc: "Inline trigger element. Clicking it toggles open in uncontrolled mode (and notifies `on_open_change` when set).",
     },
     ApiEntry {
         type_name: "Dialog",
         signature: "pub fn on_open_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn show_close_button(mut self, show: bool) -> Self",
+        doc: "Show the top-right close button (default `true`, matching shadcn).",
+    },
+    ApiEntry {
+        type_name: "Dialog",
+        signature: "pub fn max_w(mut self, width: gpui::Pixels) -> Self",
+        doc: "Override the content panel max width (default 448px / `sm:max-w-md`).",
     },
     ApiEntry {
         type_name: "DialogHeader",
@@ -853,9 +873,24 @@ pub static DIALOG_API: &[ApiEntry] = &[
         signature: "pub fn new() -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "DialogFooter",
+        signature: "pub fn show_close_button(mut self, show: bool) -> Self",
+        doc: "Append an outline \"Close\" button after children (default false).",
+    },
+    ApiEntry {
+        type_name: "DialogFooter",
+        signature: "pub fn on_close( mut self, handler: impl Fn(&mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Handler invoked when the footer's Close button is clicked.",
+    },
+    ApiEntry {
+        type_name: "DialogFooter",
+        signature: "pub fn justify_start(mut self) -> Self",
+        doc: "Use `justify-start` instead of the default `justify-end`.",
+    },
 ];
 
-pub static DIALOG_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .child(\n        Button::new(\"dialog-trigger\")\n            .variant(ButtonVariant::Outline)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.dialog_open = true;\n                cx.notify();\n            }))\n            .child(\"Edit Profile\"),\n    )\n    .child(\n        Dialog::new(\"dialog-demo\")\n            .open(self.dialog_open)\n            .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                this.dialog_open = *open;\n                cx.notify();\n            }))\n            .child(\n                DialogHeader::new()\n                    .child(DialogTitle::new().child(\"Edit profile\"))\n                    .child(DialogDescription::new().child(\n                        \"Make changes to your profile here. Click save when you're done.\",\n                    )),\n            )\n            .child(\n                div()\n                    .h(px(80.))\n                    .w_full()\n                    .rounded(theme.radius_md())\n                    .bg(theme.muted),\n            )\n            .child(\n                DialogFooter::new()\n                    .child(\n                        Button::new(\"dialog-cancel\")\n                            .variant(ButtonVariant::Outline)\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.dialog_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Cancel\"),\n                    )\n                    .child(\n                        Button::new(\"dialog-save\")\n                            .on_click(cx.listener(|this, _, _, cx| {\n                                this.dialog_open = false;\n                                cx.notify();\n                            }))\n                            .child(\"Save changes\"),\n                    ),\n            ),\n    )\n    ";
+pub static DIALOG_USAGE: &str = "const LOREM: &str = concat!(\n    \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do \",\n    \"eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut \",\n    \"enim ad minim veniam, quis nostrud exercitation ullamco laboris \",\n    \"nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in \",\n    \"reprehenderit in voluptate velit esse cillum dolore eu fugiat \",\n    \"nulla pariatur. Excepteur sint occaecat cupidatat non proident, \",\n    \"sunt in culpa qui officia deserunt mollit anim id est laborum.\",\n);\n\nlet scroll_body = |id: SharedString| {\n    div()\n        .id(id.clone())\n        .max_h(px(320.))\n        .overflow_y_scroll()\n        .children((0..10).map(move |i| {\n            div()\n                .id(ElementId::Name(format!(\"{id}-p-{i}\").into()))\n                .mb(px(16.))\n                .line_height(px(21.))\n                .child(LOREM)\n        }))\n};\n\nlet sticky_entity = cx.entity();\n\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(24.))\n    // a. Edit profile (demo) — controlled; controls-panel \"open\" switch\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Open Dialog\"),\n            )\n            .child(\n                Dialog::new(\"dialog-demo\")\n                    .open(self.dialog_open)\n                    .max_w(px(384.))\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Edit profile\"))\n                            .child(DialogDescription::new().child(\n                                \"Make changes to your profile here. Click save when you're done.\",\n                            )),\n                    )\n                    .child(\n                        FieldGroup::new()\n                            .child(\n                                Field::new()\n                                    .child(Label::new().child(\"Name\"))\n                                    .child(self.dialog_name_input.clone()),\n                            )\n                            .child(\n                                Field::new()\n                                    .child(Label::new().child(\"Username\"))\n                                    .child(self.dialog_username_input.clone()),\n                            ),\n                    )\n                    .child(\n                        DialogFooter::new()\n                            .child(\n                                Button::new(\"dialog-cancel\")\n                                    .variant(ButtonVariant::Outline)\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Cancel\"),\n                            )\n                            .child(\n                                Button::new(\"dialog-save\")\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Save changes\"),\n                            ),\n                    ),\n            ),\n    )\n    // b. Share link — custom close / justify_start footer\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-share-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_share_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Share\"),\n            )\n            .child(\n                Dialog::new(\"dialog-share\")\n                    .open(self.dialog_share_open)\n                    .max_w(px(448.))\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_share_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Share link\"))\n                            .child(DialogDescription::new().child(\n                                \"Anyone who has this link will be able to view this.\",\n                            )),\n                    )\n                    .child(self.dialog_share_input.clone())\n                    .child(\n                        DialogFooter::new()\n                            .justify_start()\n                            .child(\n                                Button::new(\"dialog-share-close\")\n                                    .on_click(cx.listener(|this, _, _, cx| {\n                                        this.dialog_share_open = false;\n                                        cx.notify();\n                                    }))\n                                    .child(\"Close\"),\n                            ),\n                    ),\n            ),\n    )\n    // c. No close button — fully uncontrolled: built-in .trigger()\n    // + default_open, no external open flag (backdrop/Escape close).\n    .child(\n        Dialog::new(\"dialog-no-close\")\n            .default_open(false)\n            .show_close_button(false)\n            .trigger(\n                Button::new(\"dialog-no-close-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .child(\"No Close Button\"),\n            )\n            .child(\n                DialogHeader::new()\n                    .child(DialogTitle::new().child(\"No Close Button\"))\n                    .child(DialogDescription::new().child(\n                        \"This dialog doesn't have a close button in the top-right corner.\",\n                    )),\n            ),\n    )\n    // d. Sticky footer — DialogFooter::show_close_button\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-sticky-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_sticky_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Sticky Footer\"),\n            )\n            .child(\n                Dialog::new(\"dialog-sticky\")\n                    .open(self.dialog_sticky_open)\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_sticky_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Sticky Footer\"))\n                            .child(DialogDescription::new().child(\n                                \"This dialog has a sticky footer that stays visible while the content scrolls.\",\n                            )),\n                    )\n                    .child(scroll_body(\"dialog-sticky-scroll\".into()))\n                    .child(\n                        DialogFooter::new()\n                            .show_close_button(true)\n                            .on_close({\n                                let entity = sticky_entity.clone();\n                                move |_window, cx| {\n                                    entity.update(cx, |this, cx| {\n                                        this.dialog_sticky_open = false;\n                                        cx.notify();\n                                    });\n                                }\n                            }),\n                    ),\n            ),\n    )\n    // e. Scrollable content — same body, no footer\n    .child(\n        div()\n            .flex()\n            .flex_col()\n            .gap(px(8.))\n            .child(\n                Button::new(\"dialog-scroll-trigger\")\n                    .variant(ButtonVariant::Outline)\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.dialog_scroll_open = true;\n                        cx.notify();\n                    }))\n                    .child(\"Scrollable Content\"),\n            )\n            .child(\n                Dialog::new(\"dialog-scroll\")\n                    .open(self.dialog_scroll_open)\n                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {\n                        this.dialog_scroll_open = *open;\n                        cx.notify();\n                    }))\n                    .child(\n                        DialogHeader::new()\n                            .child(DialogTitle::new().child(\"Scrollable Content\"))\n                            .child(DialogDescription::new().child(\n                                \"This is a dialog with scrollable content.\",\n                            )),\n                    )\n                    .child(scroll_body(\"dialog-scroll-scroll\".into())),\n            ),\n    )\n    ";
 
 pub static DRAWER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1010,9 +1045,18 @@ pub static FIELD_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Field",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Distinguishes this field's measured width state from siblings'. Only responsive fields with different widths under one parent need it.",
+    },
+    ApiEntry {
+        type_name: "Field",
         signature: "pub fn orientation(mut self, orientation: FieldOrientation) -> Self",
-        doc: "Vertical (default), Horizontal, or Responsive — Responsive turns \
-              horizontal once the measured container width crosses the breakpoint.",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Field",
+        signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self",
+        doc: "",
     },
     ApiEntry {
         type_name: "Field",
@@ -1022,19 +1066,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Field",
         signature: "pub fn content(mut self, content: FieldContent) -> Self",
-        doc: "Adds a FieldContent child and start-aligns horizontal rows \
-              (the ported has-[>field-content]:items-start).",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn breakpoint(mut self, breakpoint: Pixels) -> Self",
-        doc: "Responsive switch width; defaults to 448px, shadcn's @md.",
-    },
-    ApiEntry {
-        type_name: "Field",
-        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
-        doc: "Keys the responsive width measurement; needed only for \
-              responsive siblings with differing widths.",
+        doc: "Add a [`FieldContent`] child. In horizontal/responsive-horizontal layouts this also start-aligns the row, the ported `has-[>[data-slot=field-content]]:items-start`.",
     },
     ApiEntry {
         type_name: "FieldLabel",
@@ -1044,13 +1076,12 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldLabel",
         signature: "pub fn choice_card(mut self, checked: bool) -> Self",
-        doc: "Render as a selectable bordered card (the docs' choice card \
-              built by nesting a Field inside a FieldLabel).",
+        doc: "has-[>[data-slot=field]] — render as a selectable choice card: bordered, rounded-lg, padded, tinted primary while checked.",
     },
     ApiEntry {
         type_name: "FieldLabel",
         signature: "pub fn font_normal(mut self) -> Self",
-        doc: "The docs' className=\"font-normal\" on checkbox/radio row labels.",
+        doc: "The docs' `className=\"font-normal\"` on checkbox/radio row labels.",
     },
     ApiEntry {
         type_name: "FieldLabel",
@@ -1080,8 +1111,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldError",
         signature: "pub fn errors(mut self, errors: impl IntoIterator<Item = impl Into<SharedString>>) -> Self",
-        doc: "The TSX errors prop: duplicates drop, one message renders \
-              plain, several render as a bullet list.",
+        doc: "The TSX `errors={...}` prop: explicit children win over it, one unique message renders plain, several render as a bullet list.",
     },
     ApiEntry {
         type_name: "FieldGroup",
@@ -1091,7 +1121,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldGroup",
         signature: "pub fn gap(mut self, gap: Pixels) -> Self",
-        doc: "Overrides the 20px stack gap (docs checkbox stacks use 12px).",
+        doc: "Overrides the 20px stack gap (the docs use 12px — `data-[slot=checkbox-group]:gap-3` — for checkbox stacks).",
     },
     ApiEntry {
         type_name: "FieldSet",
@@ -1106,12 +1136,12 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldSet",
         signature: "pub fn description(mut self, description: FieldDescription) -> Self",
-        doc: "",
+        doc: "The description line under the legend.",
     },
     ApiEntry {
         type_name: "FieldSet",
         signature: "pub fn gap(mut self, gap: Pixels) -> Self",
-        doc: "Overrides the 16px gap (docs checkbox/radio fieldsets use 12px).",
+        doc: "Overrides the 16px gap (the docs' checkbox/radio fieldsets tighten to 12px — `has-[>[data-slot=radio-group]]:gap-3`).",
     },
     ApiEntry {
         type_name: "FieldLegend",
@@ -1121,16 +1151,16 @@ pub static FIELD_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "FieldLegend",
         signature: "pub fn variant(mut self, variant: FieldLegendVariant) -> Self",
-        doc: "Legend (text-base, default) or Label (text-sm) sizing.",
+        doc: "",
     },
     ApiEntry {
         type_name: "FieldSeparator",
         signature: "pub fn new() -> Self",
-        doc: "Children render centered over the rule (\"Or continue with\").",
+        doc: "",
     },
 ];
 
-pub static FIELD_USAGE: &str = "div().w(px(384.)).child(\n    FieldSet::new()\n        .legend(FieldLegend::new().child(\"Profile\"))\n        .description(\n            FieldDescription::new().child(\"This appears on invoices and emails.\"),\n        )\n        .child(\n            FieldGroup::new()\n                .child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Full name\"))\n                        .child(self.field_name_input.clone())\n                        .child(\n                            FieldDescription::new()\n                                .child(\"This appears on invoices and emails.\"),\n                        ),\n                )\n                .child(\n                    Field::new()\n                        .invalid(true)\n                        .child(FieldLabel::new().child(\"Username\"))\n                        .child(self.field_username.clone())\n                        .child(FieldError::new().child(\"Choose another username.\")),\n                )\n                .child(\n                    // w-fit: a bare flex row shrinks the field to content.\n                    div().flex().flex_row().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(Switch::new(\"newsletter\").checked(true))\n                            .child(\n                                FieldLabel::new()\n                                    .child(\"Subscribe to the newsletter\"),\n                            ),\n                    ),\n                ),\n        ),\n)\n    ";
+pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(\n                                    FieldLabel::new().child(\"Name on Card\"),\n                                )\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(\n                                    FieldLabel::new().child(\"Card Number\"),\n                                )\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(\n                                                FieldLabel::new().child(\"Month\"),\n                                            )\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\",\n                                                        \"06\", \"07\", \"08\", \"09\", \"10\",\n                                                        \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(\n                                                FieldLabel::new().child(\"Year\"),\n                                            )\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(FieldDescription::new().child(\n                    \"The billing address associated with your payment method\",\n                ))\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(\n                            Textarea::new(self.field_comments.clone()).rows(3),\n                        ),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
 
 pub static HOVER_CARD_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1765,12 +1795,12 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn default_size(mut self, size: f32) -> Self",
-        doc: "",
+        doc: "Initial fraction of the group (e.g. `0.25`). Panels without a default split the remainder equally.",
     },
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn min_size(mut self, size: f32) -> Self",
-        doc: "",
+        doc: "Minimum fraction while expanded (default `0.10`).",
     },
     ApiEntry {
         type_name: "ResizablePanel",
@@ -1780,17 +1810,17 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn collapsible(mut self, collapsible: bool) -> Self",
-        doc: "",
+        doc: "When true, dragging past the halfway threshold snaps to [`collapsed_size`](Self::collapsed_size).",
     },
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn collapsed_size(mut self, size: f32) -> Self",
-        doc: "",
+        doc: "Size while collapsed (default `0.0`).",
     },
     ApiEntry {
         type_name: "ResizablePanel",
         signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
-        doc: "",
+        doc: "Append panel content. May be called multiple times.",
     },
     ApiEntry {
         type_name: "ResizableHandle",
@@ -1800,11 +1830,11 @@ pub static RESIZABLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "ResizableHandle",
         signature: "pub fn with_handle(mut self, with_handle: bool) -> Self",
-        doc: "",
+        doc: "Show the centered grip pill (shadcn `withHandle`).",
     },
 ];
 
-pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label: &'static str| {\n    div()\n        .flex()\n        .size_full()\n        .items_center()\n        .justify_center()\n        .p(px(24.))\n        .text_size(px(14.))\n        .font_weight(FontWeight::SEMIBOLD)\n        .text_color(theme.foreground)\n        .child(label)\n};\n// Compose in shadcn order: Panel, Handle, Panel, \u{2026} Layout state is\n// managed internally \u{2014} drag just works, no wiring needed.\ndiv()\n    .w(px(384.))\n    .h(px(200.))\n    .rounded(theme.radius_lg())\n    .border_1()\n    .border_color(theme.border)\n    .overflow_hidden()\n    .child(\n        ResizablePanelGroup::new(\"resizable\")\n            .panel(ResizablePanel::new().child(panel(\"One\")))\n            .handle(ResizableHandle::new())\n            .panel(ResizablePanel::new().child(panel(\"Two\"))),\n    )\n    ";
+pub static RESIZABLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet panel = |label| Self::resizable_label(&theme, label);\nSelf::resizable_frame(\n    &theme,\n    ResizablePanelGroup::new(\"resizable-demo\")\n        .panel(ResizablePanel::new().default_size(0.5).child(panel(\"One\")))\n        .handle(ResizableHandle::new().with_handle(true))\n        .panel(\n            ResizablePanel::new().default_size(0.5).child(\n                ResizablePanelGroup::new(\"resizable-demo-nested\")\n                    .direction(ResizableDirection::Vertical)\n                    .panel(ResizablePanel::new().default_size(0.25).child(panel(\"Two\")))\n                    .handle(ResizableHandle::new().with_handle(true))\n                    .panel(\n                        ResizablePanel::new()\n                            .default_size(0.75)\n                            .child(panel(\"Three\")),\n                    ),\n            ),\n        )\n        .into_any_element(),\n)\n    ";
 
 pub static SCROLL_AREA_API: &[ApiEntry] = &[
     ApiEntry {

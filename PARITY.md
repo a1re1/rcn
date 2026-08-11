@@ -82,7 +82,7 @@ solid before the molecules that compose them.
 - [x] menubar — enter animation (100ms ease fade+slide)
 - [x] select — enter animation (100ms ease fade+slide)
 - [x] native-select — enter animation (100ms ease fade+slide)
-- [x] dialog — 200ms enter animation, backdrop fade, Escape closes (storybook root)
+- [x] dialog — base-nova parity (popover surface + foreground/10 ring, no shadow; 100ms enter fade on overlay+content; ghost icon-sm close Button; show_close_button on content+footer; max_w override; uncontrolled default_open + trigger; initial focus on open + Escape closes in-component; all five docs examples in storybook; exit animations, backdrop blur, focus trap, RTL, Input read-only omitted/TODO)
 - [x] alert-dialog — 200ms enter animation
 - [x] sheet — 500ms ease-in-out slide from its edge, Escape closes
 - [x] drawer — 500ms slide-up, Escape closes
