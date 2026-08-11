@@ -11,6 +11,9 @@
 //! - Thumb drag (Base UI `handlePointerMove` math) and track-click jump (centers thumb)
 //! - Dual-axis corner reservation (each track inset by the other scrollbar's thickness)
 //! - Scrollbar hidden on an axis when content fits (`max_offset == 0`)
+//! - Wheel containment: while this area can still scroll in the wheel
+//!   direction, outer scroll containers stay put (browser `overscroll`
+//!   chaining semantics — the page scrolls only at the limits)
 //!
 //! Omissions (not ported):
 //! - TODO(rcn): RTL (`dir="rtl"` mirrors horizontal scrollbar edge + drag math)
@@ -420,10 +423,33 @@ impl RenderOnce for ScrollArea {
             .relative()
             .when_some(self.height, |el, height| el.h(height))
             .when_some(self.width, |el, width| el.w(width))
-            // Re-render painted thumbs after native wheel scroll.
+            // Contain the wheel like a browser nested scroll container: gpui
+            // applies wheel deltas to EVERY scrollable div in the hit path
+            // (bubble phase, deepest first), so without this the page scrolls
+            // in lockstep with the scroll area. The viewport (a child) has
+            // already consumed the delta by the time this bubble listener
+            // runs; stop propagation while this area can still scroll in the
+            // wheel direction, and chain to the page only at the limits.
+            // Doubles as the repaint trigger for the painted thumbs.
             .on_scroll_wheel({
+                let handle = handle.clone();
                 let notify = scroll_state.clone();
-                move |_, _, cx| {
+                move |event, window, cx| {
+                    let delta = event.delta.pixel_delta(window.line_height());
+                    let (dx, dy) = (f32::from(delta.x), f32::from(delta.y));
+                    let offset = handle.offset();
+                    let max = handle.max_offset();
+                    // offset runs 0 → -max as content scrolls down/right;
+                    // delta < 0 scrolls further down/right, > 0 back up/left.
+                    let can_consume = |delta: f32, offset: f32, max: f32| {
+                        (delta > 0.0 && offset < 0.0) || (delta < 0.0 && -offset < max)
+                    };
+                    let can_y = can_consume(dy, f32::from(offset.y), f32::from(max.y).max(0.0));
+                    let can_x = want_horizontal
+                        && can_consume(dx, f32::from(offset.x), f32::from(max.x).max(0.0));
+                    if can_x || can_y {
+                        cx.stop_propagation();
+                    }
                     notify.update(cx, |_, cx| cx.notify());
                 }
             })
