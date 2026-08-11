@@ -208,6 +208,18 @@ const ICONS: &[(&str, &[u8])] = &[
         "icons/search.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>"##,
     ),
+    (
+        "icons/badge-check.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>"##,
+    ),
+    (
+        "icons/bookmark.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>"##,
+    ),
+    (
+        "icons/arrow-up-right.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>"##,
+    ),
 ];
 
 pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
@@ -215,6 +227,9 @@ pub const ICON_LOADER: &str = "icons/loader.svg";
 pub const ICON_ELLIPSIS: &str = "icons/ellipsis.svg";
 pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
+pub const ICON_BADGE_CHECK: &str = "icons/badge-check.svg";
+pub const ICON_BOOKMARK: &str = "icons/bookmark.svg";
+pub const ICON_ARROW_UP_RIGHT: &str = "icons/arrow-up-right.svg";
 
 pub struct Assets;
 
