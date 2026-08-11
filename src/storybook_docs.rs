@@ -1370,7 +1370,7 @@ pub static LABEL_API: &[ApiEntry] = &[
     },
 ];
 
-pub static LABEL_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(12.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(Switch::new(\"label-switch\").checked(true))\n            .child(Label::new().child(\"Airplane Mode\")),\n    )\n    .child(Label::new().disabled(true).child(\"Disabled label\"))\n    ";
+pub static LABEL_USAGE: &str = "// Port of label-demo.tsx — Checkbox + Label.\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Checkbox::new(\"label-terms\")\n            .checked(self.label_terms_checked)\n            .disabled(self.label_disabled)\n            .on_change(cx.listener(|this, checked: &bool, _, cx| {\n                this.label_terms_checked = *checked;\n                cx.notify();\n            })),\n    )\n    .child(\n        Label::new()\n            .disabled(self.label_disabled)\n            .child(\"Accept terms and conditions\"),\n    )\n    ";
 
 pub static MARKER_API: &[ApiEntry] = &[
     ApiEntry {
