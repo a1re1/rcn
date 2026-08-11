@@ -234,6 +234,27 @@ const ICONS: &[(&str, &[u8])] = &[
     ),
 ];
 
+/// Embedded photos for the ScrollArea horizontal docs demo (the shadcn demo's
+/// three Unsplash artworks, fetched at `w=300&q=80` like the docs page).
+static PHOTOS: &[(&str, &[u8])] = &[
+    (
+        "photos/ornella-binni.jpg",
+        include_bytes!("../assets/photos/ornella-binni.jpg"),
+    ),
+    (
+        "photos/tom-byrom.jpg",
+        include_bytes!("../assets/photos/tom-byrom.jpg"),
+    ),
+    (
+        "photos/vladimir-malyavko.jpg",
+        include_bytes!("../assets/photos/vladimir-malyavko.jpg"),
+    ),
+];
+
+pub const PHOTO_ORNELLA_BINNI: &str = "photos/ornella-binni.jpg";
+pub const PHOTO_TOM_BYROM: &str = "photos/tom-byrom.jpg";
+pub const PHOTO_VLADIMIR_MALYAVKO: &str = "photos/vladimir-malyavko.jpg";
+
 pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
 pub const ICON_LOADER: &str = "icons/loader.svg";
 pub const ICON_ELLIPSIS: &str = "icons/ellipsis.svg";
@@ -252,6 +273,7 @@ impl AssetSource for Assets {
     fn load(&self, path: &str) -> Result<Option<Cow<'static, [u8]>>> {
         Ok(ICONS
             .iter()
+            .chain(PHOTOS.iter())
             .find(|(name, _)| *name == path)
             .map(|(_, bytes)| Cow::Borrowed(*bytes)))
     }
@@ -259,6 +281,7 @@ impl AssetSource for Assets {
     fn list(&self, path: &str) -> Result<Vec<SharedString>> {
         Ok(ICONS
             .iter()
+            .chain(PHOTOS.iter())
             .filter(|(name, _)| name.starts_with(path))
             .map(|(name, _)| SharedString::from(*name))
             .collect())

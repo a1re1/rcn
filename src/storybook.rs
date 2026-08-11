@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, Window, div,
-    hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
+    Window, div, hsla, img, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -4996,17 +4996,19 @@ impl Storybook {
         div()
             .flex()
             .flex_col()
+            .items_start()
             .gap(px(24.))
             .child(
-                // Vertical tags demo (shadcn h-72 w-48).
+                // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288
+                // total, so the ScrollArea inside the 1px border is 190×286).
                 div()
                     .rounded(theme.radius_md())
                     .border_1()
                     .border_color(theme.border)
                     .child(
                         ScrollArea::new("scroll-area-tags")
-                            .h(px(288.))
-                            .w(px(192.))
+                            .h(px(286.))
+                            .w(px(190.))
                             .child(
                                 div()
                                     .p(px(16.))
@@ -5033,8 +5035,8 @@ impl Storybook {
                     ),
             )
             .child(
-                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal").
-                // Unsplash photos are stand-ins: muted placeholder blocks.
+                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal"),
+                // with the docs page's three Unsplash photos embedded as assets.
                 div()
                     .rounded(theme.radius_md())
                     .border_1()
@@ -5044,31 +5046,33 @@ impl Storybook {
                         // explicit h in shadcn; gpui viewport is size_full so the
                         // root needs a definite height for the track to paint).
                         ScrollArea::new("scroll-area-artwork")
-                            .w(px(384.))
-                            .h(px(460.))
+                            .w(px(382.))
+                            .h(px(458.))
                             .horizontal()
                             .child(
                                 div().flex().flex_row().gap(px(16.)).p(px(16.)).children(
                                     [
-                                        ("Ornella Binni", "photo-ornella"),
-                                        ("Tom Byrom", "photo-tom"),
-                                        ("Vladimir Malyavko", "photo-vladimir"),
+                                        ("Ornella Binni", crate::assets::PHOTO_ORNELLA_BINNI),
+                                        ("Tom Byrom", crate::assets::PHOTO_TOM_BYROM),
+                                        (
+                                            "Vladimir Malyavko",
+                                            crate::assets::PHOTO_VLADIMIR_MALYAVKO,
+                                        ),
                                     ]
                                     .into_iter()
-                                    .map(|(artist, id)| {
+                                    .map(|(artist, photo)| {
                                         let theme = theme.clone();
                                         div()
-                                            .id(id)
+                                            .id(photo)
                                             .flex()
                                             .flex_col()
                                             .flex_none()
                                             .child(
-                                                div()
+                                                img(photo)
                                                     .w(px(300.))
                                                     .h(px(400.))
                                                     .rounded(theme.radius_md())
-                                                    .overflow_hidden()
-                                                    .bg(theme.muted),
+                                                    .object_fit(ObjectFit::Cover),
                                             )
                                             .child(
                                                 div()

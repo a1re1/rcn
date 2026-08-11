@@ -241,13 +241,20 @@ impl RenderOnce for ScrollArea {
             .map(|el| {
                 // Enable overflow axes: y always (default ScrollArea), x when
                 // `.horizontal()` was requested. Dual-axis when both can scroll.
+                //
+                // Horizontal needs intrinsic content sizing (shadcn's `w-max`):
+                // in block layout the child clamps to the viewport width and
+                // max_offset.x never grows, so make the viewport a flex row and
+                // wrap children in a no-shrink container that keeps its
+                // max-content width.
                 if want_horizontal {
                     el.overflow_scroll()
+                        .flex()
+                        .child(div().flex_none().children(self.children))
                 } else {
-                    el.overflow_y_scroll()
+                    el.overflow_y_scroll().children(self.children)
                 }
-            })
-            .children(self.children);
+            });
 
         // ── vertical track + thumb ─────────────────────────────────────────────
         let v_bar = v_geo.map(|(track_inner, thumb_len)| {
