@@ -5073,7 +5073,8 @@ impl Storybook {
                     ),
                 );
         }
-        div().w(px(420.)).child(menu)
+        // Docs preview centers the trigger.
+        div().w(px(420.)).flex().justify_center().child(menu)
     }
 
     fn table_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
