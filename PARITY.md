@@ -32,7 +32,7 @@ solid before the molecules that compose them.
 ### Tier 1 — atoms
 
 - [x] button — audited in the infrastructure PR (keyboard focus + ring)
-- [x] badge — (static presentation — matches source; focus-visible/aria-invalid omitted; as-child link not ported)
+- [x] badge — (variants, link/interactive badge with focus ring + [a]:hover styles, icon/spinner padding trim, custom color overrides, all docs examples; omitted: RTL, hover transition animation, aria-invalid, underline-offset)
 - [x] label — (static presentation — matches source; peer/group disabled via explicit `.disabled`)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] separator — (static presentation — matches source, no interactive surface)

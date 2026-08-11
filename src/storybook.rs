@@ -1894,30 +1894,184 @@ impl Storybook {
                         .into_any_element(),
                 ),
             ],
-            Story::Badge => vec![(
-                "Variants",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
-                    .child(
-                        Badge::new()
-                            .variant(BadgeVariant::Secondary)
-                            .child("Secondary"),
-                    )
-                    .child(
-                        Badge::new()
-                            .variant(BadgeVariant::Destructive)
-                            .child("Destructive"),
-                    )
-                    .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
-                    .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
-                    .child(Badge::new().variant(BadgeVariant::Link).child("Link"))
-                    .into_any_element(),
-            )],
+            Story::Badge => vec![
+                (
+                    "Variants",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .child("Secondary"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Destructive)
+                                .child("Destructive"),
+                        )
+                        .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
+                        .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
+                        .into_any_element(),
+                ),
+                (
+                    "With Icon",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .icon_inline_start()
+                                .child(
+                                    Icon::new(crate::assets::ICON_BADGE_CHECK).size(px(12.)),
+                                )
+                                .child("Verified"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Outline)
+                                .icon_inline_end()
+                                .child("Bookmark")
+                                .child(Icon::new(crate::assets::ICON_BOOKMARK).size(px(12.))),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Spinner",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Destructive)
+                                .icon_inline_start()
+                                .child(
+                                    Spinner::new()
+                                        .size(px(12.))
+                                        .color(theme.destructive),
+                                )
+                                .child("Deleting"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .icon_inline_end()
+                                .child("Generating")
+                                .child(
+                                    Spinner::new()
+                                        .size(px(12.))
+                                        .color(theme.secondary_foreground),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Link",
+                    Badge::new()
+                        .variant(BadgeVariant::Default)
+                        .on_click("badge-link-example", |_, _, _| {})
+                        .icon_inline_end()
+                        .child("Open Link")
+                        .child(
+                            Icon::new(crate::assets::ICON_ARROW_UP_RIGHT).size(px(12.)),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Custom Colors",
+                    {
+                        let dark = theme.dark;
+                        div()
+                            .flex()
+                            .flex_row()
+                            .flex_wrap()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x172554).into()
+                                    } else {
+                                        rgb(0xeff6ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x93c5fd).into()
+                                    } else {
+                                        rgb(0x1d4ed8).into()
+                                    })
+                                    .child("Blue"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x052e16).into()
+                                    } else {
+                                        rgb(0xf0fdf4).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x86efac).into()
+                                    } else {
+                                        rgb(0x15803d).into()
+                                    })
+                                    .child("Green"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x082f49).into()
+                                    } else {
+                                        rgb(0xf0f9ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x7dd3fc).into()
+                                    } else {
+                                        rgb(0x0369a1).into()
+                                    })
+                                    .child("Sky"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x3b0764).into()
+                                    } else {
+                                        rgb(0xfaf5ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0xd8b4fe).into()
+                                    } else {
+                                        rgb(0x7e22ce).into()
+                                    })
+                                    .child("Purple"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x450a0a).into()
+                                    } else {
+                                        rgb(0xfef2f2).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0xfca5a5).into()
+                                    } else {
+                                        rgb(0xb91c1c).into()
+                                    })
+                                    .child("Red"),
+                            )
+                            .into_any_element()
+                    },
+                ),
+            ],
             Story::Switch => vec![(
                 "Sizes",
                 div()
@@ -2745,6 +2899,18 @@ impl Storybook {
                  .min_size(..) snap the panel closed to its .collapsed_size(..). Drag the \
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
+            ),
+            (Story::Badge, "With Icon") => Some(
+                "You can render an icon inside the badge. Use .icon_inline_start() / .icon_inline_end() to trim the padding on the icon side.",
+            ),
+            (Story::Badge, "With Spinner") => Some(
+                "You can render a spinner inside the badge. Remember to add .icon_inline_start() or .icon_inline_end() to trim the padding.",
+            ),
+            (Story::Badge, "Link") => Some(
+                "Use .on_click(id, handler) to render an interactive badge: it becomes focusable, shows the focus ring, and picks up the link hover styles.",
+            ),
+            (Story::Badge, "Custom Colors") => Some(
+                "You can customize the colors of a badge with the .bg(..) and .text_color(..) overrides.",
             ),
             _ => None,
         }
