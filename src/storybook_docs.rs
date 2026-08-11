@@ -233,6 +233,31 @@ pub static BADGE_API: &[ApiEntry] = &[
         signature: "pub fn variant(mut self, variant: BadgeVariant) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn on_click( mut self, id: impl Into<ElementId>, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Interactive/link badge (`render={<a/>}`). Sets the element id (required by gpui's StatefulInteractiveElement), makes the badge focusable, and attaches the click handler. Also enables focus-ring and `[a]:hover` styles for the active variant.",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn icon_inline_start(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-1.5`).",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn icon_inline_end(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-end\"` — trim end padding (`has-data-[icon=inline-end]:pr-1.5`).",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn bg(mut self, color: Hsla) -> Self",
+        doc: "`className` color-override port — background color applied after the variant styles (e.g. `className=\"bg-blue-50\"`).",
+    },
+    ApiEntry {
+        type_name: "Badge",
+        signature: "pub fn text_color(mut self, color: Hsla) -> Self",
+        doc: "`className` color-override port — text color applied after the variant styles (e.g. `className=\"text-blue-700\"`).",
+    },
 ];
 
 pub static BADGE_USAGE: &str = "Badge::new().variant(self.badge_variant).child(\"Badge\")\n    ";
@@ -1523,14 +1548,34 @@ pub static PAGINATION_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "Pagination",
+        signature: "pub fn w_auto(mut self) -> Self",
+        doc: "`w-auto` instead of the default `w-full` (ports Icons Only `className=\"mx-0 w-auto\"`).",
+    },
+    ApiEntry {
+        type_name: "PaginationContent",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationItem",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
         type_name: "PaginationLink",
-        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<gpui::SharedString>) -> Self",
+        signature: "pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self",
         doc: "",
     },
     ApiEntry {
         type_name: "PaginationLink",
         signature: "pub fn active(mut self, active: bool) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationLink",
+        signature: "pub fn size(mut self, size: ButtonSize) -> Self",
+        doc: "Button size — shadcn default `\"icon\"`.",
     },
     ApiEntry {
         type_name: "PaginationLink",
@@ -1541,6 +1586,11 @@ pub static PAGINATION_API: &[ApiEntry] = &[
         type_name: "PaginationPrevious",
         signature: "pub fn new(id: impl Into<ElementId>) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationPrevious",
+        signature: "pub fn text(mut self, text: impl Into<SharedString>) -> Self",
+        doc: "Label text — shadcn `text` prop, default `\"Previous\"`.",
     },
     ApiEntry {
         type_name: "PaginationPrevious",
@@ -1551,6 +1601,11 @@ pub static PAGINATION_API: &[ApiEntry] = &[
         type_name: "PaginationNext",
         signature: "pub fn new(id: impl Into<ElementId>) -> Self",
         doc: "",
+    },
+    ApiEntry {
+        type_name: "PaginationNext",
+        signature: "pub fn text(mut self, text: impl Into<SharedString>) -> Self",
+        doc: "Label text — shadcn `text` prop, default `\"Next\"`.",
     },
     ApiEntry {
         type_name: "PaginationNext",
@@ -1564,7 +1619,7 @@ pub static PAGINATION_API: &[ApiEntry] = &[
     },
 ];
 
-pub static PAGINATION_USAGE: &str = "Pagination::new()\n    .child(\n        PaginationPrevious::new(\"page-prev\").on_click(cx.listener(|this, _, _, cx| {\n            this.pagination_page = this.pagination_page.saturating_sub(1).max(1);\n            cx.notify();\n        })),\n    )\n    .children((1..=3).map(|page| {\n        PaginationLink::new((\"page-link\", page), page.to_string())\n            .active(self.pagination_page == page)\n            .on_click(cx.listener(move |this, _, _, cx| {\n                this.pagination_page = page;\n                cx.notify();\n            }))\n    }))\n    .child(PaginationEllipsis::new())\n    .child(\n        PaginationNext::new(\"page-next\").on_click(cx.listener(|this, _, _, cx| {\n            this.pagination_page = (this.pagination_page + 1).min(3);\n            cx.notify();\n        })),\n    )\n    ";
+pub static PAGINATION_USAGE: &str = "// shadcn pagination-demo: Prev / 1 / 2-active / 3 / ellipsis / Next\nlet link_size = self.pagination_link_size;\nPagination::new().child(\n    PaginationContent::new()\n        .child(\n            PaginationItem::new().child(\n                PaginationPrevious::new(\"page-prev\")\n                    .text(\"Previous\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.pagination_page =\n                            this.pagination_page.saturating_sub(1).max(1);\n                        cx.notify();\n                    })),\n            ),\n        )\n        .children((1..=3).map(|page| {\n            PaginationItem::new().child(\n                PaginationLink::new((\"page-link\", page), page.to_string())\n                    .size(link_size)\n                    .active(self.pagination_page == page)\n                    .on_click(cx.listener(move |this, _, _, cx| {\n                        this.pagination_page = page;\n                        cx.notify();\n                    })),\n            )\n        }))\n        .child(PaginationItem::new().child(PaginationEllipsis::new()))\n        .child(\n            PaginationItem::new().child(\n                PaginationNext::new(\"page-next\")\n                    .text(\"Next\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.pagination_page = (this.pagination_page + 1).min(3);\n                        cx.notify();\n                    })),\n            ),\n        ),\n)\n    ";
 
 pub static POPOVER_API: &[ApiEntry] = &[
     ApiEntry {
