@@ -2,16 +2,16 @@
 //!
 //! The shadcn textarea shell (`min-h-16 w-full rounded-lg border px-2.5 py-2`)
 //! around the [`Input`](crate::components::Input) editing machinery, with the
-//! native textarea's corner resize grip (CSS `resize`, on by default; opt out
-//! with [`Textarea::resizable`]`(false)` — Tailwind `resize-none`). Editing
+//! native textarea's corner resize grip (vertical-only, on by default; opt
+//! out with [`Textarea::resizable`]`(false)` — Tailwind `resize-none`). Editing
 //! is currently single-line — TODO(rcn): wrapped multi-line shaping and
 //! cursor movement; Enter inserts no newline yet. shadcn's
 //! `field-sizing-content` auto-grow is also TODO(rcn).
 
 use gpui::{
     App, AppContext as _, Context, CursorStyle, DragMoveEvent, Entity, EntityId, Focusable as _,
-    InteractiveElement as _, IntoElement, ParentElement, Pixels, Render, RenderOnce, Size,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px, size,
+    InteractiveElement as _, IntoElement, ParentElement, Pixels, Render, RenderOnce,
+    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::components::Icon;
@@ -82,9 +82,9 @@ impl Textarea {
         self
     }
 
-    /// The corner drag-to-resize grip (the native textarea's CSS `resize`,
-    /// which shadcn leaves enabled). On by default; pass `false` for
-    /// Tailwind's `resize-none`.
+    /// The corner drag-to-resize grip (CSS `resize: vertical` — dragging
+    /// grows the textarea's height only; width always fills the container).
+    /// On by default; pass `false` for Tailwind's `resize-none`.
     // Not yet exercised by the storybook (every docs example keeps the grip).
     #[allow(dead_code)]
     pub fn resizable(mut self, resizable: bool) -> Self {
@@ -104,17 +104,19 @@ impl RenderOnce for Textarea {
         // Focus chrome is suppressed while disabled; invalid wins over focus.
         let show_focus = focused && !self.disabled && !self.invalid;
 
-        // Like the native resizer, a drag fixes the shell's size; keyed off
-        // the wrapped entity so each textarea keeps its own dragged size.
+        // Like the native vertical resizer, a drag fixes the shell's height
+        // (width always fills the container); keyed off the wrapped entity so
+        // each textarea keeps its own dragged height.
         let entity_id = self.input.entity_id();
-        let resize_state: Entity<Option<Size<Pixels>>> =
+        let resize_state: Entity<Option<Pixels>> =
             window.use_keyed_state(("textarea-size", entity_id), cx, |_, _| None);
-        let dragged_size = *resize_state.read(cx);
+        let dragged_height = *resize_state.read(cx);
 
         div()
-            .map(|el| match dragged_size {
-                Some(s) => el.w(s.width).h(s.height),
-                None => el.w_full().min_h(px(min_height)),
+            .w_full()
+            .map(|el| match dragged_height {
+                Some(h) => el.h(h),
+                None => el.min_h(px(min_height)),
             })
             .rounded(theme.radius_lg())
             .border_1()
@@ -167,13 +169,12 @@ impl RenderOnce for Textarea {
                     if event.drag(cx).textarea != entity_id {
                         return;
                     }
-                    // The dragged corner tracks the pointer, clamped to the
-                    // configured minimum (native min-width/min-height).
-                    let origin = event.bounds.origin;
-                    let w = f32::from(event.event.position.x - origin.x).max(64.);
-                    let h = f32::from(event.event.position.y - origin.y).max(min_height);
+                    // Vertical-only: the bottom edge tracks the pointer,
+                    // clamped to the configured min-height.
+                    let h =
+                        f32::from(event.event.position.y - event.bounds.origin.y).max(min_height);
                     state.update(cx, |s, cx| {
-                        *s = Some(size(px(w), px(h)));
+                        *s = Some(px(h));
                         cx.notify();
                     });
                 })
@@ -184,7 +185,7 @@ impl RenderOnce for Textarea {
                         .bottom(px(0.))
                         .right(px(0.))
                         .size(px(12.))
-                        .cursor(CursorStyle::ResizeUpLeftDownRight)
+                        .cursor(CursorStyle::ResizeUpDown)
                         .child(
                             Icon::new(crate::assets::ICON_RESIZE_GRIP)
                                 .size(px(12.))
