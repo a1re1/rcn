@@ -45,7 +45,7 @@ solid before the molecules that compose them.
 - [x] checkbox — (keyboard focus + ring)
 - [x] radio-group — (keyboard focus + ring)
 - [x] switch — (keyboard focus + ring)
-- [x] toggle — (keyboard focus + ring)
+- [x] toggle — base-nova parity (h-8/h-7/h-9 metrics, rounded-lg + sm radius/text/icon overrides, no outline shadow, full-muted hover, uncontrolled default_pressed, on_pressed_change, icon_inline_start/end padding; all five docs examples incl. pressed bookmark fill; RTL, aria-invalid, group `value`, and hover transition-all omitted)
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
 - [x] input — full focus ring shadow (was border-only)

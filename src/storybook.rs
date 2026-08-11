@@ -681,7 +681,6 @@ pub struct Storybook {
     radio_selected: usize,
     // Toggle story state
     toggle_pressed: bool,
-    toggle_outline_pressed: bool,
     // Toggle group story state
     toggle_group_on: [bool; 3],
     // Collapsible story state
@@ -1026,7 +1025,6 @@ impl Storybook {
             label_email_input,
             radio_selected: 1,
             toggle_pressed: true,
-            toggle_outline_pressed: false,
             toggle_group_on: [true, false, false],
             collapsible_open: false,
             tabs_active: 0,
@@ -2158,46 +2156,108 @@ impl Storybook {
                     )
                     .into_any_element(),
             )],
-            Story::Toggle => vec![(
-                "Variants and sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Toggle::new("ex-toggle-default")
-                            .variant(ToggleVariant::Default)
-                            .pressed(true)
-                            .child("Default"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-outline")
-                            .variant(ToggleVariant::Outline)
-                            .pressed(true)
-                            .child("Outline"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-sm")
-                            .size(ToggleSize::Sm)
-                            .pressed(true)
-                            .child("Small"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-md")
-                            .size(ToggleSize::Default)
-                            .pressed(true)
-                            .child("Default"),
-                    )
-                    .child(
-                        Toggle::new("ex-toggle-lg")
-                            .size(ToggleSize::Lg)
-                            .pressed(true)
-                            .child("Large"),
-                    )
-                    .into_any_element(),
-            )],
+            Story::Toggle => vec![
+                (
+                    "Outline",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Toggle::new("ex-toggle-outline-italic")
+                                .variant(ToggleVariant::Outline)
+                                .default_pressed(false)
+                                .icon_inline_start()
+                                .child(
+                                    gpui::svg()
+                                        .path(crate::assets::ICON_ITALIC)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                )
+                                .child("Italic"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-outline-bold")
+                                .variant(ToggleVariant::Outline)
+                                .default_pressed(false)
+                                .icon_inline_start()
+                                .child(
+                                    gpui::svg()
+                                        .path(crate::assets::ICON_BOLD)
+                                        .size(px(16.))
+                                        .text_color(theme.foreground),
+                                )
+                                .child("Bold"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Text",
+                    Toggle::new("ex-toggle-with-text")
+                        .default_pressed(false)
+                        .icon_inline_start()
+                        .child(
+                            gpui::svg()
+                                .path(crate::assets::ICON_ITALIC)
+                                .size(px(16.))
+                                .text_color(theme.foreground),
+                        )
+                        .child("Italic")
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(8.))
+                        .child(
+                            Toggle::new("ex-toggle-sm")
+                                .variant(ToggleVariant::Outline)
+                                .size(ToggleSize::Sm)
+                                .default_pressed(false)
+                                .child("Small"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-md")
+                                .variant(ToggleVariant::Outline)
+                                .size(ToggleSize::Default)
+                                .default_pressed(false)
+                                .child("Default"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-lg")
+                                .variant(ToggleVariant::Outline)
+                                .size(ToggleSize::Lg)
+                                .default_pressed(false)
+                                .child("Large"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(8.))
+                        .child(
+                            Toggle::new("ex-toggle-disabled-default")
+                                .disabled(true)
+                                .default_pressed(false)
+                                .child("Disabled"),
+                        )
+                        .child(
+                            Toggle::new("ex-toggle-disabled-outline")
+                                .variant(ToggleVariant::Outline)
+                                .disabled(true)
+                                .default_pressed(false)
+                                .child("Disabled"),
+                        )
+                        .into_any_element(),
+                ),
+            ],
             Story::Alert => vec![(
                 "Destructive",
                 Alert::new()
@@ -4620,51 +4680,27 @@ impl Storybook {
     }
     fn toggle_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        div()
-            .flex()
-            .flex_row()
-            .items_center()
-            .gap(px(8.))
+        let icon_path = if self.toggle_pressed {
+            crate::assets::ICON_BOOKMARK_FILLED
+        } else {
+            crate::assets::ICON_BOOKMARK
+        };
+        Toggle::new("toggle-bookmark")
+            .size(ToggleSize::Sm)
+            .variant(ToggleVariant::Outline)
+            .icon_inline_start()
+            .pressed(self.toggle_pressed)
+            .on_pressed_change(cx.listener(|this, pressed: &bool, _, cx| {
+                this.toggle_pressed = *pressed;
+                cx.notify();
+            }))
             .child(
-                Toggle::new("toggle-italic")
-                    .pressed(self.toggle_pressed)
-                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
-                        this.toggle_pressed = *pressed;
-                        cx.notify();
-                    }))
-                    .child("Italic"),
+                gpui::svg()
+                    .path(icon_path)
+                    .size(px(14.))
+                    .text_color(theme.foreground),
             )
-            .child(
-                Toggle::new("toggle-outline")
-                    .variant(ToggleVariant::Outline)
-                    .pressed(self.toggle_outline_pressed)
-                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
-                        this.toggle_outline_pressed = *pressed;
-                        cx.notify();
-                    }))
-                    .child("Outline"),
-            )
-            .child(
-                Toggle::new("toggle-icon")
-                    .size(ToggleSize::Sm)
-                    .pressed(self.toggle_pressed)
-                    .on_change(cx.listener(|this, pressed: &bool, _, cx| {
-                        this.toggle_pressed = *pressed;
-                        cx.notify();
-                    }))
-                    .child(
-                        gpui::svg()
-                            .path(theme.icons.chevron_down())
-                            .size(px(16.))
-                            .text_color(theme.foreground),
-                    ),
-            )
-            .child(
-                Toggle::new("toggle-disabled")
-                    .size(ToggleSize::Lg)
-                    .disabled(true)
-                    .child("Disabled"),
-            )
+            .child("Bookmark")
     }
     fn toggle_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let labels = ["Bold", "Italic", "Underline"];

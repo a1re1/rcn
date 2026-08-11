@@ -2349,7 +2349,12 @@ pub static TOGGLE_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Toggle",
         signature: "pub fn pressed(mut self, pressed: bool) -> Self",
-        doc: "",
+        doc: "Controlled pressed state. Takes precedence over `default_pressed`.",
+    },
+    ApiEntry {
+        type_name: "Toggle",
+        signature: "pub fn default_pressed(mut self, pressed: bool) -> Self",
+        doc: "Uncontrolled initial pressed state (Base UI `defaultPressed`). Default false. Ignored when `.pressed(bool)` is set.",
     },
     ApiEntry {
         type_name: "Toggle",
@@ -2358,12 +2363,22 @@ pub static TOGGLE_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Toggle",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
+        signature: "pub fn icon_inline_start(mut self) -> Self",
+        doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Sm).",
+    },
+    ApiEntry {
+        type_name: "Toggle",
+        signature: "pub fn icon_inline_end(mut self) -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Toggle",
+        signature: "pub fn on_pressed_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
         doc: "",
     },
 ];
 
-pub static TOGGLE_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Toggle::new(\"toggle-italic\")\n            .pressed(self.toggle_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\"Italic\"),\n    )\n    .child(\n        Toggle::new(\"toggle-outline\")\n            .variant(ToggleVariant::Outline)\n            .pressed(self.toggle_outline_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_outline_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\"Outline\"),\n    )\n    .child(\n        Toggle::new(\"toggle-icon\")\n            .size(ToggleSize::Sm)\n            .pressed(self.toggle_pressed)\n            .on_change(cx.listener(|this, pressed: &bool, _, cx| {\n                this.toggle_pressed = *pressed;\n                cx.notify();\n            }))\n            .child(\n                gpui::svg()\n                    .path(theme.icons.chevron_down())\n                    .size(px(16.))\n                    .text_color(theme.foreground),\n            ),\n    )\n    .child(\n        Toggle::new(\"toggle-disabled\")\n            .size(ToggleSize::Lg)\n            .disabled(true)\n            .child(\"Disabled\"),\n    )\n    ";
+pub static TOGGLE_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet icon_path = if self.toggle_pressed {\n    crate::assets::ICON_BOOKMARK_FILLED\n} else {\n    crate::assets::ICON_BOOKMARK\n};\nToggle::new(\"toggle-bookmark\")\n    .size(ToggleSize::Sm)\n    .variant(ToggleVariant::Outline)\n    .icon_inline_start()\n    .pressed(self.toggle_pressed)\n    .on_pressed_change(cx.listener(|this, pressed: &bool, _, cx| {\n        this.toggle_pressed = *pressed;\n        cx.notify();\n    }))\n    .child(\n        gpui::svg()\n            .path(icon_path)\n            .size(px(14.))\n            .text_color(theme.foreground),\n    )\n    .child(\"Bookmark\")\n    ";
 
 pub static TOGGLE_GROUP_API: &[ApiEntry] = &[
     ApiEntry {
