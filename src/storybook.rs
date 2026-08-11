@@ -37,13 +37,16 @@ use crate::components::{
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
+    FieldTitle, HoverCard, Icon, Input,
+    InputGroup,
+    InputGroupAddon, InputOtp, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
     MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
-    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis,
+    PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle,
     Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
@@ -693,6 +696,10 @@ pub struct Storybook {
     slider_fine: f32,
     // Pagination story state
     pagination_page: usize,
+    pagination_simple_page: usize,
+    pagination_link_size: ButtonSize,
+    pagination_rows_value: Option<usize>,
+    pagination_rows_open: bool,
     // Dialog story state
     dialog_open: bool,
     // Alert dialog story state
@@ -1029,6 +1036,10 @@ impl Storybook {
             slider_value: 50.,
             slider_fine: 0.4,
             pagination_page: 2,
+            pagination_simple_page: 2,
+            pagination_link_size: ButtonSize::Icon,
+            pagination_rows_value: Some(1), // "25"
+            pagination_rows_open: false,
             dialog_open: false,
             alert_dialog_open: false,
             sheet_open: false,
@@ -1902,30 +1913,184 @@ impl Storybook {
                         .into_any_element(),
                 ),
             ],
-            Story::Badge => vec![(
-                "Variants",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
-                    .child(
-                        Badge::new()
-                            .variant(BadgeVariant::Secondary)
-                            .child("Secondary"),
-                    )
-                    .child(
-                        Badge::new()
-                            .variant(BadgeVariant::Destructive)
-                            .child("Destructive"),
-                    )
-                    .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
-                    .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
-                    .child(Badge::new().variant(BadgeVariant::Link).child("Link"))
-                    .into_any_element(),
-            )],
+            Story::Badge => vec![
+                (
+                    "Variants",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Badge::new().variant(BadgeVariant::Default).child("Default"))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .child("Secondary"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Destructive)
+                                .child("Destructive"),
+                        )
+                        .child(Badge::new().variant(BadgeVariant::Outline).child("Outline"))
+                        .child(Badge::new().variant(BadgeVariant::Ghost).child("Ghost"))
+                        .into_any_element(),
+                ),
+                (
+                    "With Icon",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .icon_inline_start()
+                                .child(
+                                    Icon::new(crate::assets::ICON_BADGE_CHECK).size(px(12.)),
+                                )
+                                .child("Verified"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Outline)
+                                .icon_inline_end()
+                                .child("Bookmark")
+                                .child(Icon::new(crate::assets::ICON_BOOKMARK).size(px(12.))),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Spinner",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Destructive)
+                                .icon_inline_start()
+                                .child(
+                                    Spinner::new()
+                                        .size(px(12.))
+                                        .color(theme.destructive),
+                                )
+                                .child("Deleting"),
+                        )
+                        .child(
+                            Badge::new()
+                                .variant(BadgeVariant::Secondary)
+                                .icon_inline_end()
+                                .child("Generating")
+                                .child(
+                                    Spinner::new()
+                                        .size(px(12.))
+                                        .color(theme.secondary_foreground),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Link",
+                    Badge::new()
+                        .variant(BadgeVariant::Default)
+                        .on_click("badge-link-example", |_, _, _| {})
+                        .icon_inline_end()
+                        .child("Open Link")
+                        .child(
+                            Icon::new(crate::assets::ICON_ARROW_UP_RIGHT).size(px(12.)),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Custom Colors",
+                    {
+                        let dark = theme.dark;
+                        div()
+                            .flex()
+                            .flex_row()
+                            .flex_wrap()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x172554).into()
+                                    } else {
+                                        rgb(0xeff6ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x93c5fd).into()
+                                    } else {
+                                        rgb(0x1d4ed8).into()
+                                    })
+                                    .child("Blue"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x052e16).into()
+                                    } else {
+                                        rgb(0xf0fdf4).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x86efac).into()
+                                    } else {
+                                        rgb(0x15803d).into()
+                                    })
+                                    .child("Green"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x082f49).into()
+                                    } else {
+                                        rgb(0xf0f9ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0x7dd3fc).into()
+                                    } else {
+                                        rgb(0x0369a1).into()
+                                    })
+                                    .child("Sky"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x3b0764).into()
+                                    } else {
+                                        rgb(0xfaf5ff).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0xd8b4fe).into()
+                                    } else {
+                                        rgb(0x7e22ce).into()
+                                    })
+                                    .child("Purple"),
+                            )
+                            .child(
+                                Badge::new()
+                                    .bg(if dark {
+                                        rgb(0x450a0a).into()
+                                    } else {
+                                        rgb(0xfef2f2).into()
+                                    })
+                                    .text_color(if dark {
+                                        rgb(0xfca5a5).into()
+                                    } else {
+                                        rgb(0xb91c1c).into()
+                                    })
+                                    .child("Red"),
+                            )
+                            .into_any_element()
+                    },
+                ),
+            ],
             Story::Switch => vec![
                 (
                     "Demo",
@@ -2860,6 +3025,100 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::PaginationStory => {
+                let link_size = self.pagination_link_size;
+                vec![
+                    (
+                        "Simple",
+                        // pagination-simple: links 1–5 only, page 2 active by default
+                        Pagination::new()
+                            .child(
+                                PaginationContent::new().children((1..=5).map(|page| {
+                                    PaginationItem::new().child(
+                                        PaginationLink::new(
+                                            ("page-simple", page),
+                                            page.to_string(),
+                                        )
+                                        .size(link_size)
+                                        .active(self.pagination_simple_page == page)
+                                        .on_click(cx.listener(move |this, _, _, cx| {
+                                            this.pagination_simple_page = page;
+                                            cx.notify();
+                                        })),
+                                    )
+                                })),
+                            )
+                            .into_any_element(),
+                    ),
+                    (
+                        "Icons Only",
+                        // pagination-icons-only: Rows-per-page Field+Select left,
+                        // Prev/Next-only w_auto Pagination right
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .justify_between()
+                            .gap(px(16.))
+                            .w_full()
+                            .child(
+                                // width fit — horizontal Field does not stretch full row
+                                div().child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(FieldLabel::new().child("Rows per page"))
+                                        .child(
+                                            Select::new("pagination-rows")
+                                                .options(["10", "25", "50", "100"])
+                                                .value(self.pagination_rows_value)
+                                                .open(self.pagination_rows_open)
+                                                .on_change(cx.listener(
+                                                    |this, value: &usize, _, cx| {
+                                                        this.pagination_rows_value = Some(*value);
+                                                        cx.notify();
+                                                    },
+                                                ))
+                                                .on_open_change(cx.listener(
+                                                    |this, open: &bool, _, cx| {
+                                                        this.pagination_rows_open = *open;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        ),
+                                ),
+                            )
+                            .child(
+                                Pagination::new().w_auto().child(
+                                    PaginationContent::new()
+                                        .child(
+                                            PaginationItem::new().child(
+                                                PaginationPrevious::new("page-icons-prev")
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.pagination_page = this
+                                                            .pagination_page
+                                                            .saturating_sub(1)
+                                                            .max(1);
+                                                        cx.notify();
+                                                    })),
+                                            ),
+                                        )
+                                        .child(
+                                            PaginationItem::new().child(
+                                                PaginationNext::new("page-icons-next").on_click(
+                                                    cx.listener(|this, _, _, cx| {
+                                                        this.pagination_page =
+                                                            (this.pagination_page + 1).min(3);
+                                                        cx.notify();
+                                                    }),
+                                                ),
+                                            ),
+                                        ),
+                                ),
+                            )
+                            .into_any_element(),
+                    ),
+                ]
+            }
             _ => Vec::new(),
         }
     }
@@ -2895,6 +3154,18 @@ impl Storybook {
                  .min_size(..) snap the panel closed to its .collapsed_size(..). Drag the \
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
+            ),
+            (Story::Badge, "With Icon") => Some(
+                "You can render an icon inside the badge. Use .icon_inline_start() / .icon_inline_end() to trim the padding on the icon side.",
+            ),
+            (Story::Badge, "With Spinner") => Some(
+                "You can render a spinner inside the badge. Remember to add .icon_inline_start() or .icon_inline_end() to trim the padding.",
+            ),
+            (Story::Badge, "Link") => Some(
+                "Use .on_click(id, handler) to render an interactive badge: it becomes focusable, shows the focus ring, and picks up the link hover styles.",
+            ),
+            (Story::Badge, "Custom Colors") => Some(
+                "You can customize the colors of a badge with the .bg(..) and .text_color(..) overrides.",
             ),
             _ => None,
         }
@@ -3178,7 +3449,20 @@ impl Storybook {
                 &theme,
             )],
             Story::SliderStory => Vec::new(),
-            Story::PaginationStory => Vec::new(),
+            Story::PaginationStory => vec![Self::control_row(
+                "size",
+                Self::choices(
+                    "pagination-link-size",
+                    &BUTTON_SIZES,
+                    self.pagination_link_size,
+                    cx,
+                    |this, v, cx| {
+                        this.pagination_link_size = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             Story::ScrollArea => Vec::new(),
             Story::TooltipStory => Vec::new(),
             Story::HoverCardStory => Vec::new(),
@@ -4682,28 +4966,44 @@ impl Storybook {
             .child(Slider::new("slider-disabled").value(30.).disabled(true))
     }
     fn pagination_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        Pagination::new()
-            .child(
-                PaginationPrevious::new("page-prev").on_click(cx.listener(|this, _, _, cx| {
-                    this.pagination_page = this.pagination_page.saturating_sub(1).max(1);
-                    cx.notify();
-                })),
-            )
-            .children((1..=3).map(|page| {
-                PaginationLink::new(("page-link", page), page.to_string())
-                    .active(self.pagination_page == page)
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        this.pagination_page = page;
-                        cx.notify();
-                    }))
-            }))
-            .child(PaginationEllipsis::new())
-            .child(
-                PaginationNext::new("page-next").on_click(cx.listener(|this, _, _, cx| {
-                    this.pagination_page = (this.pagination_page + 1).min(3);
-                    cx.notify();
-                })),
-            )
+        // shadcn pagination-demo: Prev / 1 / 2-active / 3 / ellipsis / Next
+        let link_size = self.pagination_link_size;
+        Pagination::new().child(
+            PaginationContent::new()
+                .child(
+                    PaginationItem::new().child(
+                        PaginationPrevious::new("page-prev")
+                            .text("Previous")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.pagination_page =
+                                    this.pagination_page.saturating_sub(1).max(1);
+                                cx.notify();
+                            })),
+                    ),
+                )
+                .children((1..=3).map(|page| {
+                    PaginationItem::new().child(
+                        PaginationLink::new(("page-link", page), page.to_string())
+                            .size(link_size)
+                            .active(self.pagination_page == page)
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                this.pagination_page = page;
+                                cx.notify();
+                            })),
+                    )
+                }))
+                .child(PaginationItem::new().child(PaginationEllipsis::new()))
+                .child(
+                    PaginationItem::new().child(
+                        PaginationNext::new("page-next")
+                            .text("Next")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.pagination_page = (this.pagination_page + 1).min(3);
+                                cx.notify();
+                            })),
+                    ),
+                ),
+        )
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
@@ -5309,12 +5609,16 @@ impl Storybook {
                             FieldGroup::new()
                                 .child(
                                     Field::new()
-                                        .child(FieldLabel::new().child("Name on Card"))
+                                        .child(
+                                            FieldLabel::new().child("Name on Card"),
+                                        )
                                         .child(self.field_name_input.clone()),
                                 )
                                 .child(
                                     Field::new()
-                                        .child(FieldLabel::new().child("Card Number"))
+                                        .child(
+                                            FieldLabel::new().child("Card Number"),
+                                        )
                                         .child(self.field_card_number.clone())
                                         .child(
                                             FieldDescription::new()
@@ -5330,13 +5634,16 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(FieldLabel::new().child("Month"))
+                                                    .child(
+                                                        FieldLabel::new().child("Month"),
+                                                    )
                                                     .child(
                                                         Select::new("field-month")
                                                             .placeholder("MM")
                                                             .options([
-                                                                "01", "02", "03", "04", "05", "06",
-                                                                "07", "08", "09", "10", "11", "12",
+                                                                "01", "02", "03", "04", "05",
+                                                                "06", "07", "08", "09", "10",
+                                                                "11", "12",
                                                             ])
                                                             .value(self.field_month)
                                                             .open(self.field_month_open)
@@ -5358,7 +5665,9 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(FieldLabel::new().child("Year"))
+                                                    .child(
+                                                        FieldLabel::new().child("Year"),
+                                                    )
                                                     .child(
                                                         Select::new("field-year")
                                                             .placeholder("YYYY")
@@ -5397,10 +5706,9 @@ impl Storybook {
                 .child(
                     FieldSet::new()
                         .legend(FieldLegend::new().child("Billing Address"))
-                        .description(
-                            FieldDescription::new()
-                                .child("The billing address associated with your payment method"),
-                        )
+                        .description(FieldDescription::new().child(
+                            "The billing address associated with your payment method",
+                        ))
                         .child(
                             FieldGroup::new().child(
                                 Field::new()
@@ -5428,7 +5736,9 @@ impl Storybook {
                         FieldGroup::new().child(
                             Field::new()
                                 .child(FieldLabel::new().child("Comments"))
-                                .child(Textarea::new(self.field_comments.clone()).rows(3)),
+                                .child(
+                                    Textarea::new(self.field_comments.clone()).rows(3),
+                                ),
                         ),
                     ),
                 )
@@ -5485,7 +5795,8 @@ impl Storybook {
                         .child(FieldLabel::new().child("Feedback"))
                         .child(Textarea::new(self.field_feedback.clone()).rows(4))
                         .child(
-                            FieldDescription::new().child("Share your thoughts about our service."),
+                            FieldDescription::new()
+                                .child("Share your thoughts about our service."),
                         ),
                 ),
             ),
@@ -5521,7 +5832,10 @@ impl Storybook {
                             cx.notify();
                         })),
                 )
-                .child(FieldDescription::new().child("Select your department or area of work.")),
+                .child(
+                    FieldDescription::new()
+                        .child("Select your department or area of work."),
+                ),
         )
     }
 
@@ -5530,10 +5844,12 @@ impl Storybook {
         div().w(px(320.)).child(
             Field::new()
                 .child(FieldTitle::new().child("Price Range"))
-                .child(FieldDescription::new().child(format!(
-                    "Set your budget range (${:.0}).",
-                    self.field_slider
-                )))
+                .child(
+                    FieldDescription::new().child(format!(
+                        "Set your budget range (${:.0}).",
+                        self.field_slider
+                    )),
+                )
                 .child(
                     Slider::new("field-slider")
                         .min(0.)
@@ -5554,7 +5870,8 @@ impl Storybook {
             FieldSet::new()
                 .legend(FieldLegend::new().child("Address Information"))
                 .description(
-                    FieldDescription::new().child("We need your address to deliver your order."),
+                    FieldDescription::new()
+                        .child("We need your address to deliver your order."),
                 )
                 .child(
                     FieldGroup::new()
@@ -5793,29 +6110,35 @@ impl Storybook {
                             .child("Select the compute environment for your cluster."),
                     )
                     .gap(px(12.))
-                    .child(RadioGroup::new().children(envs.into_iter().enumerate().map(
-                        |(index, (id, title, description))| {
-                            FieldLabel::new()
-                                .choice_card(self.field_compute_env == index)
-                                .child(
-                                    Field::new()
-                                        .orientation(FieldOrientation::Horizontal)
-                                        .content(
-                                            FieldContent::new()
-                                                .child(FieldTitle::new().child(title))
-                                                .child(FieldDescription::new().child(description)),
-                                        )
-                                        .child(
-                                            RadioGroupItem::new(id)
-                                                .checked(self.field_compute_env == index)
-                                                .on_select(cx.listener(move |this, _, _, cx| {
-                                                    this.field_compute_env = index;
-                                                    cx.notify();
-                                                })),
-                                        ),
-                                )
-                        },
-                    ))),
+                    .child(
+                        RadioGroup::new().children(envs.into_iter().enumerate().map(
+                            |(index, (id, title, description))| {
+                                FieldLabel::new()
+                                    .choice_card(self.field_compute_env == index)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(FieldTitle::new().child(title))
+                                                    .child(
+                                                        FieldDescription::new().child(description),
+                                                    ),
+                                            )
+                                            .child(
+                                                RadioGroupItem::new(id)
+                                                    .checked(self.field_compute_env == index)
+                                                    .on_select(cx.listener(
+                                                        move |this, _, _, cx| {
+                                                            this.field_compute_env = index;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    )
+                            },
+                        )),
+                    ),
             ),
         )
     }
@@ -5959,10 +6282,14 @@ impl Storybook {
                                         .orientation(FieldOrientation::Responsive)
                                         .content(
                                             FieldContent::new()
-                                                .child(FieldLabel::new().child("Name"))
-                                                .child(FieldDescription::new().child(
-                                                    "Provide your full name for identification",
-                                                )),
+                                                .child(
+                                                    FieldLabel::new().child("Name"),
+                                                )
+                                                .child(
+                                                    FieldDescription::new().child(
+                                                        "Provide your full name for identification",
+                                                    ),
+                                                ),
                                         )
                                         .child(self.field_responsive_name.clone()),
                                 )
