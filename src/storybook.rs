@@ -44,8 +44,9 @@ use crate::components::{
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
     MessageFooter, MessageGroup, MessageHeader, MessageScroller, NativeSelect, NavigationMenu,
-    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationEllipsis, PaginationLink,
-    PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle,
+    NavigationMenuEntry, NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis,
+    PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Popover,
+    PopoverDescription, PopoverHeader, PopoverTitle,
     Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
@@ -689,6 +690,10 @@ pub struct Storybook {
     slider_fine: f32,
     // Pagination story state
     pagination_page: usize,
+    pagination_simple_page: usize,
+    pagination_link_size: ButtonSize,
+    pagination_rows_value: Option<usize>,
+    pagination_rows_open: bool,
     // Dialog story state
     dialog_open: bool,
     // Alert dialog story state
@@ -1021,6 +1026,10 @@ impl Storybook {
             slider_value: 50.,
             slider_fine: 0.4,
             pagination_page: 2,
+            pagination_simple_page: 2,
+            pagination_link_size: ButtonSize::Icon,
+            pagination_rows_value: Some(1), // "25"
+            pagination_rows_open: false,
             dialog_open: false,
             alert_dialog_open: false,
             sheet_open: false,
@@ -2864,6 +2873,100 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::PaginationStory => {
+                let link_size = self.pagination_link_size;
+                vec![
+                    (
+                        "Simple",
+                        // pagination-simple: links 1–5 only, page 2 active by default
+                        Pagination::new()
+                            .child(
+                                PaginationContent::new().children((1..=5).map(|page| {
+                                    PaginationItem::new().child(
+                                        PaginationLink::new(
+                                            ("page-simple", page),
+                                            page.to_string(),
+                                        )
+                                        .size(link_size)
+                                        .active(self.pagination_simple_page == page)
+                                        .on_click(cx.listener(move |this, _, _, cx| {
+                                            this.pagination_simple_page = page;
+                                            cx.notify();
+                                        })),
+                                    )
+                                })),
+                            )
+                            .into_any_element(),
+                    ),
+                    (
+                        "Icons Only",
+                        // pagination-icons-only: Rows-per-page Field+Select left,
+                        // Prev/Next-only w_auto Pagination right
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .justify_between()
+                            .gap(px(16.))
+                            .w_full()
+                            .child(
+                                // width fit — horizontal Field does not stretch full row
+                                div().child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .child(FieldLabel::new().child("Rows per page"))
+                                        .child(
+                                            Select::new("pagination-rows")
+                                                .options(["10", "25", "50", "100"])
+                                                .value(self.pagination_rows_value)
+                                                .open(self.pagination_rows_open)
+                                                .on_change(cx.listener(
+                                                    |this, value: &usize, _, cx| {
+                                                        this.pagination_rows_value = Some(*value);
+                                                        cx.notify();
+                                                    },
+                                                ))
+                                                .on_open_change(cx.listener(
+                                                    |this, open: &bool, _, cx| {
+                                                        this.pagination_rows_open = *open;
+                                                        cx.notify();
+                                                    },
+                                                )),
+                                        ),
+                                ),
+                            )
+                            .child(
+                                Pagination::new().w_auto().child(
+                                    PaginationContent::new()
+                                        .child(
+                                            PaginationItem::new().child(
+                                                PaginationPrevious::new("page-icons-prev")
+                                                    .on_click(cx.listener(|this, _, _, cx| {
+                                                        this.pagination_page = this
+                                                            .pagination_page
+                                                            .saturating_sub(1)
+                                                            .max(1);
+                                                        cx.notify();
+                                                    })),
+                                            ),
+                                        )
+                                        .child(
+                                            PaginationItem::new().child(
+                                                PaginationNext::new("page-icons-next").on_click(
+                                                    cx.listener(|this, _, _, cx| {
+                                                        this.pagination_page =
+                                                            (this.pagination_page + 1).min(3);
+                                                        cx.notify();
+                                                    }),
+                                                ),
+                                            ),
+                                        ),
+                                ),
+                            )
+                            .into_any_element(),
+                    ),
+                ]
+            }
             _ => Vec::new(),
         }
     }
@@ -3170,7 +3273,20 @@ impl Storybook {
                 &theme,
             )],
             Story::SliderStory => Vec::new(),
-            Story::PaginationStory => Vec::new(),
+            Story::PaginationStory => vec![Self::control_row(
+                "size",
+                Self::choices(
+                    "pagination-link-size",
+                    &BUTTON_SIZES,
+                    self.pagination_link_size,
+                    cx,
+                    |this, v, cx| {
+                        this.pagination_link_size = v;
+                        cx.notify();
+                    },
+                ),
+                &theme,
+            )],
             Story::ScrollArea => Vec::new(),
             Story::TooltipStory => Vec::new(),
             Story::HoverCardStory => Vec::new(),
@@ -4672,28 +4788,44 @@ impl Storybook {
             .child(Slider::new("slider-disabled").value(30.).disabled(true))
     }
     fn pagination_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        Pagination::new()
-            .child(
-                PaginationPrevious::new("page-prev").on_click(cx.listener(|this, _, _, cx| {
-                    this.pagination_page = this.pagination_page.saturating_sub(1).max(1);
-                    cx.notify();
-                })),
-            )
-            .children((1..=3).map(|page| {
-                PaginationLink::new(("page-link", page), page.to_string())
-                    .active(self.pagination_page == page)
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        this.pagination_page = page;
-                        cx.notify();
-                    }))
-            }))
-            .child(PaginationEllipsis::new())
-            .child(
-                PaginationNext::new("page-next").on_click(cx.listener(|this, _, _, cx| {
-                    this.pagination_page = (this.pagination_page + 1).min(3);
-                    cx.notify();
-                })),
-            )
+        // shadcn pagination-demo: Prev / 1 / 2-active / 3 / ellipsis / Next
+        let link_size = self.pagination_link_size;
+        Pagination::new().child(
+            PaginationContent::new()
+                .child(
+                    PaginationItem::new().child(
+                        PaginationPrevious::new("page-prev")
+                            .text("Previous")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.pagination_page =
+                                    this.pagination_page.saturating_sub(1).max(1);
+                                cx.notify();
+                            })),
+                    ),
+                )
+                .children((1..=3).map(|page| {
+                    PaginationItem::new().child(
+                        PaginationLink::new(("page-link", page), page.to_string())
+                            .size(link_size)
+                            .active(self.pagination_page == page)
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                this.pagination_page = page;
+                                cx.notify();
+                            })),
+                    )
+                }))
+                .child(PaginationItem::new().child(PaginationEllipsis::new()))
+                .child(
+                    PaginationItem::new().child(
+                        PaginationNext::new("page-next")
+                            .text("Next")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.pagination_page = (this.pagination_page + 1).min(3);
+                                cx.notify();
+                            })),
+                    ),
+                ),
+        )
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
