@@ -1942,9 +1942,14 @@ pub static SCROLL_AREA_API: &[ApiEntry] = &[
         signature: "pub fn w(mut self, width: Pixels) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "ScrollArea",
+        signature: "pub fn horizontal(mut self) -> Self",
+        doc: "Paint a horizontal scrollbar along the bottom edge and enable `overflow_x_scroll` on the viewport (shadcn horizontal ScrollBar).",
+    },
 ];
 
-pub static SCROLL_AREA_USAGE: &str = "let theme = Theme::of(cx).clone();\ndiv()\n    .rounded(theme.radius_md())\n    .border_1()\n    .border_color(theme.border)\n    .child(\n        ScrollArea::new(\"scroll-area-tags\")\n            .h(px(200.))\n            .w(px(192.))\n            .child(\n                div()\n                    .flex()\n                    .flex_col()\n                    .p(px(16.))\n                    .child(\n                        div()\n                            .text_size(px(14.))\n                            .font_weight(FontWeight::MEDIUM)\n                            .pb(px(8.))\n                            .child(\"Tags\"),\n                    )\n                    .children((1..=20).flat_map(|version| {\n                        [\n                            div()\n                                .py(px(6.))\n                                .text_size(px(13.))\n                                .child(format!(\"v1.2.0-beta.{version}\"))\n                                .into_any_element(),\n                            Separator::new().into_any_element(),\n                        ]\n                    })),\n            ),\n    )\n    ";
+pub static SCROLL_AREA_USAGE: &str = "let theme = Theme::of(cx).clone();\n// shadcn docs demos: vertical Tags list, then horizontal artwork row.\ndiv()\n    .flex()\n    .flex_col()\n    .items_start()\n    .gap(px(24.))\n    .child(\n        // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288\n        // total, so the ScrollArea inside the 1px border is 190×286).\n        div()\n            .rounded(theme.radius_md())\n            .border_1()\n            .border_color(theme.border)\n            .child(\n                ScrollArea::new(\"scroll-area-tags\")\n                    .h(px(286.))\n                    .w(px(190.))\n                    .child(\n                        div()\n                            .p(px(16.))\n                            .child(\n                                div()\n                                    .text_size(px(14.))\n                                    .font_weight(FontWeight::MEDIUM)\n                                    .mb(px(16.))\n                                    .child(\"Tags\"),\n                            )\n                            .children((1..=50).rev().flat_map(|version| {\n                                [\n                                    div()\n                                        .text_size(px(14.))\n                                        .child(format!(\"v1.2.0-beta.{version}\"))\n                                        .into_any_element(),\n                                    div()\n                                        .my(px(8.))\n                                        .child(Separator::new())\n                                        .into_any_element(),\n                                ]\n                            })),\n                    ),\n            ),\n    )\n    .child(\n        // Horizontal artwork demo (shadcn w-96 + orientation=\"horizontal\"),\n        // with the docs page's three Unsplash photos embedded as assets.\n        div()\n            .rounded(theme.radius_md())\n            .border_1()\n            .border_color(theme.border)\n            .child(\n                // Height fits the square figure + caption + 16px padding\n                // (no explicit h in shadcn; gpui viewport is size_full so\n                // the root needs a definite height for the track to paint).\n                ScrollArea::new(\"scroll-area-artwork\")\n                    .w(px(382.))\n                    .h(px(358.))\n                    .horizontal()\n                    .child(\n                        div().flex().flex_row().gap(px(16.)).p(px(16.)).children(\n                            [\n                                (\"Ornella Binni\", crate::assets::PHOTO_ORNELLA_BINNI),\n                                (\"Tom Byrom\", crate::assets::PHOTO_TOM_BYROM),\n                                (\n                                    \"Vladimir Malyavko\",\n                                    crate::assets::PHOTO_VLADIMIR_MALYAVKO,\n                                ),\n                            ]\n                            .into_iter()\n                            .map(|(artist, photo)| {\n                                let theme = theme.clone();\n                                div()\n                                    .id(photo)\n                                    .flex()\n                                    .flex_col()\n                                    .flex_none()\n                                    .child(\n                                        // Square center-crop, like the\n                                        // docs page's visible framing.\n                                        img(photo)\n                                            .w(px(300.))\n                                            .h(px(300.))\n                                            .rounded(theme.radius_md())\n                                            .object_fit(ObjectFit::Cover),\n                                    )\n                                    .child(\n                                        div()\n                                            .pt(px(8.))\n                                            .text_size(px(12.))\n                                            .text_color(theme.muted_foreground)\n                                            .child(\n                                                div()\n                                                    .flex()\n                                                    .flex_row()\n                                                    .child(\"Photo by \")\n                                                    .child(\n                                                        div()\n                                                            .font_weight(\n                                                                FontWeight::SEMIBOLD,\n                                                            )\n                                                            .text_color(theme.foreground)\n                                                            .child(artist),\n                                                    ),\n                                            ),\n                                    )\n                                    .into_any_element()\n                            }),\n                        ),\n                    ),\n            ),\n    )\n    ";
 
 pub static SELECT_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2208,6 +2213,11 @@ pub static SWITCH_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Switch",
         signature: "pub fn checked(mut self, checked: bool) -> Self",
+        doc: "Controlled checked override. When set, wins over keyed uncontrolled state.",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn default_checked(mut self, default_checked: bool) -> Self",
         doc: "",
     },
     ApiEntry {
@@ -2222,12 +2232,22 @@ pub static SWITCH_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Switch",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
+        signature: "pub fn read_only(mut self, read_only: bool) -> Self",
+        doc: "Focusable with the focus ring, but activation (click/Enter/Space) is a no-op. Distinct from [`Self::disabled`] (unfocusable, 50% opacity, no pointer events).",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "`aria-invalid`: destructive border + always-visible destructive ring.",
+    },
+    ApiEntry {
+        type_name: "Switch",
+        signature: "pub fn on_checked_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Base UI `onCheckedChange` — called with the next checked value.",
     },
 ];
 
-pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .on_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
+pub static SWITCH_USAGE: &str = "Switch::new(\"preview-switch\")\n    .checked(self.switch_checked)\n    .size(self.switch_size)\n    .disabled(self.switch_disabled)\n    .invalid(self.switch_invalid)\n    .read_only(self.switch_read_only)\n    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {\n        this.switch_checked = *checked;\n        cx.notify();\n    }))\n    ";
 
 pub static TABLE_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2363,12 +2383,26 @@ pub static TEXTAREA_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Textarea",
         signature: "pub fn rows(mut self, rows: u32) -> Self",
-        doc: "Minimum visible rows (drives the shell's min-height).",
+        doc: "Minimum visible rows (drives the shell's min-height).  When unset, the shell uses shadcn's `min-h-16` (64px). When set, min height is `20 * rows + 16` px.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn disabled(mut self, disabled: bool) -> Self",
+        doc: "Disabled shell styling (opacity 0.5 + muted input background).  shadcn's `cursor-not-allowed` is omitted (no gpui equivalent worth faking). The caller is responsible for also calling [`Input::set_disabled`]`(true)` on the wrapped entity so the field is unfocusable/uneditable.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "Invalid shell styling (destructive border + always-on destructive ring).  Wins over the focused ring/border: when invalid, the destructive chrome is shown whether focused or not.",
+    },
+    ApiEntry {
+        type_name: "Textarea",
+        signature: "pub fn resizable(mut self, resizable: bool) -> Self",
+        doc: "",
     },
 ];
 
-pub static TEXTAREA_USAGE: &str =
-    "div()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()).rows(4))\n    ";
+pub static TEXTAREA_USAGE: &str = "// Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.\ndiv()\n    .w(px(288.))\n    .child(Textarea::new(self.textarea_input.clone()))\n    ";
 
 pub static TOAST_API: &[ApiEntry] = &[
     ApiEntry {

@@ -55,7 +55,7 @@ solid before the molecules that compose them.
   disabled unfocusable with bg-input/50 tint; all 14 docs examples in the
   storybook; RTL omitted; border/bg focus transition TODO; native `required`
   has no visual — noted only)
-- [x] textarea — focus ring shadow
+- [x] textarea — base-nova parity (rounded-lg px-2.5 no-shadow shell; disabled + invalid states with destructive ring rendered as a border overlay, not a see-through box shadow; corner drag-resize grip like the native `resize`; min-h-16 default; all docs examples; RTL, field-sizing-content auto-grow, and multi-line editing omitted/TODO)
 
 ### Tier 2 — molecules on the atoms
 
@@ -67,8 +67,8 @@ solid before the molecules that compose them.
 - [x] empty — (static presentation — matches source; dashed border approximated solid)
 - [x] item — (static presentation — matches source layout variants)
 - [x] field — base-nova parity (all ten parts incl. FieldLabel/FieldContent/FieldTitle/FieldSeparator; vertical/horizontal orientations + responsive via measured container width (`container_query`, @md 448px); `.invalid()` destructive cascade; choice cards via `FieldLabel::choice_card(checked)` with dark-mode primary tints; `FieldError::errors()` dedup + bullet list; browser-measured legend/description spacing; RTL and aria semantics omitted)
-- [x] input-group — focus ring shadow on the shell; shell chrome tracks
-  base-nova (h-8 rounded-lg, no resting shadow, opaque bg under the ring)
+- [x] input-group — shell chrome tracks base-nova (h-8 rounded-lg, no
+  resting shadow); focus ring as a border overlay (motion::focus_ring_overlay)
 - [x] input-otp — (slot presentation + click-to-focus; per-slot caret/paste keyboard TODO)
 - [x] button-group — (joined corner/border styling for Buttons via
   group_position; `.input(..)` segment wraps a bare Input in a joined
@@ -79,7 +79,7 @@ solid before the molecules that compose them.
 - [x] breadcrumb — (link focus rings)
 - [x] pagination — base-vega parity (Content/Item composition; Link.size + Previous/Next.text; icon-side padding via icon_inline_start/end; currentColor Icon chevrons; sm-breakpoint label hide via viewport width; foreground ellipsis; Simple + Icons Only docs examples; aria/sr-only omitted — no a11y tree; RTL omitted — unsupported, TODO)
 - [x] table — (static presentation — matches source table parts)
-- [x] scroll-area — (vertical overflow scroll; custom scrollbar + horizontal TODO)
+- [x] scroll-area — (custom painted scrollbar w/ proportional thumb, drag + track-click, horizontal orientation, focus ring; RTL + hover-fade states omitted)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] marker — (static presentation — matches source divider variants)
 

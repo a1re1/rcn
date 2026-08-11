@@ -13,7 +13,7 @@ use gpui::{
 use crate::components::button::{Button, GroupPosition};
 use crate::components::input::Input;
 use crate::components::separator::Separator;
-use crate::theme::{Theme, alpha, composite};
+use crate::theme::{Theme, alpha};
 
 enum ButtonGroupItem {
     Button(Button),
@@ -79,6 +79,28 @@ impl RenderOnce for ButtonGroup {
                         let focused = input.read(cx).focus_handle(cx).is_focused(window);
                         // Input-chrome shell (h-8 border px-2.5), corners
                         // squared on joined edges like Button::group_position.
+                        // The focus ring is a border overlay following the
+                        // joined corners — gpui box shadows would show through
+                        // the transparent bg (see motion::focus_ring_overlay).
+                        let ring_radius = theme.radius_lg() + px(3.);
+                        let ring_overlay = div()
+                            .absolute()
+                            .top(px(-4.))
+                            .left(px(-4.))
+                            .right(px(-4.))
+                            .bottom(px(-4.))
+                            .border_3()
+                            .border_color(alpha(theme.ring, 0.5))
+                            .map(|el| match position {
+                                GroupPosition::Only => el.rounded(ring_radius),
+                                GroupPosition::First => {
+                                    el.rounded_l(ring_radius).rounded_r(px(3.))
+                                }
+                                GroupPosition::Middle => el.rounded(px(3.)),
+                                GroupPosition::Last => {
+                                    el.rounded_r(ring_radius).rounded_l(px(3.))
+                                }
+                            });
                         div()
                             .flex()
                             .flex_row()
@@ -93,19 +115,10 @@ impl RenderOnce for ButtonGroup {
                                 GroupPosition::Middle => el.ml(px(-1.)),
                                 GroupPosition::Last => el.rounded_r(theme.radius_lg()).ml(px(-1.)),
                             })
-                            .when(focused, |el| {
-                                // Opaque bg under the ring: gpui shadows show
-                                // through transparent backgrounds.
-                                el.shadow(crate::motion::focus_ring(&theme))
-                                    .bg(if theme.dark {
-                                        composite(theme.background, alpha(theme.input, 0.3))
-                                    } else {
-                                        theme.background
-                                    })
-                            })
-                            .when(!focused && theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
+                            .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
                             .px(px(10.))
                             .child(div().flex_1().child(input))
+                            .when(focused, |el| el.child(ring_overlay))
                             .into_any_element()
                     }
                 }

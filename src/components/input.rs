@@ -26,7 +26,7 @@ use gpui::{
 };
 use unicode_segmentation::UnicodeSegmentation as _;
 
-use crate::theme::{Theme, alpha, composite};
+use crate::theme::{Theme, alpha};
 
 /// Invoked on user edits (typing, paste, cut, IME) — not on `set_text`.
 type ChangeHandler = Rc<dyn Fn(&SharedString, &mut Window, &mut App) + 'static>;
@@ -1145,42 +1145,30 @@ impl Render for Input {
                 } else {
                     theme.input
                 };
-                // Ring-bearing states need an opaque background: gpui box
-                // shadows show through transparent backgrounds (see
-                // `theme::composite`), where CSS rings paint outside only.
-                let ring = invalid || focused;
                 el.h(px(32.))
                     .rounded(theme.radius_lg())
                     .border_1()
                     .border_color(border)
-                    .when(invalid, |el| {
-                        // Always-on destructive ring (rest + focused); overrides blue ring.
-                        el.shadow(crate::motion::focus_ring_destructive(&theme))
-                    })
-                    .when(!invalid && focused, |el| {
-                        el.shadow(crate::motion::focus_ring(&theme))
-                    })
                     .when(disabled, |el| {
                         // disabled:bg-input/50 dark:disabled:bg-input/80 (replaces normal tint)
-                        el.bg(composite(
-                            theme.background,
-                            alpha(theme.input, if theme.dark { 0.8 } else { 0.5 }),
+                        el.bg(alpha(theme.input, if theme.dark { 0.8 } else { 0.5 }))
+                    })
+                    .when(!disabled && theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
+                    .px(px(10.))
+                    // Rings are border overlays, not box shadows: gpui paints
+                    // shadows behind the quad, so they'd show through the
+                    // transparent bg as a fill (see motion::focus_ring_overlay).
+                    // Invalid stays destructive at rest AND focused, overriding
+                    // the blue ring (aria-invalid class precedence).
+                    .when(invalid, |el| {
+                        el.child(crate::motion::focus_ring_overlay_destructive(
+                            &theme,
+                            theme.radius_lg(),
                         ))
                     })
-                    .when(!disabled, |el| {
-                        if ring {
-                            el.bg(if theme.dark {
-                                composite(theme.background, alpha(theme.input, 0.3))
-                            } else {
-                                theme.background
-                            })
-                        } else if theme.dark {
-                            el.bg(alpha(theme.input, 0.3))
-                        } else {
-                            el
-                        }
+                    .when(!invalid && focused, |el| {
+                        el.child(crate::motion::focus_ring_overlay(&theme, theme.radius_lg()))
                     })
-                    .px(px(10.))
             })
             .when(disabled, |el| el.opacity(0.5))
             .when(file_mode, {

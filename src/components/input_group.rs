@@ -12,7 +12,7 @@ use gpui::{
 };
 
 use crate::components::input::Input;
-use crate::theme::{Theme, alpha, composite};
+use crate::theme::{Theme, alpha};
 
 /// A leading or trailing addon cluster (muted, non-editing).
 #[derive(IntoElement)]
@@ -89,9 +89,10 @@ impl RenderOnce for InputGroup {
         let focused = self.input.read(cx).focus_handle(cx).is_focused(window);
 
         // Shell: base-nova h-8 rounded-lg border (no resting shadow), ring
-        // border while the inner input has focus. The focused background is
-        // opaque because gpui shadows show through transparent backgrounds
-        // (see `theme::composite`).
+        // border while the inner input has focus. The ring is a border
+        // overlay, not a box shadow — gpui paints shadows behind the quad,
+        // so they show through transparent backgrounds as a fill (see
+        // motion::focus_ring_overlay).
         div()
             .flex()
             .flex_row()
@@ -102,18 +103,13 @@ impl RenderOnce for InputGroup {
             .rounded(theme.radius_lg())
             .border_1()
             .border_color(if focused { theme.ring } else { theme.input })
-            .when(focused, |el| {
-                el.shadow(crate::motion::focus_ring(&theme))
-                    .bg(if theme.dark {
-                        composite(theme.background, alpha(theme.input, 0.3))
-                    } else {
-                        theme.background
-                    })
-            })
-            .when(!focused && theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
+            .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
             .px(px(12.))
             .children(self.leading)
             .child(div().flex_1().child(self.input))
             .children(self.trailing)
+            .when(focused, |el| {
+                el.child(crate::motion::focus_ring_overlay(&theme, theme.radius_lg()))
+            })
     }
 }

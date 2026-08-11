@@ -17,8 +17,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString,
-    Window, div, hsla, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
+    SharedString, Window, div, hsla, img, prelude::*, px, relative, rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -662,6 +662,12 @@ pub struct Storybook {
     switch_checked: bool,
     switch_size: SwitchSize,
     switch_disabled: bool,
+    switch_invalid: bool,
+    switch_read_only: bool,
+    /// Choice-card example: "Share across devices"
+    switch_ex_share: bool,
+    /// Choice-card example: "Enable notifications" (starts checked)
+    switch_ex_notifications: bool,
     // Progress controls
     progress_value: f32,
     // Item controls
@@ -751,6 +757,10 @@ pub struct Storybook {
     input_form_country_open: bool,
     // Textarea story state
     textarea_input: gpui::Entity<Input>,
+    textarea_field_input: gpui::Entity<Input>,
+    textarea_disabled_input: gpui::Entity<Input>,
+    textarea_invalid_input: gpui::Entity<Input>,
+    textarea_button_input: gpui::Entity<Input>,
     // Field story state
     field_input: gpui::Entity<Input>,
     field_error_input: gpui::Entity<Input>,
@@ -973,6 +983,31 @@ impl Storybook {
             input.set_bare(true);
             input
         });
+        let textarea_field_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_disabled_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input.set_disabled(true);
+            input
+        });
+        let textarea_invalid_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
+        let textarea_button_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type your message here.");
+            input.set_bare(true);
+            input
+        });
         let field_input = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("you@example.com");
@@ -1145,6 +1180,10 @@ impl Storybook {
             switch_checked: true,
             switch_size: SwitchSize::Default,
             switch_disabled: false,
+            switch_invalid: false,
+            switch_read_only: false,
+            switch_ex_share: false,
+            switch_ex_notifications: true,
             progress_value: 60.,
             item_variant: ItemVariant::Outline,
             item_size: ItemSize::Default,
@@ -1209,6 +1248,10 @@ impl Storybook {
             input_form_country: Some(0),
             input_form_country_open: false,
             textarea_input,
+            textarea_field_input,
+            textarea_disabled_input,
+            textarea_invalid_input,
+            textarea_button_input,
             field_input,
             field_error_input,
             field_name_input,
@@ -2242,23 +2285,159 @@ impl Storybook {
                     },
                 ),
             ],
-            Story::Switch => vec![(
-                "Sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .flex_wrap()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Switch::new("ex-switch-sm")
-                            .size(SwitchSize::Sm)
-                            .checked(true),
+            Story::Switch => vec![
+                (
+                    "Demo",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(Switch::new("ex-switch-demo"))
+                        .child(Label::new().child("Airplane Mode"))
+                        .into_any_element(),
+                ),
+                (
+                    "Description",
+                    div().w(px(384.)).child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .content(
+                                FieldContent::new()
+                                    .child(
+                                        FieldLabel::new().child("Share across devices"),
+                                    )
+                                    .child(
+                                        FieldDescription::new().child(
+                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                        ),
+                                    ),
+                            )
+                            .child(Switch::new("ex-switch-description")),
                     )
-                    .child(Switch::new("ex-switch-default").checked(true))
-                    .child(Switch::new("ex-switch-disabled").disabled(true))
                     .into_any_element(),
-            )],
+                ),
+                (
+                    "Choice Card",
+                    div().w(px(384.)).child(
+                        FieldGroup::new()
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_share)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Share across devices"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Focus is shared across devices, and turns off when you leave the app.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-share")
+                                                    .checked(self.switch_ex_share)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_share = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            )
+                            .child(
+                                FieldLabel::new()
+                                    .choice_card(self.switch_ex_notifications)
+                                    .child(
+                                        Field::new()
+                                            .orientation(FieldOrientation::Horizontal)
+                                            .content(
+                                                FieldContent::new()
+                                                    .child(
+                                                        FieldTitle::new()
+                                                            .child("Enable notifications"),
+                                                    )
+                                                    .child(
+                                                        FieldDescription::new().child(
+                                                            "Receive notifications when focus mode is enabled or disabled.",
+                                                        ),
+                                                    ),
+                                            )
+                                            .child(
+                                                Switch::new("ex-switch-choice-notify")
+                                                    .checked(self.switch_ex_notifications)
+                                                    .on_checked_change(cx.listener(
+                                                        |this, checked: &bool, _, cx| {
+                                                            this.switch_ex_notifications = *checked;
+                                                            cx.notify();
+                                                        },
+                                                    )),
+                                            ),
+                                    ),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Switch::new("ex-switch-disabled-demo").disabled(true))
+                        .child(
+                            FieldLabel::new()
+                                .disabled(true)
+                                .child("Disabled"),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .invalid(true)
+                        .content(
+                            FieldContent::new()
+                                .child(
+                                    FieldLabel::new()
+                                        .child("Accept terms and conditions"),
+                                )
+                                .child(
+                                    FieldDescription::new().child(
+                                        "You must accept the terms and conditions to continue.",
+                                    ),
+                                ),
+                        )
+                        // Uncontrolled, like the docs' `<Switch aria-invalid />` —
+                        // an invalid switch still toggles.
+                        .child(Switch::new("ex-switch-invalid-demo").invalid(true))
+                        .into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    div().w(px(160.)).child(
+                        FieldGroup::new()
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-sm").size(SwitchSize::Sm))
+                                    .child(FieldLabel::new().child("Small")),
+                            )
+                            .child(
+                                Field::new()
+                                    .orientation(FieldOrientation::Horizontal)
+                                    .child(Switch::new("ex-switch-size-default"))
+                                    .child(FieldLabel::new().child("Default")),
+                            ),
+                    )
+                    .into_any_element(),
+                ),
+            ],
             Story::Checkbox => vec![(
                 "States",
                 div()
@@ -3145,6 +3324,70 @@ impl Storybook {
                     ),
                 ),
             ],
+            // RTL docs example intentionally omitted (repo-wide out of scope).
+            Story::TextareaStory => vec![
+                (
+                    "Field",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Enter your message below."),
+                                )
+                                .child(Textarea::new(self.textarea_field_input.clone())),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .child(FieldLabel::new().disabled(true).child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_disabled_input.clone())
+                                        .disabled(true),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Invalid",
+                    div()
+                        .w(px(288.))
+                        .child(
+                            Field::new()
+                                .invalid(true)
+                                .child(FieldLabel::new().child("Message"))
+                                .child(
+                                    Textarea::new(self.textarea_invalid_input.clone())
+                                        .invalid(true),
+                                )
+                                .child(
+                                    FieldDescription::new()
+                                        .child("Please enter a valid message."),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "Button",
+                    div()
+                        .w(px(288.))
+                        .flex()
+                        .flex_col()
+                        .gap(px(8.))
+                        .child(Textarea::new(self.textarea_button_input.clone()))
+                        // Direct flex-col child so the button stretches full
+                        // width, like the docs' `grid w-full gap-2`.
+                        .child(Button::new("textarea-send").child("Send message"))
+                        .into_any_element(),
+                ),
+            ],
             Story::Skeleton => vec![
                 (
                     "Avatar",
@@ -3411,6 +3654,22 @@ impl Storybook {
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
             ),
+            (Story::TextareaStory, "Field") => Some(
+                "Use Field, FieldLabel, and FieldDescription to create a textarea with a \
+                 label and description.",
+            ),
+            (Story::TextareaStory, "Disabled") => Some(
+                "Use .disabled(true) to disable the textarea shell (plus Input::set_disabled \
+                 on the wrapped entity). FieldLabel::disabled(true) mirrors the Field \
+                 data-disabled styling.",
+            ),
+            (Story::TextareaStory, "Invalid") => Some(
+                "Use .invalid(true) to mark the textarea as invalid. Field::invalid(true) \
+                 paints the label destructive.",
+            ),
+            (Story::TextareaStory, "Button") => {
+                Some("Pair with Button to create a textarea with a submit button.")
+            }
             (Story::Badge, "With Icon") => Some(
                 "You can render an icon inside the badge. Use .icon_inline_start() / .icon_inline_end() to trim the padding on the icon side.",
             ),
@@ -3465,7 +3724,7 @@ impl Storybook {
                     Switch::new("button-disabled")
                         .checked(self.button_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.button_disabled = *checked;
                             cx.notify();
                         }))
@@ -3507,7 +3766,7 @@ impl Storybook {
                     Switch::new("ctl-switch-checked")
                         .checked(self.switch_checked)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_checked = *checked;
                             cx.notify();
                         }))
@@ -3533,8 +3792,32 @@ impl Storybook {
                     Switch::new("ctl-switch-disabled")
                         .checked(self.switch_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.switch_disabled = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "invalid",
+                    Switch::new("ctl-switch-invalid")
+                        .checked(self.switch_invalid)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_invalid = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "read_only",
+                    Switch::new("ctl-switch-read-only")
+                        .checked(self.switch_read_only)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.switch_read_only = *checked;
                             cx.notify();
                         }))
                         .into_any_element(),
@@ -3547,7 +3830,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-multiple")
                         .checked(self.accordion_multiple)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_multiple = *on;
                             cx.notify();
                         }))
@@ -3559,7 +3842,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-root-disabled")
                         .checked(self.accordion_root_disabled)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_root_disabled = *on;
                             cx.notify();
                         }))
@@ -3571,7 +3854,7 @@ impl Storybook {
                     Switch::new("ctl-accordion-disabled")
                         .checked(self.accordion_disable_third)
                         .size(SwitchSize::Sm)
-                        .on_change(cx.listener(|this, on: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, on: &bool, _, cx| {
                             this.accordion_disable_third = *on;
                             cx.notify();
                         }))
@@ -3640,7 +3923,7 @@ impl Storybook {
                 Switch::new("ctl-checkbox-checked")
                     .checked(self.checkbox_checked)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.checkbox_checked = *checked;
                         cx.notify();
                     }))
@@ -3656,7 +3939,7 @@ impl Storybook {
                 Switch::new("ctl-collapsible-open")
                     .checked(self.collapsible_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.collapsible_open = *open;
                         cx.notify();
                     }))
@@ -3703,7 +3986,7 @@ impl Storybook {
                 Switch::new("ctl-dialog-open")
                     .checked(self.dialog_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.dialog_open = *open;
                         cx.notify();
                     }))
@@ -3802,7 +4085,7 @@ impl Storybook {
                 Switch::new("ctl-label-disabled")
                     .checked(self.label_disabled)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.label_disabled = *checked;
                         cx.notify();
                     }))
@@ -3829,7 +4112,7 @@ impl Storybook {
                 Switch::new("ctl-popover-open")
                     .checked(self.popover_open)
                     .size(SwitchSize::Sm)
-                    .on_change(cx.listener(|this, open: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, open: &bool, _, cx| {
                         this.popover_open = *open;
                         cx.notify();
                     }))
@@ -4353,7 +4636,7 @@ impl Storybook {
                     .child(
                         Switch::new("tokens-switch")
                             .checked(self.switch_checked)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                                 this.switch_checked = *checked;
                                 cx.notify();
                             })),
@@ -4405,7 +4688,9 @@ impl Storybook {
             .checked(self.switch_checked)
             .size(self.switch_size)
             .disabled(self.switch_disabled)
-            .on_change(cx.listener(|this, checked: &bool, _, cx| {
+            .invalid(self.switch_invalid)
+            .read_only(self.switch_read_only)
+            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                 this.switch_checked = *checked;
                 cx.notify();
             }))
@@ -5214,36 +5499,114 @@ impl Storybook {
     }
     fn scroll_area_preview(cx: &App) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        // shadcn docs demos: vertical Tags list, then horizontal artwork row.
         div()
-            .rounded(theme.radius_md())
-            .border_1()
-            .border_color(theme.border)
+            .flex()
+            .flex_col()
+            .items_start()
+            .gap(px(24.))
             .child(
-                ScrollArea::new("scroll-area-tags")
-                    .h(px(200.))
-                    .w(px(192.))
+                // Vertical tags demo (shadcn h-72 w-48, border-box: 192×288
+                // total, so the ScrollArea inside the 1px border is 190×286).
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
                     .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .p(px(16.))
+                        ScrollArea::new("scroll-area-tags")
+                            .h(px(286.))
+                            .w(px(190.))
                             .child(
                                 div()
-                                    .text_size(px(14.))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .pb(px(8.))
-                                    .child("Tags"),
-                            )
-                            .children((1..=20).flat_map(|version| {
-                                [
-                                    div()
-                                        .py(px(6.))
-                                        .text_size(px(13.))
-                                        .child(format!("v1.2.0-beta.{version}"))
-                                        .into_any_element(),
-                                    Separator::new().into_any_element(),
-                                ]
-                            })),
+                                    .p(px(16.))
+                                    .child(
+                                        div()
+                                            .text_size(px(14.))
+                                            .font_weight(FontWeight::MEDIUM)
+                                            .mb(px(16.))
+                                            .child("Tags"),
+                                    )
+                                    .children((1..=50).rev().flat_map(|version| {
+                                        [
+                                            div()
+                                                .text_size(px(14.))
+                                                .child(format!("v1.2.0-beta.{version}"))
+                                                .into_any_element(),
+                                            div()
+                                                .my(px(8.))
+                                                .child(Separator::new())
+                                                .into_any_element(),
+                                        ]
+                                    })),
+                            ),
+                    ),
+            )
+            .child(
+                // Horizontal artwork demo (shadcn w-96 + orientation="horizontal"),
+                // with the docs page's three Unsplash photos embedded as assets.
+                div()
+                    .rounded(theme.radius_md())
+                    .border_1()
+                    .border_color(theme.border)
+                    .child(
+                        // Height fits the square figure + caption + 16px padding
+                        // (no explicit h in shadcn; gpui viewport is size_full so
+                        // the root needs a definite height for the track to paint).
+                        ScrollArea::new("scroll-area-artwork")
+                            .w(px(382.))
+                            .h(px(358.))
+                            .horizontal()
+                            .child(
+                                div().flex().flex_row().gap(px(16.)).p(px(16.)).children(
+                                    [
+                                        ("Ornella Binni", crate::assets::PHOTO_ORNELLA_BINNI),
+                                        ("Tom Byrom", crate::assets::PHOTO_TOM_BYROM),
+                                        (
+                                            "Vladimir Malyavko",
+                                            crate::assets::PHOTO_VLADIMIR_MALYAVKO,
+                                        ),
+                                    ]
+                                    .into_iter()
+                                    .map(|(artist, photo)| {
+                                        let theme = theme.clone();
+                                        div()
+                                            .id(photo)
+                                            .flex()
+                                            .flex_col()
+                                            .flex_none()
+                                            .child(
+                                                // Square center-crop, like the
+                                                // docs page's visible framing.
+                                                img(photo)
+                                                    .w(px(300.))
+                                                    .h(px(300.))
+                                                    .rounded(theme.radius_md())
+                                                    .object_fit(ObjectFit::Cover),
+                                            )
+                                            .child(
+                                                div()
+                                                    .pt(px(8.))
+                                                    .text_size(px(12.))
+                                                    .text_color(theme.muted_foreground)
+                                                    .child(
+                                                        div()
+                                                            .flex()
+                                                            .flex_row()
+                                                            .child("Photo by ")
+                                                            .child(
+                                                                div()
+                                                                    .font_weight(
+                                                                        FontWeight::SEMIBOLD,
+                                                                    )
+                                                                    .text_color(theme.foreground)
+                                                                    .child(artist),
+                                                            ),
+                                                    ),
+                                            )
+                                            .into_any_element()
+                                    }),
+                                ),
+                            ),
                     ),
             )
     }
@@ -6211,9 +6574,10 @@ impl Storybook {
         )
     }
     fn textarea_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Demo — default min-h-16 (no rows()). RTL docs example intentionally omitted.
         div()
             .w(px(288.))
-            .child(Textarea::new(self.textarea_input.clone()).rows(4))
+            .child(Textarea::new(self.textarea_input.clone()))
     }
     fn field_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         // Port of field-demo.tsx — Payment Method checkout form.
@@ -6679,7 +7043,7 @@ impl Storybook {
                 .child(
                     Switch::new("field-2fa")
                         .checked(self.field_switch_2fa)
-                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                             this.field_switch_2fa = *checked;
                             cx.notify();
                         })),
