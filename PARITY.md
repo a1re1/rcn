@@ -48,7 +48,13 @@ solid before the molecules that compose them.
 - [x] toggle — base-nova parity (h-8/h-7/h-9 metrics, rounded-lg + sm radius/text/icon overrides, no outline shadow, full-muted hover, uncontrolled default_pressed, on_pressed_change, icon_inline_start/end padding; all five docs examples incl. pressed bookmark fill; RTL, aria-invalid, group `value`, and hover transition-all omitted)
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
-- [x] input — full focus ring shadow (was border-only)
+- [x] input — base-nova parity (h-8/rounded-lg/px-2.5 chrome, no resting
+  shadow; invalid destructive border + always-on ring; read-only, masked
+  password (bullets, no copy/cut), and file mode with native picker;
+  `on_change`; alt/cmd word+line nav, deletes, double/triple-click selection;
+  disabled unfocusable with bg-input/50 tint; all 14 docs examples in the
+  storybook; RTL omitted; border/bg focus transition TODO; native `required`
+  has no visual — noted only)
 - [x] textarea — base-nova parity (rounded-lg px-2.5 no-shadow shell; disabled + invalid states with destructive ring rendered as a border overlay, not a see-through box shadow; corner drag-resize grip like the native `resize`; min-h-16 default; all docs examples; RTL, field-sizing-content auto-grow, and multi-line editing omitted/TODO)
 
 ### Tier 2 — molecules on the atoms
@@ -61,9 +67,12 @@ solid before the molecules that compose them.
 - [x] empty — (static presentation — matches source; dashed border approximated solid)
 - [x] item — (base-nova root/sizes/radius; interactive link mode with focus ring + hover; per-size media/content/description/group builders; line clamps; all docs examples; omitted: RTL, hover color transition (instant swap), automatic has-description/media context selectors (explicit builders instead))
 - [x] field — base-nova parity (all ten parts incl. FieldLabel/FieldContent/FieldTitle/FieldSeparator; vertical/horizontal orientations + responsive via measured container width (`container_query`, @md 448px); `.invalid()` destructive cascade; choice cards via `FieldLabel::choice_card(checked)` with dark-mode primary tints; `FieldError::errors()` dedup + bullet list; browser-measured legend/description spacing; RTL and aria semantics omitted)
-- [x] input-group — focus ring shadow on the shell
+- [x] input-group — shell chrome tracks base-nova (h-8 rounded-lg, no
+  resting shadow); focus ring as a border overlay (motion::focus_ring_overlay)
 - [x] input-otp — (slot presentation + click-to-focus; per-slot caret/paste keyboard TODO)
-- [x] button-group — (static presentation — layout wrapper; children own interaction)
+- [x] button-group — (joined corner/border styling for Buttons via
+  group_position; `.input(..)` segment wraps a bare Input in a joined
+  input-chrome shell (`[&>input]:flex-1`); children own interaction)
 - [x] toggle-group — (keyboard focus + ring)
 - [x] tabs — (keyboard focus + ring)
 - [x] collapsible — (200ms animated reveal)

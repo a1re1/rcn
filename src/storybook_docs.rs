@@ -414,6 +414,11 @@ pub static BUTTON_GROUP_API: &[ApiEntry] = &[
         doc: "",
     },
     ApiEntry {
+        type_name: "ButtonGroup",
+        signature: "pub fn input(mut self, input: Entity<Input>) -> Self",
+        doc: "A joined input segment (`[&>input]:flex-1`): the group draws the shared border and squared inner corners around a bare [`Input`] (`input.set_bare(true)`), like [`InputGroup`](super::InputGroup).",
+    },
+    ApiEntry {
         type_name: "ButtonGroupText",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -1245,7 +1250,32 @@ pub static INPUT_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Input",
+        signature: "pub fn set_invalid(&mut self, invalid: bool)",
+        doc: "Mirrors `aria-invalid`: destructive border + always-on destructive ring.",
+    },
+    ApiEntry {
+        type_name: "Input",
+        signature: "pub fn set_read_only(&mut self, read_only: bool)",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Input",
+        signature: "pub fn set_masked(&mut self, masked: bool)",
+        doc: "`type=\"password\"`: one bullet per grapheme; copy/cut are no-ops.",
+    },
+    ApiEntry {
+        type_name: "Input",
+        signature: "pub fn set_file(&mut self, file: bool)",
+        doc: "`type=\"file\"`: non-editable chrome with Choose File + selected name.",
+    },
+    ApiEntry {
+        type_name: "Input",
         signature: "pub fn set_bare(&mut self, bare: bool)",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Input",
+        signature: "pub fn on_change( &mut self, handler: impl Fn(&SharedString, &mut Window, &mut App) + 'static, ) -> &mut Self",
         doc: "",
     },
     ApiEntry {
@@ -1255,12 +1285,17 @@ pub static INPUT_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Input",
+        signature: "pub fn file_name(&self) -> Option<&str>",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "Input",
         signature: "pub fn set_text(&mut self, text: impl Into<SharedString>, cx: &mut Context<Self>)",
         doc: "",
     },
 ];
 
-pub static INPUT_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet value = self.input_demo.read(cx).text().to_string();\ndiv()\n    .flex()\n    .flex_col()\n    .gap(px(16.))\n    .w(px(288.))\n    .child(self.input_demo.clone())\n    .child(self.input_disabled.clone())\n    .child(\n        Button::new(\"input-clear\")\n            .variant(ButtonVariant::Outline)\n            .size(ButtonSize::Sm)\n            .on_click(cx.listener(|this, _, _, cx| {\n                this.input_demo\n                    .update(cx, |input, cx| input.set_text(\"\", cx));\n                cx.notify();\n            }))\n            .child(\"Clear\"),\n    )\n    .child(\n        div()\n            .text_size(px(12.))\n            .text_color(theme.muted_foreground)\n            .child(if value.is_empty() {\n                \"value: (empty)\".to_string()\n            } else {\n                format!(\"value: {value}\")\n            }),\n    )\n    ";
+pub static INPUT_USAGE: &str = "div().w(px(320.)).child(\n    Field::new()\n        .child(FieldLabel::new().child(\"API Key\"))\n        .child(self.input_demo.clone())\n        .child(\n            FieldDescription::new().child(\"Your API key is encrypted and stored securely.\"),\n        ),\n)\n    ";
 
 pub static INPUT_GROUP_API: &[ApiEntry] = &[
     ApiEntry {
