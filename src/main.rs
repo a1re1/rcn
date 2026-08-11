@@ -4,6 +4,7 @@
 
 mod assets;
 mod components;
+mod container_query;
 mod motion;
 mod storybook;
 mod storybook_docs;
