@@ -208,6 +208,18 @@ const ICONS: &[(&str, &[u8])] = &[
         "icons/search.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>"##,
     ),
+    // Lucide `save` — used by the tooltip keyboard-shortcut story.
+    (
+        "icons/save.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>"##,
+    ),
+    // Pre-rotated 10px diamond (shadcn's `size-2.5 rotate-45 rounded-[2px]`
+    // tooltip arrow). gpui divs cannot rotate, so the fill is baked in.
+    // Slight path rounding approximates the 2px corner radius.
+    (
+        "icons/tooltip-arrow.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M4.15.85c.47-.47 1.23-.47 1.7 0l3.3 3.3c.47.47.47 1.23 0 1.7l-3.3 3.3c-.47.47-1.23.47-1.7 0l-3.3-3.3c-.47-.47-.47-1.23 0-1.7l3.3-3.3z"/></svg>"##,
+    ),
 ];
 
 pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
@@ -215,6 +227,8 @@ pub const ICON_LOADER: &str = "icons/loader.svg";
 pub const ICON_ELLIPSIS: &str = "icons/ellipsis.svg";
 pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
+pub const ICON_SAVE: &str = "icons/save.svg";
+pub const ICON_TOOLTIP_ARROW: &str = "icons/tooltip-arrow.svg";
 
 pub struct Assets;
 

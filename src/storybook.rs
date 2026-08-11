@@ -22,6 +22,7 @@ use gpui::{
 };
 
 use crate::assets::IconLibrary;
+use crate::components::tooltip::{TooltipAlign, TooltipSide};
 use crate::components::{
     Accordion, AccordionContent, AccordionItem, AccordionTrigger, Alert, AlertDescription,
     AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -800,6 +801,10 @@ pub struct Storybook {
     accordion_root_disabled: bool,
     // Controlled-mode example: the open set lives here, not in the component.
     accordion_value: Vec<ElementId>,
+    // Tooltip controls
+    tooltip_side: TooltipSide,
+    tooltip_align: TooltipAlign,
+    tooltip_disabled: bool,
     // __STORY_STATE__
     // Popover state
     popover_open: bool,
@@ -1097,6 +1102,9 @@ impl Storybook {
             accordion_multiple: false,
             accordion_root_disabled: false,
             accordion_value: vec![("ex-acc-ctl", 1usize).into()],
+            tooltip_side: TooltipSide::Top,
+            tooltip_align: TooltipAlign::Center,
+            tooltip_disabled: false,
             // __STORY_STATE_INIT__
             popover_open: false,
             card_size: CardSize::Default,
@@ -1309,7 +1317,7 @@ impl Storybook {
             Story::SliderStory => self.slider_preview(cx).into_any_element(),
             Story::PaginationStory => self.pagination_preview(cx).into_any_element(),
             Story::ScrollArea => Self::scroll_area_preview(cx).into_any_element(),
-            Story::TooltipStory => Self::tooltip_preview().into_any_element(),
+            Story::TooltipStory => self.tooltip_preview().into_any_element(),
             Story::HoverCardStory => Self::hover_card_preview().into_any_element(),
             Story::DialogStory => self.dialog_preview(cx).into_any_element(),
             Story::AlertDialogStory => self.alert_dialog_preview(cx).into_any_element(),
@@ -2710,6 +2718,170 @@ impl Storybook {
                     ),
                 ),
             ],
+            Story::TooltipStory => vec![
+                (
+                    "Sides",
+                    div()
+                        .flex()
+                        .flex_row()
+                        .flex_wrap()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            Tooltip::new("tooltip-ex-left", "Add to library")
+                                .side(TooltipSide::Left)
+                                .child(
+                                    Button::new("tooltip-ex-left-btn")
+                                        .variant(ButtonVariant::Outline)
+                                        .child("Left"),
+                                ),
+                        )
+                        .child(
+                            Tooltip::new("tooltip-ex-top", "Add to library")
+                                .side(TooltipSide::Top)
+                                .child(
+                                    Button::new("tooltip-ex-top-btn")
+                                        .variant(ButtonVariant::Outline)
+                                        .child("Top"),
+                                ),
+                        )
+                        .child(
+                            Tooltip::new("tooltip-ex-bottom", "Add to library")
+                                .side(TooltipSide::Bottom)
+                                .child(
+                                    Button::new("tooltip-ex-bottom-btn")
+                                        .variant(ButtonVariant::Outline)
+                                        .child("Bottom"),
+                                ),
+                        )
+                        .child(
+                            Tooltip::new("tooltip-ex-right", "Add to library")
+                                .side(TooltipSide::Right)
+                                .child(
+                                    Button::new("tooltip-ex-right-btn")
+                                        .variant(ButtonVariant::Outline)
+                                        .child("Right"),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+                (
+                    "With Keyboard Shortcut",
+                    Tooltip::rich("tooltip-ex-kbd", |_, _| {
+                        div()
+                            .flex()
+                            .flex_row()
+                            .items_center()
+                            .gap(px(6.))
+                            .child("Save Changes")
+                            .child(Kbd::new().in_tooltip().child("S"))
+                            .into_any_element()
+                    })
+                    .has_kbd()
+                    .child(
+                        Button::new("tooltip-ex-save")
+                            .variant(ButtonVariant::Outline)
+                            .size(ButtonSize::IconSm)
+                            .child(Icon::new(crate::assets::ICON_SAVE)),
+                    )
+                    .into_any_element(),
+                ),
+                (
+                    "Disabled Button",
+                    Tooltip::new(
+                        "tooltip-ex-disabled",
+                        "This feature is currently unavailable",
+                    )
+                    .child(
+                        Button::new("tooltip-ex-disabled-btn")
+                            .variant(ButtonVariant::Outline)
+                            .disabled(true)
+                            .child("Disabled"),
+                    )
+                    .into_any_element(),
+                ),
+                (
+                    "RTL (mirrored)",
+                    // gpui has no direction context — mirror the demo composition manually
+                    div()
+                        .flex()
+                        .flex_col()
+                        .items_center()
+                        .gap(px(16.))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_row()
+                                .flex_wrap()
+                                .items_center()
+                                .gap(px(8.))
+                                // Physical sides laid out in reversed order for RTL
+                                .child(
+                                    Tooltip::new("tooltip-rtl-right", "Add to library")
+                                        .side(TooltipSide::Right)
+                                        .child(
+                                            Button::new("tooltip-rtl-right-btn")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Right"),
+                                        ),
+                                )
+                                .child(
+                                    Tooltip::new("tooltip-rtl-bottom", "Add to library")
+                                        .side(TooltipSide::Bottom)
+                                        .child(
+                                            Button::new("tooltip-rtl-bottom-btn")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Bottom"),
+                                        ),
+                                )
+                                .child(
+                                    Tooltip::new("tooltip-rtl-top", "Add to library")
+                                        .side(TooltipSide::Top)
+                                        .child(
+                                            Button::new("tooltip-rtl-top-btn")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Top"),
+                                        ),
+                                )
+                                .child(
+                                    Tooltip::new("tooltip-rtl-left", "Add to library")
+                                        .side(TooltipSide::Left)
+                                        .child(
+                                            Button::new("tooltip-rtl-left-btn")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Left"),
+                                        ),
+                                ),
+                        )
+                        .child(
+                            div()
+                                .flex()
+                                .flex_row()
+                                .items_center()
+                                .gap(px(8.))
+                                // RTL logical mapping: inline-start → Right, inline-end → Left
+                                .child(
+                                    Tooltip::new("tooltip-rtl-start", "Add to library")
+                                        .side(TooltipSide::Right)
+                                        .child(
+                                            Button::new("tooltip-rtl-start-btn")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Inline Start"),
+                                        ),
+                                )
+                                .child(
+                                    Tooltip::new("tooltip-rtl-end", "Add to library")
+                                        .side(TooltipSide::Left)
+                                        .child(
+                                            Button::new("tooltip-rtl-end-btn")
+                                                .variant(ButtonVariant::Outline)
+                                                .child("Inline End"),
+                                        ),
+                                ),
+                        )
+                        .into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -2745,6 +2917,13 @@ impl Storybook {
                  .min_size(..) snap the panel closed to its .collapsed_size(..). Drag the \
                  sidebar below its minimum to collapse it, or press Enter on the focused \
                  handle.",
+            ),
+            (Story::TooltipStory, "Sides") => {
+                Some("Use .side(..) to change the position of the tooltip.")
+            }
+            (Story::TooltipStory, "Disabled Button") => Some(
+                "Show a tooltip on a disabled button — the Tooltip wrapper owns hover \
+                 (shadcn's wrapping span), so a disabled trigger still shows it.",
             ),
             _ => None,
         }
@@ -3006,7 +3185,57 @@ impl Storybook {
             Story::SliderStory => Vec::new(),
             Story::PaginationStory => Vec::new(),
             Story::ScrollArea => Vec::new(),
-            Story::TooltipStory => Vec::new(),
+            Story::TooltipStory => vec![
+                Self::control_row(
+                    "side",
+                    Self::choices(
+                        "tooltip-side",
+                        &[
+                            ("top", TooltipSide::Top),
+                            ("right", TooltipSide::Right),
+                            ("bottom", TooltipSide::Bottom),
+                            ("left", TooltipSide::Left),
+                        ],
+                        self.tooltip_side,
+                        cx,
+                        |this, v, cx| {
+                            this.tooltip_side = v;
+                            cx.notify();
+                        },
+                    ),
+                    &theme,
+                ),
+                Self::control_row(
+                    "align",
+                    Self::choices(
+                        "tooltip-align",
+                        &[
+                            ("start", TooltipAlign::Start),
+                            ("center", TooltipAlign::Center),
+                            ("end", TooltipAlign::End),
+                        ],
+                        self.tooltip_align,
+                        cx,
+                        |this, v, cx| {
+                            this.tooltip_align = v;
+                            cx.notify();
+                        },
+                    ),
+                    &theme,
+                ),
+                Self::control_row(
+                    "disabled",
+                    Switch::new("tooltip-disabled")
+                        .checked(self.tooltip_disabled)
+                        .size(SwitchSize::Sm)
+                        .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.tooltip_disabled = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+            ],
             Story::HoverCardStory => Vec::new(),
             Story::DialogStory => vec![Self::control_row(
                 "open",
@@ -4564,35 +4793,17 @@ impl Storybook {
                     ),
             )
     }
-    fn tooltip_preview() -> impl IntoElement + use<> {
-        div()
-            .flex()
-            .flex_row()
-            .items_center()
-            .gap(px(12.))
+    fn tooltip_preview(&self) -> impl IntoElement + use<> {
+        // Docs main demo: one outline "Hover" button → "Add to library",
+        // wired to the side/align/disabled controls.
+        Tooltip::new("tooltip-demo", "Add to library")
+            .side(self.tooltip_side)
+            .align(self.tooltip_align)
+            .disabled(self.tooltip_disabled)
             .child(
-                Tooltip::new("tooltip-demo", "Add to library").child(
-                    Button::new("tooltip-trigger")
-                        .variant(ButtonVariant::Outline)
-                        .child("Hover me"),
-                ),
-            )
-            .child(
-                Tooltip::rich("tooltip-rich-demo", |_, _| {
-                    div()
-                        .flex()
-                        .flex_row()
-                        .items_center()
-                        .gap(px(4.))
-                        .child("Save Changes")
-                        .child(Kbd::new().in_tooltip().child("S"))
-                        .into_any_element()
-                })
-                .child(
-                    Button::new("tooltip-rich-trigger")
-                        .variant(ButtonVariant::Outline)
-                        .child("Rich tooltip"),
-                ),
+                Button::new("tooltip-trigger")
+                    .variant(ButtonVariant::Outline)
+                    .child("Hover"),
             )
     }
     fn hover_card_preview() -> impl IntoElement + use<> {
