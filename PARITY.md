@@ -32,7 +32,7 @@ solid before the molecules that compose them.
 ### Tier 1 — atoms
 
 - [x] button — audited in the infrastructure PR (keyboard focus + ring)
-- [x] badge — (static presentation — matches source; focus-visible/aria-invalid omitted; as-child link not ported)
+- [x] badge — (variants, link/interactive badge with focus ring + [a]:hover styles, icon/spinner padding trim, custom color overrides, all docs examples; omitted: RTL, hover transition animation, aria-invalid, underline-offset)
 - [x] label — (static presentation — matches source; peer/group disabled via explicit `.disabled`)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
 - [x] separator — (static presentation — matches source, no interactive surface)
@@ -66,7 +66,7 @@ solid before the molecules that compose them.
 - [x] tabs — (keyboard focus + ring)
 - [x] collapsible — (200ms animated reveal)
 - [x] breadcrumb — (link focus rings)
-- [x] pagination — (Button-based links inherit focus rings)
+- [x] pagination — base-vega parity (Content/Item composition; Link.size + Previous/Next.text; icon-side padding via icon_inline_start/end; currentColor Icon chevrons; sm-breakpoint label hide via viewport width; foreground ellipsis; Simple + Icons Only docs examples; aria/sr-only omitted — no a11y tree; RTL omitted — unsupported, TODO)
 - [x] table — (static presentation — matches source table parts)
 - [x] scroll-area — (vertical overflow scroll; custom scrollbar + horizontal TODO)
 - [x] kbd — (tooltip-context styles via in_tooltip(); all six shadcn doc examples in the storybook, RTL mirrored manually)
