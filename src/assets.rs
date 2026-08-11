@@ -208,6 +208,10 @@ const ICONS: &[(&str, &[u8])] = &[
         "icons/search.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>"##,
     ),
+    (
+        "icons/info.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>"##,
+    ),
 ];
 
 pub const ICON_CIRCLE_ALERT: &str = "icons/circle-alert.svg";
@@ -215,6 +219,7 @@ pub const ICON_LOADER: &str = "icons/loader.svg";
 pub const ICON_ELLIPSIS: &str = "icons/ellipsis.svg";
 pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
+pub const ICON_INFO: &str = "icons/info.svg";
 
 pub struct Assets;
 

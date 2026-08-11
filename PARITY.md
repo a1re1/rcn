@@ -46,7 +46,13 @@ solid before the molecules that compose them.
 - [x] toggle — (keyboard focus + ring)
 - [x] slider — keyboard focus ring + arrow-key steps
 - [x] progress — (static bar; width transition on value change TODO; indeterminate TODO)
-- [x] input — full focus ring shadow (was border-only)
+- [x] input — base-nova parity (h-8/rounded-lg/px-2.5 chrome, no resting
+  shadow; invalid destructive border + always-on ring; read-only, masked
+  password (bullets, no copy/cut), and file mode with native picker;
+  `on_change`; alt/cmd word+line nav, deletes, double/triple-click selection;
+  disabled unfocusable with bg-input/50 tint; all 14 docs examples in the
+  storybook; RTL omitted; border/bg focus transition TODO; native `required`
+  has no visual — noted only)
 - [x] textarea — focus ring shadow
 
 ### Tier 2 — molecules on the atoms

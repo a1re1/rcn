@@ -1,26 +1,35 @@
-//! Input — port of shadcn base-vega `ui/input.tsx`.
+//! Input — port of shadcn base-nova `ui/input.tsx`.
 //!
 //! A real single-line text field: selection, IME composition, clipboard,
 //! and keyboard navigation, adapted from gpui's reference text-input
-//! example and styled with the shadcn input tokens (h-9 rounded-md
-//! border-input px-3 text-sm shadow-xs; ring border while focused).
+//! example and styled with the shadcn base-nova input tokens (h-8
+//! rounded-lg border-input bg-transparent px-2.5 py-1 text-base/md:text-sm;
+//! dark:bg-input/30; focus-visible border-ring + ring-3 ring-ring/50).
+//!
+//! TODO: border/bg color transition on focus change (base-nova
+//! transition-colors 150ms cubic-bezier(0.4,0,0.2,1); gpui animates on
+//! mount only).
 //!
 //! Unlike the RenderOnce components, `Input` is an entity — create it with
 //! `cx.new(|cx| Input::new(cx))`, render the `Entity<Input>` directly, and
 //! call [`Input::register_key_bindings`] once at app startup.
 
 use std::ops::Range;
+use std::rc::Rc;
 
 use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, Element, ElementId, ElementInputHandler,
     Entity, EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyBinding, LayoutId,
-    MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point,
-    ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window, actions, div,
-    fill, point, prelude::*, px, relative, size,
+    MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, PathPromptOptions,
+    Pixels, Point, ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle,
+    Window, actions, div, fill, point, prelude::*, px, relative, size,
 };
 use unicode_segmentation::UnicodeSegmentation as _;
 
 use crate::theme::{Theme, alpha};
+
+/// Invoked whenever the input content changes (`set_text`, replace, IME).
+type ChangeHandler = Rc<dyn Fn(&SharedString, &mut Window, &mut App) + 'static>;
 
 actions!(
     rcn_input,
@@ -34,10 +43,20 @@ actions!(
         SelectAll,
         Home,
         End,
+        MoveToPreviousWord,
+        MoveToNextWord,
+        SelectToPreviousWord,
+        SelectToNextWord,
+        SelectToBeginning,
+        SelectToEnd,
+        DeleteToPreviousWord,
+        DeleteToNextWord,
+        DeleteToBeginning,
         ShowCharacterPalette,
         Paste,
         Cut,
         Copy,
+        OpenFile,
     ]
 );
 
@@ -46,6 +65,16 @@ pub struct Input {
     content: SharedString,
     placeholder: SharedString,
     disabled: bool,
+    /// `aria-invalid` — destructive border + always-on destructive ring.
+    invalid: bool,
+    /// Native readOnly: focus/selection/copy work; mutations are no-ops.
+    read_only: bool,
+    /// `type="password"` — display bullets; copy/cut no-ops.
+    masked: bool,
+    /// `type="file"` — non-editable chrome with Choose File + filename.
+    file: bool,
+    /// Display name of the picked file (file mode only).
+    file_name: Option<SharedString>,
     /// Render without the input chrome (border/height/padding) so wrappers
     /// like Textarea and InputGroup can supply their own shell.
     bare: bool,
@@ -55,6 +84,7 @@ pub struct Input {
     last_layout: Option<ShapedLine>,
     last_bounds: Option<Bounds<Pixels>>,
     is_selecting: bool,
+    on_change: Option<ChangeHandler>,
 }
 
 impl Input {
@@ -64,6 +94,11 @@ impl Input {
             content: "".into(),
             placeholder: "".into(),
             disabled: false,
+            invalid: false,
+            read_only: false,
+            masked: false,
+            file: false,
+            file_name: None,
             bare: false,
             selected_range: 0..0,
             selection_reversed: false,
@@ -71,6 +106,7 @@ impl Input {
             last_layout: None,
             last_bounds: None,
             is_selecting: false,
+            on_change: None,
         }
     }
 
@@ -83,6 +119,17 @@ impl Input {
             KeyBinding::new("right", Right, Some("RcnInput")),
             KeyBinding::new("shift-left", SelectLeft, Some("RcnInput")),
             KeyBinding::new("shift-right", SelectRight, Some("RcnInput")),
+            KeyBinding::new("alt-left", MoveToPreviousWord, Some("RcnInput")),
+            KeyBinding::new("alt-right", MoveToNextWord, Some("RcnInput")),
+            KeyBinding::new("alt-shift-left", SelectToPreviousWord, Some("RcnInput")),
+            KeyBinding::new("alt-shift-right", SelectToNextWord, Some("RcnInput")),
+            KeyBinding::new("cmd-left", Home, Some("RcnInput")),
+            KeyBinding::new("cmd-right", End, Some("RcnInput")),
+            KeyBinding::new("cmd-shift-left", SelectToBeginning, Some("RcnInput")),
+            KeyBinding::new("cmd-shift-right", SelectToEnd, Some("RcnInput")),
+            KeyBinding::new("alt-backspace", DeleteToPreviousWord, Some("RcnInput")),
+            KeyBinding::new("alt-delete", DeleteToNextWord, Some("RcnInput")),
+            KeyBinding::new("cmd-backspace", DeleteToBeginning, Some("RcnInput")),
             KeyBinding::new("cmd-a", SelectAll, Some("RcnInput")),
             KeyBinding::new("cmd-v", Paste, Some("RcnInput")),
             KeyBinding::new("cmd-c", Copy, Some("RcnInput")),
@@ -90,6 +137,10 @@ impl Input {
             KeyBinding::new("home", Home, Some("RcnInput")),
             KeyBinding::new("end", End, Some("RcnInput")),
             KeyBinding::new("ctrl-cmd-space", ShowCharacterPalette, Some("RcnInput")),
+            // File mode uses its own key context so enter/space activate the
+            // picker without consuming those keys in editable inputs.
+            KeyBinding::new("enter", OpenFile, Some("RcnFileInput")),
+            KeyBinding::new("space", OpenFile, Some("RcnFileInput")),
         ]);
     }
 
@@ -102,20 +153,100 @@ impl Input {
         self.disabled = disabled;
     }
 
+    /// Mirrors `aria-invalid`: destructive border + always-on destructive ring.
+    pub fn set_invalid(&mut self, invalid: bool) {
+        self.invalid = invalid;
+    }
+
+    /// Native readOnly: focus, selection, and copy work; mutations are no-ops.
+    #[allow(dead_code)] // part of the shadcn contract; no storybook example uses it
+    pub fn set_read_only(&mut self, read_only: bool) {
+        self.read_only = read_only;
+    }
+
+    /// `type="password"`: one bullet per grapheme; copy/cut are no-ops.
+    pub fn set_masked(&mut self, masked: bool) {
+        self.masked = masked;
+    }
+
+    /// `type="file"`: non-editable chrome with Choose File + selected name.
+    pub fn set_file(&mut self, file: bool) {
+        self.file = file;
+    }
+
     pub fn set_bare(&mut self, bare: bool) {
         self.bare = bare;
+    }
+
+    /// Callback invoked whenever content changes.
+    #[allow(dead_code)] // part of the shadcn contract; no storybook example uses it
+    pub fn on_change(
+        &mut self,
+        handler: impl Fn(&SharedString, &mut Window, &mut App) + 'static,
+    ) -> &mut Self {
+        self.on_change = Some(Rc::new(handler));
+        self
     }
 
     pub fn text(&self) -> &str {
         &self.content
     }
 
-    pub fn set_text(&mut self, text: impl Into<SharedString>, cx: &mut Context<Self>) {
+    #[allow(dead_code)] // part of the file-mode contract; no storybook example reads it
+    pub fn file_name(&self) -> Option<&str> {
+        self.file_name.as_ref().map(|s| s.as_ref())
+    }
+
+    pub fn set_text(
+        &mut self,
+        text: impl Into<SharedString>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         self.content = text.into();
         let end = self.content.len();
         self.selected_range = end..end;
         self.marked_range = None;
+        self.emit_change(window, cx);
         cx.notify();
+    }
+
+    fn emit_change(&self, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some(handler) = self.on_change.clone() {
+            let value = self.content.clone();
+            handler(&value, window, cx);
+        }
+    }
+
+    fn can_mutate(&self) -> bool {
+        !self.disabled && !self.read_only && !self.file
+    }
+
+    /// Display text: masked content is one U+2022 bullet per grapheme.
+    fn display_text(&self) -> SharedString {
+        if self.masked && !self.content.is_empty() {
+            let bullets: String = self.content.graphemes(true).map(|_| '•').collect();
+            SharedString::from(bullets)
+        } else {
+            self.content.clone()
+        }
+    }
+
+    /// Map a content (UTF-8) byte offset to the corresponding display offset.
+    /// When masked, each grapheme becomes one 3-byte U+2022 bullet.
+    fn content_to_display_offset(&self, content_offset: usize) -> usize {
+        if !self.masked {
+            return content_offset.min(self.content.len());
+        }
+        masked_display_offset(&self.content, content_offset)
+    }
+
+    /// Map a display (shaped-line) byte offset back to a content offset.
+    fn display_to_content_offset(&self, display_offset: usize) -> usize {
+        if !self.masked {
+            return display_offset.min(self.content.len());
+        }
+        masked_content_offset(&self.content, display_offset)
     }
 
     fn left(&mut self, _: &Left, _: &mut Window, cx: &mut Context<Self>) {
@@ -155,7 +286,113 @@ impl Input {
         self.move_to(self.content.len(), cx);
     }
 
+    fn move_to_previous_word(
+        &mut self,
+        _: &MoveToPreviousWord,
+        _: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.move_to(self.previous_word_boundary(self.cursor_offset()), cx);
+    }
+
+    fn move_to_next_word(&mut self, _: &MoveToNextWord, _: &mut Window, cx: &mut Context<Self>) {
+        self.move_to(self.next_word_boundary(self.cursor_offset()), cx);
+    }
+
+    fn select_to_previous_word(
+        &mut self,
+        _: &SelectToPreviousWord,
+        _: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.select_to(self.previous_word_boundary(self.cursor_offset()), cx);
+    }
+
+    fn select_to_next_word(
+        &mut self,
+        _: &SelectToNextWord,
+        _: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.select_to(self.next_word_boundary(self.cursor_offset()), cx);
+    }
+
+    fn select_to_beginning(
+        &mut self,
+        _: &SelectToBeginning,
+        _: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.select_to(0, cx);
+    }
+
+    fn select_to_end(&mut self, _: &SelectToEnd, _: &mut Window, cx: &mut Context<Self>) {
+        self.select_to(self.content.len(), cx);
+    }
+
+    fn delete_to_previous_word(
+        &mut self,
+        _: &DeleteToPreviousWord,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if !self.can_mutate() {
+            return;
+        }
+        if self.selected_range.is_empty() {
+            let prev = self.previous_word_boundary(self.cursor_offset());
+            if self.cursor_offset() == prev {
+                window.play_system_bell();
+                return;
+            }
+            self.select_to(prev, cx);
+        }
+        self.replace_text_in_range(None, "", window, cx);
+    }
+
+    fn delete_to_next_word(
+        &mut self,
+        _: &DeleteToNextWord,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if !self.can_mutate() {
+            return;
+        }
+        if self.selected_range.is_empty() {
+            let next = self.next_word_boundary(self.cursor_offset());
+            if self.cursor_offset() == next {
+                window.play_system_bell();
+                return;
+            }
+            self.select_to(next, cx);
+        }
+        self.replace_text_in_range(None, "", window, cx);
+    }
+
+    fn delete_to_beginning(
+        &mut self,
+        _: &DeleteToBeginning,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if !self.can_mutate() {
+            return;
+        }
+        if self.selected_range.is_empty() {
+            if self.cursor_offset() == 0 {
+                window.play_system_bell();
+                return;
+            }
+            self.select_to(0, cx);
+        }
+        self.replace_text_in_range(None, "", window, cx);
+    }
+
     fn backspace(&mut self, _: &Backspace, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.can_mutate() {
+            return;
+        }
         if self.selected_range.is_empty() {
             let prev = self.previous_boundary(self.cursor_offset());
             if self.cursor_offset() == prev {
@@ -168,6 +405,9 @@ impl Input {
     }
 
     fn delete(&mut self, _: &Delete, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.can_mutate() {
+            return;
+        }
         if self.selected_range.is_empty() {
             let next = self.next_boundary(self.cursor_offset());
             if self.cursor_offset() == next {
@@ -182,9 +422,34 @@ impl Input {
     fn on_mouse_down(
         &mut self,
         event: &MouseDownEvent,
-        _window: &mut Window,
+        window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        if self.disabled {
+            return;
+        }
+        // File mode: focus + open native picker.
+        if self.file {
+            window.focus(&self.focus_handle, cx);
+            self.open_file(&OpenFile, window, cx);
+            return;
+        }
+        window.focus(&self.focus_handle, cx);
+        // Double-click selects word; triple-click (or more) selects all.
+        if event.click_count >= 3 {
+            self.move_to(0, cx);
+            self.select_to(self.content.len(), cx);
+            self.is_selecting = false;
+            return;
+        }
+        if event.click_count == 2 {
+            let offset = self.index_for_mouse_position(event.position);
+            let (start, end) = word_range_at(&self.content, offset);
+            self.move_to(start, cx);
+            self.select_to(end, cx);
+            self.is_selecting = false;
+            return;
+        }
         self.is_selecting = true;
         if event.modifiers.shift {
             self.select_to(self.index_for_mouse_position(event.position), cx);
@@ -198,9 +463,42 @@ impl Input {
     }
 
     fn on_mouse_move(&mut self, event: &MouseMoveEvent, _: &mut Window, cx: &mut Context<Self>) {
+        if self.disabled || self.file {
+            return;
+        }
         if self.is_selecting {
             self.select_to(self.index_for_mouse_position(event.position), cx);
         }
+    }
+
+    fn open_file(&mut self, _: &OpenFile, _window: &mut Window, cx: &mut Context<Self>) {
+        if !self.file || self.disabled {
+            return;
+        }
+        let receiver = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: None,
+        });
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(paths))) = receiver.await else {
+                return;
+            };
+            let Some(path) = paths.into_iter().next() else {
+                return;
+            };
+            let name = path
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_else(|| path.to_string_lossy().to_string());
+            this.update(cx, |this, cx| {
+                this.file_name = Some(SharedString::from(name));
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
     }
 
     fn show_character_palette(
@@ -209,16 +507,26 @@ impl Input {
         window: &mut Window,
         _: &mut Context<Self>,
     ) {
+        if !self.can_mutate() {
+            return;
+        }
         window.show_character_palette();
     }
 
     fn paste(&mut self, _: &Paste, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.can_mutate() {
+            return;
+        }
         if let Some(text) = cx.read_from_clipboard().and_then(|item| item.text()) {
             self.replace_text_in_range(None, &text.replace("\n", " "), window, cx);
         }
     }
 
     fn copy(&mut self, _: &Copy, _: &mut Window, cx: &mut Context<Self>) {
+        // Native password fields do not copy plaintext.
+        if self.masked || self.file {
+            return;
+        }
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
                 self.content[self.selected_range.clone()].to_string(),
@@ -227,6 +535,10 @@ impl Input {
     }
 
     fn cut(&mut self, _: &Cut, window: &mut Window, cx: &mut Context<Self>) {
+        // Native password fields do not cut; read-only/file block mutations.
+        if self.masked || !self.can_mutate() {
+            return;
+        }
         if !self.selected_range.is_empty() {
             cx.write_to_clipboard(ClipboardItem::new_string(
                 self.content[self.selected_range.clone()].to_string(),
@@ -262,7 +574,8 @@ impl Input {
         if position.y > bounds.bottom() {
             return self.content.len();
         }
-        line.closest_index_for_x(position.x - bounds.left())
+        let display_idx = line.closest_index_for_x(position.x - bounds.left());
+        self.display_to_content_offset(display_idx)
     }
 
     fn select_to(&mut self, offset: usize, cx: &mut Context<Self>) {
@@ -326,6 +639,110 @@ impl Input {
             .find_map(|(idx, _)| (idx > offset).then_some(idx))
             .unwrap_or(self.content.len())
     }
+
+    fn previous_word_boundary(&self, offset: usize) -> usize {
+        word_bound_offsets(&self.content)
+            .into_iter()
+            .rev()
+            .find(|&idx| idx < offset)
+            .unwrap_or(0)
+    }
+
+    fn next_word_boundary(&self, offset: usize) -> usize {
+        word_bound_offsets(&self.content)
+            .into_iter()
+            .find(|&idx| idx > offset)
+            .unwrap_or(self.content.len())
+    }
+}
+
+/// Word-boundary offsets via unicode word breaks, skipping whitespace-only
+/// segments (matches native NSTextField alt-arrow motion).
+fn word_bound_offsets(text: &str) -> Vec<usize> {
+    let mut offsets = vec![0usize];
+    for (idx, word) in text.split_word_bound_indices() {
+        if word.chars().all(|c| c.is_whitespace()) {
+            continue;
+        }
+        if idx != 0 {
+            offsets.push(idx);
+        }
+        let end = idx + word.len();
+        if end != 0 {
+            offsets.push(end);
+        }
+    }
+    let len = text.len();
+    if offsets.last().copied() != Some(len) {
+        offsets.push(len);
+    }
+    offsets.sort_unstable();
+    offsets.dedup();
+    offsets
+}
+
+/// Inclusive word span under `offset` for double-click selection.
+fn word_range_at(text: &str, offset: usize) -> (usize, usize) {
+    if text.is_empty() {
+        return (0, 0);
+    }
+    let offset = offset.min(text.len());
+    for (idx, word) in text.split_word_bound_indices() {
+        let end = idx + word.len();
+        if offset < idx || offset > end {
+            continue;
+        }
+        // Prefer the word that contains the caret; at a boundary prefer the
+        // following non-whitespace word (macOS double-click behavior).
+        if offset == end {
+            continue;
+        }
+        if word.chars().all(|c| c.is_whitespace()) {
+            continue;
+        }
+        return (idx, end);
+    }
+    // Caret at end of a word or on whitespace — fall back to nearest prior word.
+    let mut last = None;
+    for (idx, word) in text.split_word_bound_indices() {
+        if word.chars().all(|c| c.is_whitespace()) {
+            continue;
+        }
+        let end = idx + word.len();
+        if end <= offset {
+            last = Some((idx, end));
+        } else if idx >= offset {
+            return last.unwrap_or((idx, end));
+        }
+    }
+    last.unwrap_or((offset, offset))
+}
+
+/// Masked display offset for a content offset: each grapheme renders as one
+/// 3-byte U+2022 bullet.
+fn masked_display_offset(text: &str, content_offset: usize) -> usize {
+    let mut display = 0usize;
+    for (idx, _g) in text.grapheme_indices(true) {
+        if idx >= content_offset {
+            return display;
+        }
+        display += '•'.len_utf8(); // 3
+    }
+    display
+}
+
+/// Inverse of [`masked_display_offset`]: display (shaped-line) offset back to
+/// a content offset.
+fn masked_content_offset(text: &str, display_offset: usize) -> usize {
+    let bullet_len = '•'.len_utf8(); // 3
+    let mut display = 0usize;
+    for (idx, _g) in text.grapheme_indices(true) {
+        if display + bullet_len > display_offset {
+            return idx;
+        }
+        display += bullet_len;
+    }
+    text.len()
 }
 
 impl EntityInputHandler for Input {
@@ -371,10 +788,10 @@ impl EntityInputHandler for Input {
         &mut self,
         range_utf16: Option<Range<usize>>,
         new_text: &str,
-        _: &mut Window,
+        window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        if self.disabled {
+        if !self.can_mutate() {
             return;
         }
         let range = range_utf16
@@ -388,6 +805,7 @@ impl EntityInputHandler for Input {
                 .into();
         self.selected_range = range.start + new_text.len()..range.start + new_text.len();
         self.marked_range.take();
+        self.emit_change(window, cx);
         cx.notify();
     }
 
@@ -396,10 +814,10 @@ impl EntityInputHandler for Input {
         range_utf16: Option<Range<usize>>,
         new_text: &str,
         new_selected_range_utf16: Option<Range<usize>>,
-        _window: &mut Window,
+        window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        if self.disabled {
+        if !self.can_mutate() {
             return;
         }
         let range = range_utf16
@@ -422,6 +840,7 @@ impl EntityInputHandler for Input {
             .map(|new_range| new_range.start + range.start..new_range.end + range.end)
             .unwrap_or_else(|| range.start + new_text.len()..range.start + new_text.len());
 
+        self.emit_change(window, cx);
         cx.notify();
     }
 
@@ -434,13 +853,12 @@ impl EntityInputHandler for Input {
     ) -> Option<Bounds<Pixels>> {
         let last_layout = self.last_layout.as_ref()?;
         let range = self.range_from_utf16(&range_utf16);
+        let start = self.content_to_display_offset(range.start);
+        let end = self.content_to_display_offset(range.end);
         Some(Bounds::from_corners(
+            point(bounds.left() + last_layout.x_for_index(start), bounds.top()),
             point(
-                bounds.left() + last_layout.x_for_index(range.start),
-                bounds.top(),
-            ),
-            point(
-                bounds.left() + last_layout.x_for_index(range.end),
+                bounds.left() + last_layout.x_for_index(end),
                 bounds.bottom(),
             ),
         ))
@@ -454,9 +872,9 @@ impl EntityInputHandler for Input {
     ) -> Option<usize> {
         let line_point = self.last_bounds?.localize(&point)?;
         let last_layout = self.last_layout.as_ref()?;
-        assert_eq!(last_layout.text, self.content);
-        let utf8_index = last_layout.index_for_x(point.x - line_point.x)?;
-        Some(self.offset_to_utf16(utf8_index))
+        let display_index = last_layout.index_for_x(point.x - line_point.x)?;
+        let content_index = self.display_to_content_offset(display_index);
+        Some(self.offset_to_utf16(content_index))
     }
 }
 
@@ -520,10 +938,13 @@ impl Element for TextElement {
         let cursor = input.cursor_offset();
         let style = window.text_style();
 
+        // Content offsets → display offsets (identity unless masked).
+        let to_display = |off: usize| -> usize { input.content_to_display_offset(off) };
+
         let (display_text, text_color) = if content.is_empty() {
             (input.placeholder.clone(), theme.muted_foreground)
         } else {
-            (content, style.color)
+            (input.display_text(), style.color)
         };
 
         let run = TextRun {
@@ -535,13 +956,15 @@ impl Element for TextElement {
             strikethrough: None,
         };
         let runs = if let Some(marked_range) = input.marked_range.as_ref() {
+            let ms = to_display(marked_range.start);
+            let me = to_display(marked_range.end);
             vec![
                 TextRun {
-                    len: marked_range.start,
+                    len: ms,
                     ..run.clone()
                 },
                 TextRun {
-                    len: marked_range.end - marked_range.start,
+                    len: me.saturating_sub(ms),
                     underline: Some(UnderlineStyle {
                         color: Some(run.color),
                         thickness: px(1.0),
@@ -550,7 +973,7 @@ impl Element for TextElement {
                     ..run.clone()
                 },
                 TextRun {
-                    len: display_text.len() - marked_range.end,
+                    len: display_text.len().saturating_sub(me),
                     ..run
                 },
             ]
@@ -566,7 +989,10 @@ impl Element for TextElement {
             .text_system()
             .shape_line(display_text, font_size, &runs, None);
 
-        let cursor_pos = line.x_for_index(cursor);
+        let cursor_display = to_display(cursor);
+        let sel_start = to_display(selected_range.start);
+        let sel_end = to_display(selected_range.end);
+        let cursor_pos = line.x_for_index(cursor_display);
         let (selection, cursor) = if selected_range.is_empty() {
             (
                 None,
@@ -582,14 +1008,8 @@ impl Element for TextElement {
             (
                 Some(fill(
                     Bounds::from_corners(
-                        point(
-                            bounds.left() + line.x_for_index(selected_range.start),
-                            bounds.top(),
-                        ),
-                        point(
-                            bounds.left() + line.x_for_index(selected_range.end),
-                            bounds.bottom(),
-                        ),
+                        point(bounds.left() + line.x_for_index(sel_start), bounds.top()),
+                        point(bounds.left() + line.x_for_index(sel_end), bounds.bottom()),
                     ),
                     alpha(theme.primary, 0.2),
                 )),
@@ -649,55 +1069,195 @@ impl Element for TextElement {
 impl Render for Input {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
-        let focused = self.focus_handle.is_focused(window);
+        let focused = !self.disabled && self.focus_handle.is_focused(window);
+        let invalid = self.invalid;
+        let disabled = self.disabled;
+        let file_mode = self.file;
+        let file_label = self
+            .file_name
+            .clone()
+            .unwrap_or_else(|| SharedString::from("No file chosen"));
 
-        // h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm
-        // shadow-xs; dark: bg-input/30; focused: border-ring
-        div()
-            .key_context("RcnInput")
-            .track_focus(&self.focus_handle(cx))
-            .cursor(CursorStyle::IBeam)
-            .on_action(cx.listener(Self::backspace))
-            .on_action(cx.listener(Self::delete))
-            .on_action(cx.listener(Self::left))
-            .on_action(cx.listener(Self::right))
-            .on_action(cx.listener(Self::select_left))
-            .on_action(cx.listener(Self::select_right))
-            .on_action(cx.listener(Self::select_all))
-            .on_action(cx.listener(Self::home))
-            .on_action(cx.listener(Self::end))
-            .on_action(cx.listener(Self::show_character_palette))
-            .on_action(cx.listener(Self::paste))
-            .on_action(cx.listener(Self::cut))
-            .on_action(cx.listener(Self::copy))
-            .on_mouse_down(MouseButton::Left, cx.listener(Self::on_mouse_down))
-            .on_mouse_up(MouseButton::Left, cx.listener(Self::on_mouse_up))
-            .on_mouse_up_out(MouseButton::Left, cx.listener(Self::on_mouse_up))
-            .on_mouse_move(cx.listener(Self::on_mouse_move))
+        // Disabled: not focusable (no track_focus / no mouse handlers / no IBeam).
+        let mut el = div()
+            .key_context(if file_mode {
+                "RcnFileInput"
+            } else {
+                "RcnInput"
+            })
             .flex()
             .flex_row()
             .items_center()
             .w_full()
+            .min_w_0()
             .text_size(px(14.))
             .line_height(px(20.))
-            .text_color(theme.foreground)
+            .text_color(theme.foreground);
+
+        if !disabled {
+            el = el
+                .track_focus(&self.focus_handle(cx))
+                .cursor(if file_mode {
+                    CursorStyle::PointingHand
+                } else {
+                    CursorStyle::IBeam
+                })
+                .on_action(cx.listener(Self::backspace))
+                .on_action(cx.listener(Self::delete))
+                .on_action(cx.listener(Self::left))
+                .on_action(cx.listener(Self::right))
+                .on_action(cx.listener(Self::select_left))
+                .on_action(cx.listener(Self::select_right))
+                .on_action(cx.listener(Self::select_all))
+                .on_action(cx.listener(Self::home))
+                .on_action(cx.listener(Self::end))
+                .on_action(cx.listener(Self::move_to_previous_word))
+                .on_action(cx.listener(Self::move_to_next_word))
+                .on_action(cx.listener(Self::select_to_previous_word))
+                .on_action(cx.listener(Self::select_to_next_word))
+                .on_action(cx.listener(Self::select_to_beginning))
+                .on_action(cx.listener(Self::select_to_end))
+                .on_action(cx.listener(Self::delete_to_previous_word))
+                .on_action(cx.listener(Self::delete_to_next_word))
+                .on_action(cx.listener(Self::delete_to_beginning))
+                .on_action(cx.listener(Self::show_character_palette))
+                .on_action(cx.listener(Self::paste))
+                .on_action(cx.listener(Self::cut))
+                .on_action(cx.listener(Self::copy))
+                .on_action(cx.listener(Self::open_file))
+                .on_mouse_down(MouseButton::Left, cx.listener(Self::on_mouse_down))
+                .on_mouse_up(MouseButton::Left, cx.listener(Self::on_mouse_up))
+                .on_mouse_up_out(MouseButton::Left, cx.listener(Self::on_mouse_up))
+                .on_mouse_move(cx.listener(Self::on_mouse_move));
+        }
+
+        el
+            // h-8 w-full min-w-0 rounded-lg border border-input bg-transparent
+            // px-2.5 py-1 text-base md:text-sm; dark:bg-input/30;
+            // focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50
+            // aria-invalid: border-destructive + ring-destructive (always on)
+            // disabled: bg-input/50 (dark: bg-input/80) opacity-50, no pointer
+            // (no shadow-xs — base-nova drops it)
             .when(!self.bare, |el| {
-                el.h(px(36.))
-                    .rounded(theme.radius_md())
+                let border = if invalid {
+                    if theme.dark {
+                        alpha(theme.destructive, 0.5)
+                    } else {
+                        theme.destructive
+                    }
+                } else if focused {
+                    theme.ring
+                } else {
+                    theme.input
+                };
+                el.h(px(32.))
+                    .rounded(theme.radius_lg())
                     .border_1()
-                    .border_color(if focused { theme.ring } else { theme.input })
-                    .when(focused, |el| el.shadow(crate::motion::focus_ring(&theme)))
-                    .when(!focused, |el| el.shadow_xs())
-                    .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
-                    .px(px(12.))
+                    .border_color(border)
+                    .when(invalid, |el| {
+                        // Always-on destructive ring (rest + focused); overrides blue ring.
+                        el.shadow(crate::motion::focus_ring_destructive(&theme))
+                    })
+                    .when(!invalid && focused, |el| {
+                        el.shadow(crate::motion::focus_ring(&theme))
+                    })
+                    .when(disabled, |el| {
+                        // disabled:bg-input/50 dark:disabled:bg-input/80 (replaces normal tint)
+                        el.bg(alpha(theme.input, if theme.dark { 0.8 } else { 0.5 }))
+                    })
+                    .when(!disabled && theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
+                    .px(px(10.))
             })
-            .when(self.disabled, |el| el.opacity(0.5))
-            .child(TextElement { input: cx.entity() })
+            .when(disabled, |el| el.opacity(0.5))
+            .when(file_mode, {
+                let theme = theme.clone();
+                move |el| {
+                    el.gap(px(8.))
+                        .child(
+                            div()
+                                .flex()
+                                .items_center()
+                                .h(px(24.))
+                                .text_size(px(14.))
+                                .font_weight(gpui::FontWeight::MEDIUM)
+                                .text_color(theme.foreground)
+                                .child("Choose File"),
+                        )
+                        .child(
+                            div()
+                                .text_size(px(14.))
+                                .text_color(theme.muted_foreground)
+                                .child(file_label),
+                        )
+                }
+            })
+            .when(!file_mode, |el| {
+                el.child(TextElement { input: cx.entity() })
+            })
     }
 }
 
 impl Focusable for Input {
     fn focus_handle(&self, _: &App) -> FocusHandle {
         self.focus_handle.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn word_boundaries_skip_whitespace_runs() {
+        let text = "hello  brave world";
+        assert_eq!(word_bound_offsets(text), vec![0, 5, 7, 12, 13, 18]);
+        // alt-right from inside "hello" lands at its end; alt-left from
+        // inside "world" lands at its start.
+        assert!(word_bound_offsets(text).contains(&5));
+        assert!(word_bound_offsets(text).contains(&13));
+    }
+
+    #[test]
+    fn word_boundaries_empty_and_unicode() {
+        assert_eq!(word_bound_offsets(""), vec![0]);
+        // "héllo wörld" — boundaries at byte offsets around multibyte chars.
+        let text = "héllo wörld";
+        let offsets = word_bound_offsets(text);
+        assert_eq!(offsets.first(), Some(&0));
+        assert_eq!(offsets.last(), Some(&text.len()));
+        for &o in &offsets {
+            assert!(text.is_char_boundary(o));
+        }
+    }
+
+    #[test]
+    fn double_click_word_span() {
+        let text = "hello world";
+        // Caret inside "hello".
+        assert_eq!(word_range_at(text, 2), (0, 5));
+        // Caret inside "world".
+        assert_eq!(word_range_at(text, 8), (6, 11));
+        // Caret at very end selects the trailing word.
+        assert_eq!(word_range_at(text, 11), (6, 11));
+        // Empty text.
+        assert_eq!(word_range_at("", 0), (0, 0));
+    }
+
+    #[test]
+    fn masked_offsets_round_trip() {
+        // "aé👍" → graphemes of 1, 2, and 4 bytes; each displays as one
+        // 3-byte bullet.
+        let text = "aé👍";
+        assert_eq!(masked_display_offset(text, 0), 0);
+        assert_eq!(masked_display_offset(text, 1), 3);
+        assert_eq!(masked_display_offset(text, 3), 6);
+        assert_eq!(masked_display_offset(text, text.len()), 9);
+        assert_eq!(masked_content_offset(text, 0), 0);
+        assert_eq!(masked_content_offset(text, 3), 1);
+        assert_eq!(masked_content_offset(text, 6), 3);
+        assert_eq!(masked_content_offset(text, 9), text.len());
+        // Mid-bullet display offsets snap to the grapheme start.
+        assert_eq!(masked_content_offset(text, 1), 0);
+        assert_eq!(masked_content_offset(text, 4), 1);
     }
 }

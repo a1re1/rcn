@@ -37,9 +37,7 @@ use crate::components::{
     DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input,
-    InputGroup,
-    InputGroupAddon, InputOtp, Item, ItemActions,
+    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
     ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant,
     ItemSeparator, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant,
     Menubar, MenubarItem, MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent,
@@ -715,9 +713,28 @@ pub struct Storybook {
     nav_menu_open: Option<usize>,
     // Toast story state
     toast_visible: bool,
-    // Input story state
+    // Input story state — one entity per shadcn docs example
     input_demo: gpui::Entity<Input>,
     input_disabled: gpui::Entity<Input>,
+    input_basic: gpui::Entity<Input>,
+    input_field: gpui::Entity<Input>,
+    input_fieldgroup_name: gpui::Entity<Input>,
+    input_fieldgroup_email: gpui::Entity<Input>,
+    input_invalid: gpui::Entity<Input>,
+    input_file: gpui::Entity<Input>,
+    input_inline: gpui::Entity<Input>,
+    input_grid_first: gpui::Entity<Input>,
+    input_grid_last: gpui::Entity<Input>,
+    input_required: gpui::Entity<Input>,
+    input_badge: gpui::Entity<Input>,
+    input_ig_url: gpui::Entity<Input>,
+    input_bg_search: gpui::Entity<Input>,
+    input_form_name: gpui::Entity<Input>,
+    input_form_email: gpui::Entity<Input>,
+    input_form_phone: gpui::Entity<Input>,
+    input_form_address: gpui::Entity<Input>,
+    input_form_country: Option<usize>,
+    input_form_country_open: bool,
     // Textarea story state
     textarea_input: gpui::Entity<Input>,
     // Field story state
@@ -841,9 +858,98 @@ fn load_verification() -> HashMap<String, String> {
 impl Storybook {
     pub fn new(cx: &mut Context<Self>) -> Self {
         let focus_handle = cx.focus_handle();
+        // input-demo.tsx — API Key password field.
         let input_demo = cx.new(|cx| {
             let mut input = Input::new(cx);
-            input.placeholder("Email");
+            input.placeholder("sk-...");
+            input.set_masked(true);
+            input
+        });
+        let input_basic = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Enter text");
+            input
+        });
+        let input_field = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Enter your username");
+            input
+        });
+        let input_fieldgroup_name = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Jordan Lee");
+            input
+        });
+        let input_fieldgroup_email = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("name@example.com");
+            input
+        });
+        let input_invalid = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Error");
+            input.set_invalid(true);
+            input
+        });
+        let input_file = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_file(true);
+            input
+        });
+        let input_inline = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search...");
+            input
+        });
+        let input_grid_first = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Jordan");
+            input
+        });
+        let input_grid_last = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Lee");
+            input
+        });
+        let input_required = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("This field is required");
+            input
+        });
+        let input_badge = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("https://api.example.com/webhook");
+            input
+        });
+        let input_ig_url = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("example.com");
+            input.set_bare(true);
+            input
+        });
+        let input_bg_search = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Type to search...");
+            input
+        });
+        let input_form_name = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Evil Rabbit");
+            input
+        });
+        let input_form_email = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("john@example.com");
+            input
+        });
+        let input_form_phone = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("+1 (555) 123-4567");
+            input
+        });
+        let input_form_address = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("123 Main St");
             input
         });
         let textarea_input = cx.new(|cx| {
@@ -981,7 +1087,7 @@ impl Storybook {
         }
         let input_disabled = cx.new(|cx| {
             let mut input = Input::new(cx);
-            input.placeholder("Disabled");
+            input.placeholder("Email");
             input.set_disabled(true);
             input
         });
@@ -1038,6 +1144,25 @@ impl Storybook {
             toast_visible: false,
             input_demo,
             input_disabled,
+            input_basic,
+            input_field,
+            input_fieldgroup_name,
+            input_fieldgroup_email,
+            input_invalid,
+            input_file,
+            input_inline,
+            input_grid_first,
+            input_grid_last,
+            input_required,
+            input_badge,
+            input_ig_url,
+            input_bg_search,
+            input_form_name,
+            input_form_email,
+            input_form_phone,
+            input_form_address,
+            input_form_country: Some(0),
+            input_form_country_open: false,
             textarea_input,
             field_input,
             field_error_input,
@@ -2597,6 +2722,36 @@ impl Storybook {
                     .disabled(true)
                     .into_any_element(),
             )],
+            Story::InputStory => vec![
+                ("Basic", self.input_example_basic(cx).into_any_element()),
+                ("Field", self.input_example_field(cx).into_any_element()),
+                (
+                    "Field Group",
+                    self.input_example_fieldgroup(cx).into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    self.input_example_disabled(cx).into_any_element(),
+                ),
+                ("Invalid", self.input_example_invalid(cx).into_any_element()),
+                ("File", self.input_example_file(cx).into_any_element()),
+                ("Inline", self.input_example_inline(cx).into_any_element()),
+                ("Grid", self.input_example_grid(cx).into_any_element()),
+                (
+                    "Required",
+                    self.input_example_required(cx).into_any_element(),
+                ),
+                ("Badge", self.input_example_badge(cx).into_any_element()),
+                (
+                    "Input Group",
+                    self.input_example_input_group(cx).into_any_element(),
+                ),
+                (
+                    "Button Group",
+                    self.input_example_button_group(cx).into_any_element(),
+                ),
+                ("Form", self.input_example_form(cx).into_any_element()),
+            ],
             Story::FieldStory => vec![
                 (
                     "Input",
@@ -2732,6 +2887,43 @@ impl Storybook {
     /// section descriptions.
     fn example_description(story: Story, title: &'static str) -> Option<&'static str> {
         match (story, title) {
+            (Story::InputStory, "Field") => Some(
+                "Use Field, FieldLabel, and FieldDescription to create an input with a \
+                 label and description.",
+            ),
+            (Story::InputStory, "Field Group") => {
+                Some("Use FieldGroup to show multiple Field blocks and to build forms.")
+            }
+            (Story::InputStory, "Disabled") => {
+                Some("Use .set_disabled(true) to disable the input.")
+            }
+            (Story::InputStory, "Invalid") => {
+                Some("Use .set_invalid(true) to mark the input as invalid.")
+            }
+            (Story::InputStory, "File") => Some("Use .set_file(true) to create a file input."),
+            (Story::InputStory, "Inline") => Some(
+                "Use Field with FieldOrientation::Horizontal to create an inline input. \
+                 Pair with Button to create a search input with a button.",
+            ),
+            (Story::InputStory, "Grid") => {
+                Some("Use a grid layout to place multiple inputs side by side.")
+            }
+            (Story::InputStory, "Required") => {
+                Some("Mark required inputs with a destructive asterisk in the label.")
+            }
+            (Story::InputStory, "Badge") => {
+                Some("Use Badge in the label to highlight a recommended field.")
+            }
+            (Story::InputStory, "Input Group") => Some(
+                "To add icons, text, or buttons inside an input, use the InputGroup \
+                 component.",
+            ),
+            (Story::InputStory, "Button Group") => {
+                Some("To add buttons to an input, pair it with adjacent Buttons.")
+            }
+            (Story::InputStory, "Form") => {
+                Some("A full form example with multiple inputs, a select, and a button.")
+            }
             (Story::ResizableStory, "Vertical") => {
                 Some("Use .direction(ResizableDirection::Vertical) for vertical resizing.")
             }
@@ -5081,37 +5273,274 @@ impl Storybook {
                 )
             })
     }
-    fn input_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+    /// Port of input-demo.tsx — API Key password field.
+    fn input_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldLabel::new().child("API Key"))
+                .child(self.input_demo.clone())
+                .child(
+                    FieldDescription::new().child("Your API key is encrypted and stored securely."),
+                ),
+        )
+    }
+
+    /// Port of input-basic.tsx.
+    fn input_example_basic(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(self.input_basic.clone())
+    }
+
+    /// Port of input-field.tsx.
+    fn input_example_field(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldLabel::new().child("Username"))
+                .child(self.input_field.clone())
+                .child(FieldDescription::new().child("Choose a unique username for your account.")),
+        )
+    }
+
+    /// Port of input-fieldgroup.tsx.
+    fn input_example_fieldgroup(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            FieldGroup::new()
+                .child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Name"))
+                        .child(self.input_fieldgroup_name.clone()),
+                )
+                .child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Email"))
+                        .child(self.input_fieldgroup_email.clone())
+                        .child(
+                            FieldDescription::new().child("We'll send updates to this address."),
+                        ),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(
+                            Button::new("input-fg-reset")
+                                .variant(ButtonVariant::Outline)
+                                .child("Reset"),
+                        )
+                        .child(Button::new("input-fg-submit").child("Submit")),
+                ),
+        )
+    }
+
+    /// Port of input-disabled.tsx.
+    fn input_example_disabled(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldLabel::new().disabled(true).child("Email"))
+                .child(self.input_disabled.clone())
+                .child(FieldDescription::new().child("This field is currently disabled.")),
+        )
+    }
+
+    /// Port of input-invalid.tsx.
+    fn input_example_invalid(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .invalid(true)
+                .child(FieldLabel::new().child("Invalid Input"))
+                .child(self.input_invalid.clone())
+                .child(FieldDescription::new().child("This field contains validation errors.")),
+        )
+    }
+
+    /// Port of input-file.tsx.
+    fn input_example_file(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldLabel::new().child("Picture"))
+                .child(self.input_file.clone())
+                .child(FieldDescription::new().child("Select a picture to upload.")),
+        )
+    }
+
+    /// Port of input-inline.tsx.
+    fn input_example_inline(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .orientation(FieldOrientation::Horizontal)
+                .child(div().flex_1().child(self.input_inline.clone()))
+                .child(
+                    Button::new("input-inline-search")
+                        .size(ButtonSize::Sm)
+                        .child("Search"),
+                ),
+        )
+    }
+
+    /// Port of input-grid.tsx — FieldGroup as a two-column grid (gap-7).
+    fn input_example_grid(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(384.)).child(
+            div()
+                .flex()
+                .flex_row()
+                .gap(px(28.))
+                .child(
+                    div().flex_1().child(
+                        Field::new()
+                            .child(FieldLabel::new().child("First Name"))
+                            .child(self.input_grid_first.clone()),
+                    ),
+                )
+                .child(
+                    div().flex_1().child(
+                        Field::new()
+                            .child(FieldLabel::new().child("Last Name"))
+                            .child(self.input_grid_last.clone()),
+                    ),
+                ),
+        )
+    }
+
+    /// Port of input-required.tsx.
+    fn input_example_required(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
-        let value = self.input_demo.read(cx).text().to_string();
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(16.))
-            .w(px(288.))
-            .child(self.input_demo.clone())
-            .child(self.input_disabled.clone())
-            .child(
-                Button::new("input-clear")
-                    .variant(ButtonVariant::Outline)
-                    .size(ButtonSize::Sm)
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.input_demo
-                            .update(cx, |input, cx| input.set_text("", cx));
-                        cx.notify();
-                    }))
-                    .child("Clear"),
-            )
-            .child(
+        div().w(px(320.)).child(
+            Field::new()
+                .child(
+                    FieldLabel::new()
+                        .child("Required Field")
+                        .child(div().text_color(theme.destructive).child("*")),
+                )
+                .child(self.input_required.clone())
+                .child(FieldDescription::new().child("This field must be filled out.")),
+        )
+    }
+
+    /// Port of input-badge.tsx.
+    fn input_example_badge(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new()
+                .child(
+                    FieldLabel::new()
+                        .child("Webhook URL")
+                        .child(Badge::new().variant(BadgeVariant::Secondary).child("Beta")),
+                )
+                .child(self.input_badge.clone()),
+        )
+    }
+
+    /// Port of input-input-group.tsx.
+    fn input_example_input_group(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div().w(px(320.)).child(
+            Field::new()
+                .child(FieldLabel::new().child("Website URL"))
+                .child(
+                    InputGroup::new(self.input_ig_url.clone())
+                        .leading(InputGroupAddon::new().child("https://"))
+                        .trailing(
+                            InputGroupAddon::new().child(
+                                gpui::svg()
+                                    .path(crate::assets::ICON_INFO)
+                                    .size(px(16.))
+                                    .text_color(theme.muted_foreground),
+                            ),
+                        ),
+                ),
+        )
+    }
+
+    /// Port of input-button-group.tsx. ButtonGroup only accepts Buttons, so
+    /// the joined input+button row is approximated with an adjacent flex row
+    /// (shared-border grouping is a button-group audit TODO).
+    fn input_example_button_group(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(320.)).child(
+            Field::new().child(FieldLabel::new().child("Search")).child(
                 div()
-                    .text_size(px(12.))
-                    .text_color(theme.muted_foreground)
-                    .child(if value.is_empty() {
-                        "value: (empty)".to_string()
-                    } else {
-                        format!("value: {value}")
-                    }),
-            )
+                    .flex()
+                    .flex_row()
+                    .w_full()
+                    .child(div().flex_1().child(self.input_bg_search.clone()))
+                    .child(
+                        div().ml(px(-1.)).child(
+                            Button::new("input-bg-search")
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Sm)
+                                .child("Search"),
+                        ),
+                    ),
+            ),
+        )
+    }
+
+    /// Port of input-form.tsx — full form with inputs, a select, and buttons.
+    fn input_example_form(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div().w(px(384.)).child(
+            FieldGroup::new()
+                .child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Name"))
+                        .child(self.input_form_name.clone()),
+                )
+                .child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Email"))
+                        .child(self.input_form_email.clone())
+                        .child(
+                            FieldDescription::new()
+                                .child("We'll never share your email with anyone."),
+                        ),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .flex_row()
+                        .gap(px(16.))
+                        .w_full()
+                        .child(
+                            div().flex_1().child(
+                                Field::new()
+                                    .child(FieldLabel::new().child("Phone"))
+                                    .child(self.input_form_phone.clone()),
+                            ),
+                        )
+                        .child(
+                            div().flex_1().child(
+                                Field::new()
+                                    .child(FieldLabel::new().child("Country"))
+                                    .child(
+                                        Select::new("input-form-country")
+                                            .options(["United States", "United Kingdom", "Canada"])
+                                            .value(self.input_form_country)
+                                            .open(self.input_form_country_open)
+                                            .on_change(cx.listener(|this, value: &usize, _, cx| {
+                                                this.input_form_country = Some(*value);
+                                                cx.notify();
+                                            }))
+                                            .on_open_change(cx.listener(
+                                                |this, open: &bool, _, cx| {
+                                                    this.input_form_country_open = *open;
+                                                    cx.notify();
+                                                },
+                                            )),
+                                    ),
+                            ),
+                        ),
+                )
+                .child(
+                    Field::new()
+                        .child(FieldLabel::new().child("Address"))
+                        .child(self.input_form_address.clone()),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(
+                            Button::new("input-form-cancel")
+                                .variant(ButtonVariant::Outline)
+                                .child("Cancel"),
+                        )
+                        .child(Button::new("input-form-submit").child("Submit")),
+                ),
+        )
     }
     fn textarea_preview(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div()
@@ -5133,16 +5562,12 @@ impl Storybook {
                             FieldGroup::new()
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Name on Card"),
-                                        )
+                                        .child(FieldLabel::new().child("Name on Card"))
                                         .child(self.field_name_input.clone()),
                                 )
                                 .child(
                                     Field::new()
-                                        .child(
-                                            FieldLabel::new().child("Card Number"),
-                                        )
+                                        .child(FieldLabel::new().child("Card Number"))
                                         .child(self.field_card_number.clone())
                                         .child(
                                             FieldDescription::new()
@@ -5158,16 +5583,13 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Month"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Month"))
                                                     .child(
                                                         Select::new("field-month")
                                                             .placeholder("MM")
                                                             .options([
-                                                                "01", "02", "03", "04", "05",
-                                                                "06", "07", "08", "09", "10",
-                                                                "11", "12",
+                                                                "01", "02", "03", "04", "05", "06",
+                                                                "07", "08", "09", "10", "11", "12",
                                                             ])
                                                             .value(self.field_month)
                                                             .open(self.field_month_open)
@@ -5189,9 +5611,7 @@ impl Storybook {
                                         .child(
                                             div().flex_1().child(
                                                 Field::new()
-                                                    .child(
-                                                        FieldLabel::new().child("Year"),
-                                                    )
+                                                    .child(FieldLabel::new().child("Year"))
                                                     .child(
                                                         Select::new("field-year")
                                                             .placeholder("YYYY")
@@ -5230,9 +5650,10 @@ impl Storybook {
                 .child(
                     FieldSet::new()
                         .legend(FieldLegend::new().child("Billing Address"))
-                        .description(FieldDescription::new().child(
-                            "The billing address associated with your payment method",
-                        ))
+                        .description(
+                            FieldDescription::new()
+                                .child("The billing address associated with your payment method"),
+                        )
                         .child(
                             FieldGroup::new().child(
                                 Field::new()
@@ -5260,9 +5681,7 @@ impl Storybook {
                         FieldGroup::new().child(
                             Field::new()
                                 .child(FieldLabel::new().child("Comments"))
-                                .child(
-                                    Textarea::new(self.field_comments.clone()).rows(3),
-                                ),
+                                .child(Textarea::new(self.field_comments.clone()).rows(3)),
                         ),
                     ),
                 )
@@ -5319,8 +5738,7 @@ impl Storybook {
                         .child(FieldLabel::new().child("Feedback"))
                         .child(Textarea::new(self.field_feedback.clone()).rows(4))
                         .child(
-                            FieldDescription::new()
-                                .child("Share your thoughts about our service."),
+                            FieldDescription::new().child("Share your thoughts about our service."),
                         ),
                 ),
             ),
@@ -5356,10 +5774,7 @@ impl Storybook {
                             cx.notify();
                         })),
                 )
-                .child(
-                    FieldDescription::new()
-                        .child("Select your department or area of work."),
-                ),
+                .child(FieldDescription::new().child("Select your department or area of work.")),
         )
     }
 
@@ -5368,12 +5783,10 @@ impl Storybook {
         div().w(px(320.)).child(
             Field::new()
                 .child(FieldTitle::new().child("Price Range"))
-                .child(
-                    FieldDescription::new().child(format!(
-                        "Set your budget range (${:.0}).",
-                        self.field_slider
-                    )),
-                )
+                .child(FieldDescription::new().child(format!(
+                    "Set your budget range (${:.0}).",
+                    self.field_slider
+                )))
                 .child(
                     Slider::new("field-slider")
                         .min(0.)
@@ -5394,8 +5807,7 @@ impl Storybook {
             FieldSet::new()
                 .legend(FieldLegend::new().child("Address Information"))
                 .description(
-                    FieldDescription::new()
-                        .child("We need your address to deliver your order."),
+                    FieldDescription::new().child("We need your address to deliver your order."),
                 )
                 .child(
                     FieldGroup::new()
@@ -5634,35 +6046,29 @@ impl Storybook {
                             .child("Select the compute environment for your cluster."),
                     )
                     .gap(px(12.))
-                    .child(
-                        RadioGroup::new().children(envs.into_iter().enumerate().map(
-                            |(index, (id, title, description))| {
-                                FieldLabel::new()
-                                    .choice_card(self.field_compute_env == index)
-                                    .child(
-                                        Field::new()
-                                            .orientation(FieldOrientation::Horizontal)
-                                            .content(
-                                                FieldContent::new()
-                                                    .child(FieldTitle::new().child(title))
-                                                    .child(
-                                                        FieldDescription::new().child(description),
-                                                    ),
-                                            )
-                                            .child(
-                                                RadioGroupItem::new(id)
-                                                    .checked(self.field_compute_env == index)
-                                                    .on_select(cx.listener(
-                                                        move |this, _, _, cx| {
-                                                            this.field_compute_env = index;
-                                                            cx.notify();
-                                                        },
-                                                    )),
-                                            ),
-                                    )
-                            },
-                        )),
-                    ),
+                    .child(RadioGroup::new().children(envs.into_iter().enumerate().map(
+                        |(index, (id, title, description))| {
+                            FieldLabel::new()
+                                .choice_card(self.field_compute_env == index)
+                                .child(
+                                    Field::new()
+                                        .orientation(FieldOrientation::Horizontal)
+                                        .content(
+                                            FieldContent::new()
+                                                .child(FieldTitle::new().child(title))
+                                                .child(FieldDescription::new().child(description)),
+                                        )
+                                        .child(
+                                            RadioGroupItem::new(id)
+                                                .checked(self.field_compute_env == index)
+                                                .on_select(cx.listener(move |this, _, _, cx| {
+                                                    this.field_compute_env = index;
+                                                    cx.notify();
+                                                })),
+                                        ),
+                                )
+                        },
+                    ))),
             ),
         )
     }
@@ -5806,14 +6212,10 @@ impl Storybook {
                                         .orientation(FieldOrientation::Responsive)
                                         .content(
                                             FieldContent::new()
-                                                .child(
-                                                    FieldLabel::new().child("Name"),
-                                                )
-                                                .child(
-                                                    FieldDescription::new().child(
-                                                        "Provide your full name for identification",
-                                                    ),
-                                                ),
+                                                .child(FieldLabel::new().child("Name"))
+                                                .child(FieldDescription::new().child(
+                                                    "Provide your full name for identification",
+                                                )),
                                         )
                                         .child(self.field_responsive_name.clone()),
                                 )
@@ -5918,9 +6320,9 @@ impl Storybook {
                         .item(CommandItem::new("cmd-emoji", "Search Emoji"))
                         .item(
                             CommandItem::new("cmd-calc", "Calculator").on_select(cx.listener(
-                                |this, _, _, cx| {
+                                |this, _, window, cx| {
                                     this.command_input.update(cx, |input, cx| {
-                                        input.set_text("", cx);
+                                        input.set_text("", window, cx);
                                     });
                                     cx.notify();
                                 },
