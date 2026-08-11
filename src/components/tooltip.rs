@@ -34,9 +34,9 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use gpui::{
-    AnyElement, App, ElementId, Entity, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, SharedString, StatefulInteractiveElement as _, Styled, Window, anchored, deferred,
-    div, prelude::FluentBuilder as _, px, svg,
+    Anchor, AnyElement, App, ElementId, Entity, InteractiveElement as _, IntoElement,
+    ParentElement, RenderOnce, SharedString, StatefulInteractiveElement as _, Styled, Window,
+    anchored, deferred, div, point, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::assets::ICON_TOOLTIP_ARROW;
@@ -496,81 +496,82 @@ fn positioned_panel(
     // trigger-facing edge (centered on the bubble — accepted simplification).
     // Hovering the stack keeps the tooltip open (hoverable-popup default);
     // crossing the side_offset gap is covered by the grace close.
-    let mut stack = div()
+    let stack = div()
         .id(panel_id)
         .relative()
         .on_hover(move |hovered, window, cx| on_hover(*hovered, window, cx))
         .child(bubble)
         .child(arrow);
-    // align_offset shifts the whole stack along the align axis.
-    if align_offset != 0.0 {
-        stack = match side {
-            TooltipSide::Top | TooltipSide::Bottom => stack.ml(px(align_offset)),
-            TooltipSide::Left | TooltipSide::Right => stack.mt(px(align_offset)),
-        };
-    }
 
     let animated = motion::tooltip_in("tooltip-in", side.to_overlay(), stack);
 
-    // Outer absolute wrapper pinned to the trigger-facing edge; side_offset
-    // is its padding. Crossing that gap without the tooltip closing is
-    // handled by the grace close, since gpui hover hitboxes are per-element.
+    // gpui's `anchored` is itself position:absolute — it contributes zero
+    // size to its parent and paints its child from the parent's laid-out
+    // origin toward the given `Anchor` corner. So placement works as: pin a
+    // zero-size wrapper point on the trigger's side/align anchor location,
+    // then have `anchored` put the panel's matching corner (or edge-center)
+    // at that point. (Laying the panel out in-flow and aligning with
+    // flex/justify does NOT work — a zero-size absolute child can't be
+    // justified, and the default TopLeft anchor paints down/right, covering
+    // the trigger for side Top/Left.)
+    let anchor = match (side, align) {
+        (TooltipSide::Top, TooltipAlign::Start) => Anchor::BottomLeft,
+        (TooltipSide::Top, TooltipAlign::Center) => Anchor::BottomCenter,
+        (TooltipSide::Top, TooltipAlign::End) => Anchor::BottomRight,
+        (TooltipSide::Bottom, TooltipAlign::Start) => Anchor::TopLeft,
+        (TooltipSide::Bottom, TooltipAlign::Center) => Anchor::TopCenter,
+        (TooltipSide::Bottom, TooltipAlign::End) => Anchor::TopRight,
+        (TooltipSide::Left, TooltipAlign::Start) => Anchor::TopRight,
+        (TooltipSide::Left, TooltipAlign::Center) => Anchor::RightCenter,
+        (TooltipSide::Left, TooltipAlign::End) => Anchor::BottomRight,
+        (TooltipSide::Right, TooltipAlign::Start) => Anchor::TopLeft,
+        (TooltipSide::Right, TooltipAlign::Center) => Anchor::LeftCenter,
+        (TooltipSide::Right, TooltipAlign::End) => Anchor::BottomLeft,
+    };
+    // side_offset pushes the panel away from the trigger along the side
+    // axis; align_offset slides it along the align axis (positive toward
+    // the end, matching floating-ui's alignOffset).
+    let offset = match side {
+        TooltipSide::Top => point(px(align_offset), px(-side_offset)),
+        TooltipSide::Bottom => point(px(align_offset), px(side_offset)),
+        TooltipSide::Left => point(px(-side_offset), px(align_offset)),
+        TooltipSide::Right => point(px(side_offset), px(align_offset)),
+    };
+
     let wrapper = div().absolute().child(
         // deferred + anchored keeps the panel above siblings and snaps inside
         // the window if it would overflow (same pattern as Popover).
         deferred(
             anchored()
+                .anchor(anchor)
+                .offset(offset)
                 .snap_to_window_with_margin(px(8.))
                 .child(animated),
         ),
     );
 
-    // Pin wrapper to the correct edge and stretch along the orthogonal axis
-    // so justify_* can place the bubble per align.
+    // Pin the zero-size wrapper's origin to the anchor point on the trigger:
+    // the trigger-facing edge (side) at the aligned position (align).
     let wrapper = match side {
-        TooltipSide::Top => wrapper
-            .left_0()
-            .right_0()
-            .bottom(gpui::relative(1.))
-            .pb(px(side_offset))
-            .flex()
-            .flex_row()
-            .map(|e| apply_align(e, align)),
-        TooltipSide::Bottom => wrapper
-            .left_0()
-            .right_0()
-            .top(gpui::relative(1.))
-            .pt(px(side_offset))
-            .flex()
-            .flex_row()
-            .map(|e| apply_align(e, align)),
-        TooltipSide::Left => wrapper
-            .top_0()
-            .bottom_0()
-            .right(gpui::relative(1.))
-            .pr(px(side_offset))
-            .flex()
-            .flex_col()
-            .map(|e| apply_align(e, align)),
-        TooltipSide::Right => wrapper
-            .top_0()
-            .bottom_0()
-            .left(gpui::relative(1.))
-            .pl(px(side_offset))
-            .flex()
-            .flex_col()
-            .map(|e| apply_align(e, align)),
+        TooltipSide::Top => wrapper.bottom(gpui::relative(1.)),
+        TooltipSide::Bottom => wrapper.top(gpui::relative(1.)),
+        TooltipSide::Left => wrapper.right(gpui::relative(1.)),
+        TooltipSide::Right => wrapper.left(gpui::relative(1.)),
+    };
+    let wrapper = match (side, align) {
+        (TooltipSide::Top | TooltipSide::Bottom, TooltipAlign::Start) => wrapper.left_0(),
+        (TooltipSide::Top | TooltipSide::Bottom, TooltipAlign::Center) => {
+            wrapper.left(gpui::relative(0.5))
+        }
+        (TooltipSide::Top | TooltipSide::Bottom, TooltipAlign::End) => wrapper.right_0(),
+        (TooltipSide::Left | TooltipSide::Right, TooltipAlign::Start) => wrapper.top_0(),
+        (TooltipSide::Left | TooltipSide::Right, TooltipAlign::Center) => {
+            wrapper.top(gpui::relative(0.5))
+        }
+        (TooltipSide::Left | TooltipSide::Right, TooltipAlign::End) => wrapper.bottom_0(),
     };
 
     wrapper.into_any_element()
-}
-
-fn apply_align<E: Styled>(el: E, align: TooltipAlign) -> E {
-    match align {
-        TooltipAlign::Start => el.justify_start(),
-        TooltipAlign::Center => el.justify_center(),
-        TooltipAlign::End => el.justify_end(),
-    }
 }
 
 /// 10×10 pre-rotated diamond arrow (`icons/tooltip-arrow.svg`), centered on
