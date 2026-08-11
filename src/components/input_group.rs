@@ -1,4 +1,5 @@
-//! InputGroup — port of shadcn base-vega `ui/input-group.tsx`.
+//! InputGroup — port of shadcn `ui/input-group.tsx` (shell chrome tracks
+//! base-nova: h-8 rounded-lg border, no resting shadow).
 //!
 //! An input-styled shell that lays addons (icons, text, buttons) around a
 //! bare [`Input`](crate::components::Input): the group draws the border,
@@ -87,24 +88,28 @@ impl RenderOnce for InputGroup {
         let theme = Theme::of(cx).clone();
         let focused = self.input.read(cx).focus_handle(cx).is_focused(window);
 
-        // Shell: h-9 rounded-md border shadow-xs, ring border when the inner
-        // input has focus.
+        // Shell: base-nova h-8 rounded-lg border (no resting shadow), ring
+        // border while the inner input has focus. The ring is a border
+        // overlay, not a box shadow — gpui paints shadows behind the quad,
+        // so they show through transparent backgrounds as a fill (see
+        // motion::focus_ring_overlay).
         div()
             .flex()
             .flex_row()
             .items_center()
             .gap(px(8.))
-            .h(px(36.))
+            .h(px(32.))
             .w_full()
-            .rounded(theme.radius_md())
+            .rounded(theme.radius_lg())
             .border_1()
             .border_color(if focused { theme.ring } else { theme.input })
-            .when(focused, |el| el.shadow(crate::motion::focus_ring(&theme)))
-            .when(!focused, |el| el.shadow_xs())
             .when(theme.dark, |el| el.bg(alpha(theme.input, 0.3)))
             .px(px(12.))
             .children(self.leading)
             .child(div().flex_1().child(self.input))
             .children(self.trailing)
+            .when(focused, |el| {
+                el.child(crate::motion::focus_ring_overlay(&theme, theme.radius_lg()))
+            })
     }
 }

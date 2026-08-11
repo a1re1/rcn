@@ -221,6 +221,10 @@ const ICONS: &[(&str, &[u8])] = &[
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M4.15.85c.47-.47 1.23-.47 1.7 0l3.3 3.3c.47.47.47 1.23 0 1.7l-3.3 3.3c-.47.47-1.23.47-1.7 0l-3.3-3.3c-.47-.47-.47-1.23 0-1.7l3.3-3.3z"/></svg>"##,
     ),
     (
+        "icons/info.svg",
+        br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>"##,
+    ),
+    (
         "icons/inbox.svg",
         br##"<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>"##,
     ),
@@ -292,6 +296,7 @@ pub const ICON_CIRCLE_CHECK: &str = "icons/circle-check.svg";
 pub const ICON_SEARCH: &str = "icons/search.svg";
 pub const ICON_SAVE: &str = "icons/save.svg";
 pub const ICON_TOOLTIP_ARROW: &str = "icons/tooltip-arrow.svg";
+pub const ICON_INFO: &str = "icons/info.svg";
 pub const ICON_INBOX: &str = "icons/inbox.svg";
 pub const ICON_SHIELD_ALERT: &str = "icons/shield-alert.svg";
 pub const ICON_BADGE_CHECK: &str = "icons/badge-check.svg";
