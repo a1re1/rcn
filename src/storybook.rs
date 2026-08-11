@@ -17,7 +17,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, Window, div,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, SharedString, Window, div,
     hsla, prelude::*, px, relative, rgb,
 };
 
@@ -699,6 +699,12 @@ pub struct Storybook {
     pagination_rows_open: bool,
     // Dialog story state
     dialog_open: bool,
+    dialog_share_open: bool,
+    dialog_sticky_open: bool,
+    dialog_scroll_open: bool,
+    dialog_name_input: gpui::Entity<Input>,
+    dialog_username_input: gpui::Entity<Input>,
+    dialog_share_input: gpui::Entity<Input>,
     // Alert dialog story state
     alert_dialog_open: bool,
     // Sheet story state
@@ -875,6 +881,23 @@ impl Storybook {
             input.placeholder("Evil Rabbit");
             input
         });
+        let dialog_name_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_text("Pedro Duarte", cx);
+            input
+        });
+        let dialog_username_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.set_text("@peduarte", cx);
+            input
+        });
+        let dialog_share_input = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            // shadcn renders this readOnly; Input has no read-only mode yet,
+            // and disabled would dim it to 50% — leave it editable.
+            input.set_text("https://ui.shadcn.com/docs/installation", cx);
+            input
+        });
         let field_card_number = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("1234 5678 9012 3456");
@@ -1037,6 +1060,12 @@ impl Storybook {
             pagination_rows_value: Some(1), // "25"
             pagination_rows_open: false,
             dialog_open: false,
+            dialog_share_open: false,
+            dialog_sticky_open: false,
+            dialog_scroll_open: false,
+            dialog_name_input,
+            dialog_username_input,
+            dialog_share_input,
             alert_dialog_open: false,
             sheet_open: false,
             sheet_side: SheetSide::Right,
@@ -5097,60 +5126,244 @@ impl Storybook {
         )
     }
     fn dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let theme = Theme::of(cx).clone();
+        const LOREM: &str = concat!(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do ",
+            "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut ",
+            "enim ad minim veniam, quis nostrud exercitation ullamco laboris ",
+            "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in ",
+            "reprehenderit in voluptate velit esse cillum dolore eu fugiat ",
+            "nulla pariatur. Excepteur sint occaecat cupidatat non proident, ",
+            "sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        );
+
+        let scroll_body = |id: SharedString| {
+            div()
+                .id(id.clone())
+                .max_h(px(320.))
+                .overflow_y_scroll()
+                .children((0..10).map(move |i| {
+                    div()
+                        .id(ElementId::Name(format!("{id}-p-{i}").into()))
+                        .mb(px(16.))
+                        .line_height(px(21.))
+                        .child(LOREM)
+                }))
+        };
+
+        let sticky_entity = cx.entity();
+
         div()
+            .flex()
+            .flex_col()
+            .gap(px(24.))
+            // a. Edit profile (demo) — controlled; controls-panel "open" switch
             .child(
-                Button::new("dialog-trigger")
-                    .variant(ButtonVariant::Outline)
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.dialog_open = true;
-                        cx.notify();
-                    }))
-                    .child("Edit Profile"),
-            )
-            .child(
-                Dialog::new("dialog-demo")
-                    .open(self.dialog_open)
-                    .on_open_change(cx.listener(|this, open: &bool, _, cx| {
-                        this.dialog_open = *open;
-                        cx.notify();
-                    }))
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
                     .child(
-                        DialogHeader::new()
-                            .child(DialogTitle::new().child("Edit profile"))
-                            .child(DialogDescription::new().child(
-                                "Make changes to your profile here. Click save when you're done.",
-                            )),
+                        Button::new("dialog-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_open = true;
+                                cx.notify();
+                            }))
+                            .child("Open Dialog"),
                     )
                     .child(
-                        div()
-                            .h(px(80.))
-                            .w_full()
-                            .rounded(theme.radius_md())
-                            .bg(theme.muted),
-                    )
-                    .child(
-                        DialogFooter::new()
+                        Dialog::new("dialog-demo")
+                            .open(self.dialog_open)
+                            .max_w(px(384.))
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_open = *open;
+                                cx.notify();
+                            }))
                             .child(
-                                Button::new("dialog-cancel")
-                                    .variant(ButtonVariant::Outline)
-                                    .on_click(cx.listener(|this, _, _, cx| {
-                                        this.dialog_open = false;
-                                        cx.notify();
-                                    }))
-                                    .child("Cancel"),
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Edit profile"))
+                                    .child(DialogDescription::new().child(
+                                        "Make changes to your profile here. Click save when you're done.",
+                                    )),
                             )
                             .child(
-                                Button::new("dialog-save")
-                                    .on_click(cx.listener(|this, _, _, cx| {
-                                        this.dialog_open = false;
-                                        cx.notify();
-                                    }))
-                                    .child("Save changes"),
+                                FieldGroup::new()
+                                    .child(
+                                        Field::new()
+                                            .child(Label::new().child("Name"))
+                                            .child(self.dialog_name_input.clone()),
+                                    )
+                                    .child(
+                                        Field::new()
+                                            .child(Label::new().child("Username"))
+                                            .child(self.dialog_username_input.clone()),
+                                    ),
+                            )
+                            .child(
+                                DialogFooter::new()
+                                    .child(
+                                        Button::new("dialog-cancel")
+                                            .variant(ButtonVariant::Outline)
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Cancel"),
+                                    )
+                                    .child(
+                                        Button::new("dialog-save")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Save changes"),
+                                    ),
                             ),
                     ),
             )
+            // b. Share link — custom close / justify_start footer
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-share-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_share_open = true;
+                                cx.notify();
+                            }))
+                            .child("Share"),
+                    )
+                    .child(
+                        Dialog::new("dialog-share")
+                            .open(self.dialog_share_open)
+                            .max_w(px(448.))
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_share_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Share link"))
+                                    .child(DialogDescription::new().child(
+                                        "Anyone who has this link will be able to view this.",
+                                    )),
+                            )
+                            .child(self.dialog_share_input.clone())
+                            .child(
+                                DialogFooter::new()
+                                    .justify_start()
+                                    .child(
+                                        Button::new("dialog-share-close")
+                                            .on_click(cx.listener(|this, _, _, cx| {
+                                                this.dialog_share_open = false;
+                                                cx.notify();
+                                            }))
+                                            .child("Close"),
+                                    ),
+                            ),
+                    ),
+            )
+            // c. No close button — fully uncontrolled: built-in .trigger()
+            // + default_open, no external open flag (backdrop/Escape close).
+            .child(
+                Dialog::new("dialog-no-close")
+                    .default_open(false)
+                    .show_close_button(false)
+                    .trigger(
+                        Button::new("dialog-no-close-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .child("No Close Button"),
+                    )
+                    .child(
+                        DialogHeader::new()
+                            .child(DialogTitle::new().child("No Close Button"))
+                            .child(DialogDescription::new().child(
+                                "This dialog doesn't have a close button in the top-right corner.",
+                            )),
+                    ),
+            )
+            // d. Sticky footer — DialogFooter::show_close_button
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-sticky-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_sticky_open = true;
+                                cx.notify();
+                            }))
+                            .child("Sticky Footer"),
+                    )
+                    .child(
+                        Dialog::new("dialog-sticky")
+                            .open(self.dialog_sticky_open)
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_sticky_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Sticky Footer"))
+                                    .child(DialogDescription::new().child(
+                                        "This dialog has a sticky footer that stays visible while the content scrolls.",
+                                    )),
+                            )
+                            .child(scroll_body("dialog-sticky-scroll".into()))
+                            .child(
+                                DialogFooter::new()
+                                    .show_close_button(true)
+                                    .on_close({
+                                        let entity = sticky_entity.clone();
+                                        move |_window, cx| {
+                                            entity.update(cx, |this, cx| {
+                                                this.dialog_sticky_open = false;
+                                                cx.notify();
+                                            });
+                                        }
+                                    }),
+                            ),
+                    ),
+            )
+            // e. Scrollable content — same body, no footer
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(
+                        Button::new("dialog-scroll-trigger")
+                            .variant(ButtonVariant::Outline)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dialog_scroll_open = true;
+                                cx.notify();
+                            }))
+                            .child("Scrollable Content"),
+                    )
+                    .child(
+                        Dialog::new("dialog-scroll")
+                            .open(self.dialog_scroll_open)
+                            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                this.dialog_scroll_open = *open;
+                                cx.notify();
+                            }))
+                            .child(
+                                DialogHeader::new()
+                                    .child(DialogTitle::new().child("Scrollable Content"))
+                                    .child(DialogDescription::new().child(
+                                        "This is a dialog with scrollable content.",
+                                    )),
+                            )
+                            .child(scroll_body("dialog-scroll-scroll".into())),
+                    ),
+            )
     }
+
     fn alert_dialog_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div()
             .child(
@@ -7036,7 +7249,6 @@ impl Render for Storybook {
                 // close on Escape; component-level focus traps are a TODO,
                 // so the demo handles it at the root).
                 if event.keystroke.key == "escape" {
-                    this.dialog_open = false;
                     this.alert_dialog_open = false;
                     this.sheet_open = false;
                     this.drawer_open = false;
