@@ -35,8 +35,9 @@ use std::time::Duration;
 
 use gpui::{
     Anchor, AnyElement, App, ElementId, Entity, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, SharedString, StatefulInteractiveElement as _, Styled, Window,
-    anchored, deferred, div, point, prelude::FluentBuilder as _, px, svg,
+    ParentElement, Refineable as _, RenderOnce, SharedString, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, anchored, deferred, div, point, prelude::FluentBuilder as _,
+    px, svg,
 };
 
 use crate::assets::ICON_TOOLTIP_ARROW;
@@ -104,10 +105,15 @@ impl TooltipState {
 ///
 /// When `has_kbd` is set, right padding drops 12→6px (shadcn's
 /// `has-data-[slot=kbd]:pr-1.5`).
-fn tooltip_bubble(theme: Theme, body: AnyElement, has_kbd: bool) -> impl IntoElement {
+fn tooltip_bubble(
+    theme: Theme,
+    body: AnyElement,
+    has_kbd: bool,
+    style: StyleRefinement,
+) -> impl IntoElement {
     // shadcn `w-fit` — gpui has no width:fit-content helper; flex row + max_w
     // already shrink-wraps the bubble to its content.
-    div()
+    let mut bubble = div()
         .flex()
         .flex_row()
         .items_center()
@@ -122,7 +128,10 @@ fn tooltip_bubble(theme: Theme, body: AnyElement, has_kbd: bool) -> impl IntoEle
         .py(px(6.))
         .text_size(px(12.))
         .line_height(px(16.))
-        .child(body)
+        .child(body);
+    // Caller refinement applied last so Styled overrides win over defaults.
+    bubble.style().refine(&style);
+    bubble
 }
 
 /// A hover-tooltip wrapper around a trigger element.
@@ -149,6 +158,9 @@ pub struct Tooltip {
     open: Option<bool>,
     on_open_change: Option<OpenChangeHandler>,
     has_kbd: bool,
+    /// Caller [`Styled`] refinement, applied to the floating tooltip bubble
+    /// (bg/rounded/padding), not the trigger wrapper.
+    style: StyleRefinement,
 }
 
 impl Tooltip {
@@ -169,6 +181,7 @@ impl Tooltip {
             open: None,
             on_open_change: None,
             has_kbd: false,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -192,6 +205,7 @@ impl Tooltip {
             open: None,
             on_open_change: None,
             has_kbd: false,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -285,6 +299,12 @@ impl ParentElement for Tooltip {
     }
 }
 
+impl Styled for Tooltip {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Tooltip {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -298,6 +318,7 @@ impl RenderOnce for Tooltip {
         let text = self.text.clone();
         let content = self.content.clone();
         let on_open_change = self.on_open_change.clone();
+        let style = self.style.clone();
 
         // Resolve open: controlled snapshot, or keyed uncontrolled state.
         let default_open = self.default_open;
@@ -459,6 +480,7 @@ impl RenderOnce for Tooltip {
                     has_kbd,
                     panel_id,
                     panel_hover,
+                    style.clone(),
                 ))
             })
     }
@@ -489,8 +511,9 @@ fn positioned_panel(
     has_kbd: bool,
     panel_id: ElementId,
     on_hover: Rc<dyn Fn(bool, &mut Window, &mut App)>,
+    style: StyleRefinement,
 ) -> AnyElement {
-    let bubble = tooltip_bubble(theme.clone(), body, has_kbd);
+    let bubble = tooltip_bubble(theme.clone(), body, has_kbd, style);
     let arrow = arrow_el(theme, side);
 
     // Stack bubble + arrow. Arrow is absolutely positioned on the bubble's
