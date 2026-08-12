@@ -430,6 +430,11 @@ pub static BUTTON_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Button",
+        signature: "pub fn flush(mut self) -> Self",
+        doc: "Zero horizontal padding — the docs' `className=\"p-0\"` override on inline link buttons (e.g. a show-more trigger inside flowing text).",
+    },
+    ApiEntry {
+        type_name: "Button",
         signature: "pub fn icon_inline_start(mut self) -> Self",
         doc: "Child `data-icon=\"inline-start\"` — trim start padding (`has-data-[icon=inline-start]:pl-2` / `pl-1.5` for Xs/Sm).",
     },

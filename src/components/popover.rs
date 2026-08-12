@@ -104,7 +104,7 @@ impl RenderOnce for Popover {
                                 .snap_to_window_with_margin(px(8.))
                                 .child(crate::motion::pop_in(
                                     "popover-in",
-                                    // w-72 rounded-md bg-popover p-4 text-sm
+                                    // w-72 rounded-3xl bg-popover p-4 text-sm
                                     // text-popover-foreground shadow-md ring-1
                                     // ring-foreground/10, flex-col gap-4
                                     div()
@@ -113,7 +113,7 @@ impl RenderOnce for Popover {
                                         .flex_col()
                                         .gap(px(16.))
                                         .w(px(288.))
-                                        .rounded(theme.radius_md())
+                                        .rounded(theme.radius_3xl())
                                         .bg(theme.popover)
                                         .text_color(theme.popover_foreground)
                                         .text_size(px(14.))

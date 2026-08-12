@@ -9356,11 +9356,15 @@ impl Storybook {
                         div()
                             .flex()
                             .flex_col()
+                            // items-start + p-0: the docs trigger is a
+                            // `gap-1 p-0` link button flush with the text.
+                            .items_start()
                             .gap(px(8.))
                             .child(div().child(body))
                             .child(
                                 Button::new("bubble-collapsible-toggle")
                                     .variant(ButtonVariant::Link)
+                                    .flush()
                                     .on_click(cx.listener(|this, _: &ClickEvent, _, cx| {
                                         this.bubble_collapsible_open =
                                             !this.bubble_collapsible_open;
