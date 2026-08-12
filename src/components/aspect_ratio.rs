@@ -2,13 +2,22 @@
 //!
 //! Constrains its content to a width/height ratio (`aspect-(--ratio)`),
 //! via gpui's native aspect-ratio style.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
-use gpui::{AnyElement, App, IntoElement, ParentElement, RenderOnce, Styled, Window, div};
+use gpui::{
+    AnyElement, App, IntoElement, ParentElement, Refineable as _, RenderOnce, StyleRefinement,
+    Styled, Window, div,
+};
 
+/// Constrains children to a fixed width/height ratio.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct AspectRatio {
     ratio: f32,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AspectRatio {
@@ -17,7 +26,14 @@ impl AspectRatio {
         Self {
             ratio,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
+    }
+}
+
+impl Styled for AspectRatio {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -30,10 +46,12 @@ impl ParentElement for AspectRatio {
 impl RenderOnce for AspectRatio {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // relative aspect-(--ratio)
-        div()
+        let mut root = div()
             .relative()
             .w_full()
             .aspect_ratio(self.ratio)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
