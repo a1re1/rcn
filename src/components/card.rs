@@ -5,6 +5,9 @@
 //! (16px / 12px). Parts also accept an explicit `.spacing(Pixels)` override that
 //! mirrors shadcn's `[--card-spacing:*]` arbitrary value.
 //!
+//! Sizing and shape overrides come from the caller via [`Styled`] (gpui's
+//! equivalent of shadcn's `className` passthrough).
+//!
 //! Omissions vs source (no gpui equivalent yet):
 //! - CSS variable cascade (`--card-spacing`) — each part takes `.size(CardSize)`
 //!   and/or `.spacing(Pixels)` explicitly (gpui has no CSS variable cascade).
@@ -20,8 +23,8 @@
 //! - RTL docs example not ported
 
 use gpui::{
-    AnyElement, App, FontWeight, IntoElement, ParentElement, Pixels, RenderOnce, Styled, Window,
-    div, prelude::FluentBuilder as _, px,
+    AnyElement, App, FontWeight, IntoElement, ParentElement, Pixels, Refineable as _, RenderOnce,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::theme::{Theme, alpha};
@@ -53,11 +56,13 @@ impl CardSize {
 ///
 /// Footer `pb-0` is emulated by CardFooter applying `mb(-spacing)` (footer must
 /// be the last child). Leading full-bleed media uses `.flush_top()` (`pt-0`).
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Card {
     size: CardSize,
     spacing_override: Option<Pixels>,
     flush_top: bool,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -67,6 +72,7 @@ impl Card {
             size: CardSize::Default,
             spacing_override: None,
             flush_top: false,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -102,6 +108,12 @@ impl Default for Card {
     }
 }
 
+impl Styled for Card {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for Card {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -113,7 +125,7 @@ impl RenderOnce for Card {
         let theme = Theme::of(cx).clone();
         let spacing = self.spacing_px();
 
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(spacing)
@@ -127,7 +139,9 @@ impl RenderOnce for Card {
             .text_color(theme.card_foreground)
             .border_1()
             .border_color(alpha(theme.foreground, 0.1))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -139,11 +153,13 @@ impl RenderOnce for Card {
 /// Size/spacing must match the parent Card — gpui has no CSS variable cascade.
 /// When `.action(...)` is set, renders as a row: left column (title + description)
 /// + action at the end (`grid-cols-[1fr_auto]` / `row-span-2`).
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct CardHeader {
     size: CardSize,
     spacing_override: Option<Pixels>,
     action: Option<AnyElement>,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -153,6 +169,7 @@ impl CardHeader {
             size: CardSize::Default,
             spacing_override: None,
             action: None,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -188,6 +205,12 @@ impl Default for CardHeader {
     }
 }
 
+impl Styled for CardHeader {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for CardHeader {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -205,7 +228,7 @@ impl RenderOnce for CardHeader {
             .min_w_0()
             .children(self.children);
 
-        div()
+        let mut root = div()
             .flex()
             .when(self.action.is_some(), |el| {
                 el.flex_row().items_start().gap(px(4.))
@@ -215,15 +238,20 @@ impl RenderOnce for CardHeader {
             .child(body)
             .when_some(self.action, |el, action| {
                 el.child(CardAction::new().child(action))
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// cn-font-heading text-base leading-snug font-medium
 /// group-data-[size=sm]/card:text-sm
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct CardTitle {
     size: CardSize,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -231,6 +259,7 @@ impl CardTitle {
     pub fn new() -> Self {
         Self {
             size: CardSize::Default,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -250,6 +279,12 @@ impl Default for CardTitle {
     }
 }
 
+impl Styled for CardTitle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for CardTitle {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -264,24 +299,30 @@ impl RenderOnce for CardTitle {
             CardSize::Sm => (px(14.), px(19.)),
         };
 
-        div()
+        let mut root = div()
             .text_size(text_size)
             .line_height(line_height)
             .font_weight(FontWeight::MEDIUM)
             .when_some(theme.heading_font(), |el, f| el.font_family(f))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// text-sm text-muted-foreground
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct CardDescription {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl CardDescription {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -290,6 +331,12 @@ impl CardDescription {
 impl Default for CardDescription {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for CardDescription {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -303,10 +350,12 @@ impl RenderOnce for CardDescription {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
 
-        div()
+        let mut root = div()
             .text_size(px(14.))
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -315,14 +364,17 @@ impl RenderOnce for CardDescription {
 /// Aligned to the end of a flex row (source places action in a grid end cell).
 /// `CardHeader::action(...)` wraps its element in this part; it also composes
 /// standalone for call sites that build the header row themselves.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct CardAction {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl CardAction {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -334,6 +386,12 @@ impl Default for CardAction {
     }
 }
 
+impl Styled for CardAction {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for CardAction {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -342,7 +400,9 @@ impl ParentElement for CardAction {
 
 impl RenderOnce for CardAction {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().ml_auto().self_start().children(self.children)
+        let mut root = div().ml_auto().self_start().children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -350,12 +410,13 @@ impl RenderOnce for CardAction {
 ///
 /// Size/spacing must match the parent Card — gpui has no CSS variable cascade.
 /// Use `.flush_bottom()` (`-mb-(--card-spacing)`) for edge-to-edge content above
-/// a footer.
+/// a footer. Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct CardContent {
     size: CardSize,
     spacing_override: Option<Pixels>,
     flush_bottom: bool,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -365,6 +426,7 @@ impl CardContent {
             size: CardSize::Default,
             spacing_override: None,
             flush_bottom: false,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -399,6 +461,12 @@ impl Default for CardContent {
     }
 }
 
+impl Styled for CardContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for CardContent {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -409,10 +477,12 @@ impl RenderOnce for CardContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         let spacing = self.spacing_px();
 
-        div()
+        let mut root = div()
             .px(spacing)
             .when(self.flush_bottom, |el| el.mb(-spacing))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -422,10 +492,12 @@ impl RenderOnce for CardContent {
 /// Always applies `mb(-spacing)` so the card root's bottom `py` is cancelled
 /// (`has-data-[slot=card-footer]:pb-0`). **The footer must be the last child**
 /// of the Card for this emulation to hold.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct CardFooter {
     size: CardSize,
     spacing_override: Option<Pixels>,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -434,6 +506,7 @@ impl CardFooter {
         Self {
             size: CardSize::Default,
             spacing_override: None,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -461,6 +534,12 @@ impl Default for CardFooter {
     }
 }
 
+impl Styled for CardFooter {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for CardFooter {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -472,7 +551,7 @@ impl RenderOnce for CardFooter {
         let theme = Theme::of(cx);
         let spacing = self.spacing_px();
 
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
@@ -482,6 +561,8 @@ impl RenderOnce for CardFooter {
             .bg(alpha(theme.muted, 0.5))
             // Cancel the card root's bottom py — footer must be last child.
             .mb(-spacing)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
