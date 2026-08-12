@@ -19,11 +19,14 @@
 //! - TODO(rcn): RTL (`dir="rtl"` mirrors horizontal scrollbar edge + drag math)
 //! - Base UI `data-hovering` / `data-scrolling` 500ms fade visibility states
 //! - Scrollbar `transition-colors` (no-op visual in base-nova without hover styles)
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, AppContext as _, DragMoveEvent, ElementId, InteractiveElement as _,
-    IntoElement, MouseButton, ParentElement, Pixels, Render, RenderOnce, ScrollHandle,
-    StatefulInteractiveElement as _, Styled, Window, div, point, prelude::FluentBuilder as _, px,
+    IntoElement, MouseButton, ParentElement, Pixels, Refineable as _, Render, RenderOnce,
+    ScrollHandle, StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div, point,
+    prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -72,6 +75,8 @@ struct DragSeed {
 struct ScrollPaintState;
 
 #[derive(IntoElement)]
+/// Root is the relative shell around the focusable viewport and painted
+/// scrollbars. Sizing and shape overrides come from the caller via [`Styled`].
 pub struct ScrollArea {
     id: ElementId,
     height: Option<Pixels>,
@@ -81,6 +86,7 @@ pub struct ScrollArea {
     /// whenever content overflows on y.
     horizontal: bool,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ScrollArea {
@@ -91,6 +97,7 @@ impl ScrollArea {
             width: None,
             horizontal: false,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -109,6 +116,12 @@ impl ScrollArea {
     pub fn horizontal(mut self) -> Self {
         self.horizontal = true;
         self
+    }
+}
+
+impl Styled for ScrollArea {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -418,7 +431,7 @@ impl RenderOnce for ScrollArea {
         let seed_move = drag_seed.clone();
         let move_id = id.clone();
 
-        div()
+        let mut root = div()
             .id(id)
             .relative()
             .when_some(self.height, |el, height| el.h(height))
@@ -491,6 +504,8 @@ impl RenderOnce for ScrollArea {
             })
             .child(viewport)
             .children(v_bar)
-            .children(h_bar)
+            .children(h_bar);
+        root.style().refine(&self.style);
+        root
     }
 }
