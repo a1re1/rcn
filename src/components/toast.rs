@@ -3,14 +3,15 @@
 //! A notification card plus a viewport pinned to the window's bottom-right
 //! corner. Controlled: the caller owns which toasts are visible and closes
 //! them from the card's close button. Timers, swipe-to-dismiss, and stack
-//! animations are omitted.
+//! animations are omitted. Sizing and shape overrides come from the caller
+//! via [`Styled`].
 
 use std::rc::Rc;
 
 use gpui::{
     AnyElement, App, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div, point,
-    prelude::FluentBuilder as _, px, svg,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    anchored, deferred, div, point, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::motion;
@@ -19,15 +20,19 @@ use crate::theme::{Theme, alpha};
 type CloseHandler = Rc<dyn Fn(&gpui::ClickEvent, &mut Window, &mut App) + 'static>;
 
 /// The bottom-right viewport that stacks visible toasts over the app.
+/// Sizing and shape overrides via [`Styled`] target the viewport stack root
+/// (the flex container), not the deferred/anchored plumbing.
 #[derive(IntoElement)]
 pub struct ToastViewport {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ToastViewport {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -44,32 +49,38 @@ impl ParentElement for ToastViewport {
     }
 }
 
+impl Styled for ToastViewport {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ToastViewport {
     fn render(self, window: &mut Window, _cx: &mut App) -> impl IntoElement {
         if self.children.is_empty() {
-            return div().into_any_element();
+            let mut empty = div();
+            empty.style().refine(&self.style);
+            return empty.into_any_element();
         }
         let viewport = window.viewport_size();
-        deferred(
-            anchored().position(point(px(0.), px(0.))).child(
-                div()
-                    .w(viewport.width)
-                    .h(viewport.height)
-                    .flex()
-                    .flex_col()
-                    .items_end()
-                    .justify_end()
-                    .p(px(16.))
-                    .gap(px(8.))
-                    .children(self.children),
-            ),
-        )
-        .into_any_element()
+        let mut root = div()
+            .w(viewport.width)
+            .h(viewport.height)
+            .flex()
+            .flex_col()
+            .items_end()
+            .justify_end()
+            .p(px(16.))
+            .gap(px(8.))
+            .children(self.children);
+        root.style().refine(&self.style);
+        deferred(anchored().position(point(px(0.), px(0.))).child(root)).into_any_element()
     }
 }
 
 /// One notification card: title, optional description, optional action,
-/// and a close button.
+/// and a close button. Sizing and shape overrides via [`Styled`] target the
+/// toast card root (bg/rounded/padding), not the pop-in motion wrapper.
 #[derive(IntoElement)]
 pub struct Toast {
     id: ElementId,
@@ -77,6 +88,7 @@ pub struct Toast {
     description: Option<gpui::SharedString>,
     action: Option<AnyElement>,
     on_close: Option<CloseHandler>,
+    style: StyleRefinement,
 }
 
 impl Toast {
@@ -87,6 +99,7 @@ impl Toast {
             description: None,
             action: None,
             on_close: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -110,12 +123,18 @@ impl Toast {
     }
 }
 
+impl Styled for Toast {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Toast {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         // Card: w-full max-w-sm rounded-md bg-popover p-4 shadow-lg ring-1,
         // sliding in from the bottom like the source's enter animation.
-        let card = div()
+        let mut card = div()
             .id(self.id)
             .occlude()
             .flex()
@@ -174,6 +193,7 @@ impl RenderOnce for Toast {
                         )
                 })
             });
+        card.style().refine(&self.style);
         crate::motion::pop_in("toast-in", card)
     }
 }
