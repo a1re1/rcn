@@ -3,13 +3,16 @@
 //! A horizontal row of menu triggers sharing the dropdown-menu panel.
 //! Controlled: the caller owns which menu index is open (`None` = all
 //! closed) and receives changes via `on_open_change`.
+//!
+//! Sizing and shape overrides for the root bar come from the caller via
+//! [`Styled`] (gpui's equivalent of shadcn's `className` passthrough).
 
 use std::rc::Rc;
 
 use gpui::{
     App, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement as _,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div,
-    prelude::FluentBuilder as _, px, relative,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    anchored, deferred, div, prelude::FluentBuilder as _, px, relative,
 };
 
 pub use crate::components::dropdown_menu::DropdownMenuItem as MenubarItem;
@@ -43,12 +46,15 @@ impl MenubarMenu {
     }
 }
 
+/// Horizontal menubar root. Caller style overrides via [`Styled`] target the
+/// root bar (border/background/shadow), not individual menu panels.
 #[derive(IntoElement)]
 pub struct Menubar {
     id: ElementId,
     open: Option<usize>,
     menus: Vec<MenubarMenu>,
     on_open_change: Option<OpenChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Menubar {
@@ -58,6 +64,7 @@ impl Menubar {
             open: None,
             menus: Vec::new(),
             on_open_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -81,6 +88,12 @@ impl Menubar {
     }
 }
 
+impl Styled for Menubar {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Menubar {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -88,7 +101,7 @@ impl RenderOnce for Menubar {
         let on_open_change = self.on_open_change;
 
         // flex h-9 items-center gap-1 rounded-md border bg-background p-1 shadow-xs
-        div()
+        let mut root = div()
             .id(self.id)
             .flex()
             .flex_row()
@@ -156,6 +169,8 @@ impl RenderOnce for Menubar {
                                 )),
                         )
                     })
-            }))
+            }));
+        root.style().refine(&self.style);
+        root
     }
 }
