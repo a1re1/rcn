@@ -3,7 +3,8 @@
 //! Variants: Default, Outline, Secondary, Ghost, Destructive, Link.
 //! Sizes: Default, Xs, Sm, Lg and the square Icon, IconXs, IconSm, IconLg.
 //! Builders: `rounded_full`, `icon_inline_start`, `icon_inline_end`,
-//! `tooltip_rich`.
+//! `tooltip_rich`. Additional sizing/shape overrides come from the caller via
+//! [`Styled`] (gpui's equivalent of shadcn's `className` passthrough).
 //!
 //! Omitted from the source (no gpui equivalent yet): focus-visible ring,
 //! aria-invalid styles.
@@ -12,8 +13,8 @@ use std::rc::Rc;
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::components::tooltip::attach_tooltip;
@@ -71,6 +72,7 @@ pub struct Button {
     on_click: Option<ClickHandler>,
     tooltip: Option<TooltipContent>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Button {
@@ -87,6 +89,7 @@ impl Button {
             on_click: None,
             tooltip: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -155,6 +158,12 @@ impl Button {
 impl ParentElement for Button {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
+    }
+}
+
+impl Styled for Button {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -315,7 +324,8 @@ impl RenderOnce for Button {
 
         // active:translate-y-px; disabled:opacity-50 + no pointer events.
         // Optional rich tooltip via anchored attach_tooltip (side Top, instant).
-        let button = styled
+        // Caller refinement applied last so Styled overrides win over defaults.
+        let mut button = styled
             .when(self.disabled, |s| s.opacity(0.5))
             .when(!self.disabled, |s| {
                 s.tab_index(0)
@@ -324,6 +334,7 @@ impl RenderOnce for Button {
                     .when_some(self.on_click, |s, on_click| s.on_click(on_click))
             })
             .children(self.children);
+        button.style().refine(&self.style);
 
         match self.tooltip {
             Some(content) => {
