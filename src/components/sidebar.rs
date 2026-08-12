@@ -5,23 +5,26 @@
 //! state. Controlled collapse via `open` + a trigger button. The
 //! dedicated `--sidebar` token family, icon-rail collapse mode, mobile
 //! sheet mode, and submenu machinery are omitted (backgrounds approximate
-//! with the base tokens).
+//! with the base tokens). Sizing and shape overrides come from the caller
+//! via [`Styled`].
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px, svg,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::motion;
 use crate::theme::Theme;
 
 /// The shell: sidebar rail + inset main content, filling its container.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarProvider {
     open: bool,
     sidebar: Option<AnyElement>,
     inset: Option<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SidebarProvider {
@@ -30,6 +33,7 @@ impl SidebarProvider {
             open: true,
             sidebar: None,
             inset: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -56,9 +60,15 @@ impl Default for SidebarProvider {
     }
 }
 
+impl Styled for SidebarProvider {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarProvider {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .size_full()
@@ -70,20 +80,25 @@ impl RenderOnce for SidebarProvider {
                     .flex_1()
                     .min_w(px(0.))
                     .children(self.inset),
-            )
+            );
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// The rail: w-64 full-height column on a muted background.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Sidebar {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Sidebar {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -100,10 +115,16 @@ impl ParentElement for Sidebar {
     }
 }
 
+impl Styled for Sidebar {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Sidebar {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .flex_shrink_0()
@@ -116,20 +137,25 @@ impl RenderOnce for Sidebar {
             } else {
                 theme.secondary
             })
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// p-2 stack pinned to the top of the rail.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarHeader {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SidebarHeader {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -146,27 +172,38 @@ impl ParentElement for SidebarHeader {
     }
 }
 
+impl Styled for SidebarHeader {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarHeader {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(px(8.))
             .p(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// flex-1 scrollable middle of the rail.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarContent {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SidebarContent {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -183,9 +220,15 @@ impl ParentElement for SidebarContent {
     }
 }
 
+impl Styled for SidebarContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .id("sidebar-content")
             .flex()
             .flex_col()
@@ -193,20 +236,25 @@ impl RenderOnce for SidebarContent {
             .min_h(px(0.))
             .gap(px(8.))
             .overflow_y_scroll()
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// p-2 stack pinned to the bottom of the rail.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarFooter {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SidebarFooter {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -223,22 +271,32 @@ impl ParentElement for SidebarFooter {
     }
 }
 
+impl Styled for SidebarFooter {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarFooter {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(px(8.))
             .p(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// A labeled section of menu items.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarGroup {
     label: Option<gpui::SharedString>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SidebarGroup {
@@ -246,6 +304,7 @@ impl SidebarGroup {
         Self {
             label: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -267,10 +326,16 @@ impl ParentElement for SidebarGroup {
     }
 }
 
+impl Styled for SidebarGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarGroup {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(px(2.))
@@ -287,17 +352,21 @@ impl RenderOnce for SidebarGroup {
                         .child(label),
                 )
             })
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// One menu row: hover accent, active = accent bg + medium weight.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarMenuButton {
     id: ElementId,
     active: bool,
     on_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SidebarMenuButton {
@@ -307,6 +376,7 @@ impl SidebarMenuButton {
             active: false,
             on_click: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -330,10 +400,16 @@ impl ParentElement for SidebarMenuButton {
     }
 }
 
+impl Styled for SidebarMenuButton {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarMenuButton {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
-        div()
+        let mut root = div()
             .id(self.id)
             .flex()
             .flex_row()
@@ -359,15 +435,19 @@ impl RenderOnce for SidebarMenuButton {
                 el.hover(|s| s.bg(theme.accent).text_color(theme.accent_foreground))
             })
             .when_some(self.on_click, |el, on_click| el.on_click(on_click))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// The collapse/expand trigger (panel icon button).
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SidebarTrigger {
     id: ElementId,
     on_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
+    style: StyleRefinement,
 }
 
 impl SidebarTrigger {
@@ -375,6 +455,7 @@ impl SidebarTrigger {
         Self {
             id: id.into(),
             on_click: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -387,10 +468,16 @@ impl SidebarTrigger {
     }
 }
 
+impl Styled for SidebarTrigger {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SidebarTrigger {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
-        div()
+        let mut root = div()
             .id(self.id)
             .flex()
             .size(px(28.))
@@ -404,6 +491,8 @@ impl RenderOnce for SidebarTrigger {
                     .path(theme.icons.chevron_left())
                     .size(px(16.))
                     .text_color(theme.muted_foreground),
-            )
+            );
+        root.style().refine(&self.style);
+        root
     }
 }
