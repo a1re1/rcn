@@ -990,7 +990,7 @@ pub static DIALOG_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "DialogFooter",
-        signature: "pub fn on_close( mut self, handler: impl Fn(&mut Window, &mut App) + 'static, ) -> Self",
+        signature: "pub fn on_close(mut self, handler: impl Fn(&mut Window, &mut App) + 'static) -> Self",
         doc: "Handler invoked when the footer's Close button is clicked.",
     },
     ApiEntry {
@@ -1100,8 +1100,8 @@ pub static DROPDOWN_MENU_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "DropdownMenu",
-        signature: "pub(crate) fn menu_panel( entries: Vec<DropdownMenuEntry>, on_open_change: Option<OpenChangeHandler>, cx: &App, ) -> impl IntoElement + use<>",
-        doc: "Renders the shared menu panel; also used by context-menu and menubar.",
+        signature: "pub(crate) fn menu_panel( entries: Vec<DropdownMenuEntry>, on_open_change: Option<OpenChangeHandler>, cx: &App, ) -> Div",
+        doc: "Renders the shared menu panel; also used by context-menu and menubar. Returns a [`Div`] so callers can refine the floating panel root via [`Styled`].",
     },
 ];
 
@@ -2721,7 +2721,7 @@ pub static TOOLTIP_API: &[ApiEntry] = &[
         doc: "Content includes a Kbd chip — drops right padding 12→6px (explicit stand-in for shadcn's `:has([data-slot=kbd])` selector).",
     },
     ApiEntry {
-        type_name: "RenderOnce",
+        type_name: "Tooltip",
         signature: "pub fn attach_tooltip<E: IntoElement>( id: impl Into<ElementId>, trigger: E, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> impl IntoElement",
         doc: "Attach an anchored tooltip to an arbitrary styled element (used by [`crate::components::Button::tooltip_rich`]). Defaults: side Top, align Center, instant open, hoverable panel.  Returns a relative wrapper around `trigger` that owns hover/Escape state and paints the bubble — the trigger's own focus/click/hover is unchanged.",
     },
