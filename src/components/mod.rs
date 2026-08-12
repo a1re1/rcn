@@ -79,7 +79,7 @@ pub use breadcrumb::{
     Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator,
 };
-pub use bubble::{Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant};
+pub use bubble::{Bubble, BubbleAlign, BubbleGroup, BubbleReactions, BubbleSide, BubbleVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use calendar::{Calendar, CalendarDate};

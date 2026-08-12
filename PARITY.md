@@ -112,7 +112,7 @@ solid before the molecules that compose them.
 - [x] data-table — (storybook composition on table primitives; no dedicated component module)
 - [x] chart — (BarChart only; line/area/pie + tooltips TODO)
 - [x] message — (static presentation — matches source row layout)
-- [x] bubble — (static presentation — matches source variants)
+- [x] bubble — (full contract: 7 variants incl. destructive, align, BubbleGroup, interactive content with per-variant hovers + focus ring, exact tinted oklch math, reactions ring-3/offsets/has-button; all 9 docs examples; instant hover vs transition-colors noted)
 - [x] message-scroller — (scroll container; stick-to-bottom + scroll-to-bottom button TODO)
 - [x] attachment — (remove button focus ring; vertical orientation + progress overlay TODO)
 - [x] questionnaire — (choice focus rings)
