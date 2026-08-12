@@ -12,11 +12,13 @@
 //! `:is(button,a):hover` rules. Hover is instant — source
 //! `transition-colors` (150ms) cannot animate under gpui hover styles (same
 //! divergence as Button / Item).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, BoxShadow, ClickEvent, ElementId, Hsla, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div, point,
-    prelude::FluentBuilder as _, px,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, point, prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -60,6 +62,7 @@ pub struct Bubble {
     content_children: Vec<AnyElement>,
     /// Non-content children (e.g. [`BubbleReactions`]) via [`ParentElement`].
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Bubble {
@@ -71,6 +74,7 @@ impl Bubble {
             on_click: None,
             content_children: Vec::new(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -123,6 +127,12 @@ impl ParentElement for Bubble {
     }
 }
 
+impl Styled for Bubble {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Bubble {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         let mut kids = Vec::with_capacity(1 + self.children.len());
@@ -139,7 +149,8 @@ impl RenderOnce for Bubble {
         }
         kids.extend(self.children);
 
-        div()
+        // Caller refinement applied last so Styled overrides win over defaults.
+        let mut root = div()
             .relative()
             .flex()
             .flex_col()
@@ -154,7 +165,9 @@ impl RenderOnce for Bubble {
                 BubbleAlign::Start => el.self_start(),
                 BubbleAlign::End => el.self_end(),
             })
-            .children(kids)
+            .children(kids);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -165,13 +178,21 @@ impl RenderOnce for Bubble {
 #[derive(IntoElement)]
 pub struct BubbleGroup {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl BubbleGroup {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
+    }
+}
+
+impl Styled for BubbleGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -189,12 +210,14 @@ impl ParentElement for BubbleGroup {
 
 impl RenderOnce for BubbleGroup {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .min_w(px(0.))
             .gap(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -420,6 +443,7 @@ pub struct BubbleReactions {
     /// button children.
     buttons: bool,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl BubbleReactions {
@@ -431,6 +455,7 @@ impl BubbleReactions {
             align: BubbleAlign::End,
             buttons: false,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -464,6 +489,12 @@ impl ParentElement for BubbleReactions {
     }
 }
 
+impl Styled for BubbleReactions {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BubbleReactions {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -475,7 +506,7 @@ impl RenderOnce for BubbleReactions {
             spread_radius: px(3.),
             inset: false,
         }];
-        div()
+        let mut root = div()
             .absolute()
             .flex()
             .flex_row()
@@ -496,6 +527,8 @@ impl RenderOnce for BubbleReactions {
                 BubbleAlign::Start => el.left(px(12.)),
                 BubbleAlign::End => el.right(px(12.)),
             })
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
