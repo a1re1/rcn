@@ -10,6 +10,10 @@
 //! transition-colors 150ms cubic-bezier(0.4,0,0.2,1); gpui animates on
 //! mount only).
 //!
+//! Sizing and shape overrides come from the caller via [`Styled`], applied to
+//! the input shell root. Chain them at construction time, inside the entity
+//! closure: `cx.new(|cx| Input::new(cx).w_full())`.
+//!
 //! Unlike the RenderOnce components, `Input` is an entity — create it with
 //! `cx.new(|cx| Input::new(cx))`, render the `Entity<Input>` directly, and
 //! call [`Input::register_key_bindings`] once at app startup.
@@ -21,8 +25,8 @@ use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, Element, ElementId, ElementInputHandler,
     Entity, EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyBinding, LayoutId,
     MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, PathPromptOptions,
-    Pixels, Point, ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle,
-    Window, actions, div, fill, point, prelude::*, px, relative, size,
+    Pixels, Point, ShapedLine, SharedString, Style, StyleRefinement, TextRun, UTF16Selection,
+    UnderlineStyle, Window, actions, div, fill, point, prelude::*, px, relative, size,
 };
 use unicode_segmentation::UnicodeSegmentation as _;
 
@@ -85,6 +89,8 @@ pub struct Input {
     last_bounds: Option<Bounds<Pixels>>,
     is_selecting: bool,
     on_change: Option<ChangeHandler>,
+    /// Caller [`Styled`] refinement, applied to the shell root in render.
+    style: StyleRefinement,
 }
 
 impl Input {
@@ -107,6 +113,7 @@ impl Input {
             last_bounds: None,
             is_selecting: false,
             on_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -1061,6 +1068,15 @@ impl Element for TextElement {
     }
 }
 
+/// Sizing and shape overrides on the shell root — gpui's equivalent of
+/// shadcn's `className` passthrough. Chain at construction time:
+/// `cx.new(|cx| Input::new(cx).w_full())`.
+impl Styled for Input {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl Render for Input {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -1126,7 +1142,7 @@ impl Render for Input {
                 .on_mouse_move(cx.listener(Self::on_mouse_move));
         }
 
-        el
+        let mut root = el
             // h-8 w-full min-w-0 rounded-lg border border-input bg-transparent
             // px-2.5 py-1 text-base md:text-sm; dark:bg-input/30;
             // focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50
@@ -1195,7 +1211,10 @@ impl Render for Input {
             })
             .when(!file_mode, |el| {
                 el.child(TextElement { input: cx.entity() })
-            })
+            });
+        // Caller refinement applied last so Styled overrides win over defaults.
+        root.style().refine(&self.style);
+        root
     }
 }
 
