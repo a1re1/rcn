@@ -4,13 +4,18 @@
 //! pattern): outside clicks close it, item clicks fire `on_select` and
 //! close. Items are typed so the panel can style hover/destructive/
 //! disabled states. Submenus and typeahead are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`] and apply
+//! to the floating menu panel (the element carrying background, border, and
+//! shadow), not the trigger wrapper.
 
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement as _, RenderOnce, StatefulInteractiveElement as _, Styled, Window, anchored,
-    deferred, div, prelude::FluentBuilder as _, px, relative, svg,
+    AnyElement, App, ClickEvent, Div, ElementId, FontWeight, InteractiveElement as _, IntoElement,
+    ParentElement as _, Refineable as _, RenderOnce, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, anchored, deferred, div, prelude::FluentBuilder as _, px,
+    relative, svg,
 };
 
 use crate::theme::{Theme, alpha};
@@ -85,6 +90,8 @@ impl DropdownMenuItem {
     }
 }
 
+/// Menu opened from a trigger. Sizing and shape overrides via [`Styled`] target
+/// the floating menu panel root (bg/border/shadow), not the trigger.
 #[derive(IntoElement)]
 pub struct DropdownMenu {
     id: ElementId,
@@ -92,6 +99,7 @@ pub struct DropdownMenu {
     trigger: Option<AnyElement>,
     entries: Vec<DropdownMenuEntry>,
     on_open_change: Option<OpenChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl DropdownMenu {
@@ -102,6 +110,7 @@ impl DropdownMenu {
             trigger: None,
             entries: Vec::new(),
             on_open_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -141,12 +150,19 @@ impl DropdownMenu {
     }
 }
 
+impl Styled for DropdownMenu {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 /// Renders the shared menu panel; also used by context-menu and menubar.
+/// Returns a [`Div`] so callers can refine the floating panel root via [`Styled`].
 pub(crate) fn menu_panel(
     entries: Vec<DropdownMenuEntry>,
     on_open_change: Option<OpenChangeHandler>,
     cx: &App,
-) -> impl IntoElement + use<> {
+) -> Div {
     let theme = Theme::of(cx).clone();
     let close_on_out = on_open_change.clone();
     div()
@@ -255,7 +271,10 @@ impl RenderOnce for DropdownMenu {
         let open = self.open;
         let toggle = self.on_open_change.clone();
         let panel = if open {
-            Some(menu_panel(self.entries, self.on_open_change, cx).into_any_element())
+            let mut panel = menu_panel(self.entries, self.on_open_change, cx);
+            // Caller styles win over panel defaults; refine before deferred/anchored/motion wrap.
+            panel.style().refine(&self.style);
+            Some(panel)
         } else {
             None
         };
@@ -281,9 +300,9 @@ impl RenderOnce for DropdownMenu {
                         .top(relative(1.))
                         .pt(px(4.))
                         .child(deferred(
-                            anchored().snap_to_window_with_margin(px(8.)).child(
-                                crate::motion::pop_in("dropdown-in", gpui::div().child(panel)),
-                            ),
+                            anchored()
+                                .snap_to_window_with_margin(px(8.))
+                                .child(crate::motion::pop_in("dropdown-in", panel)),
                         )),
                 )
             })
