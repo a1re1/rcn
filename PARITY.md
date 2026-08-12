@@ -85,9 +85,9 @@ solid before the molecules that compose them.
 
 ### Tier 3 — overlays (popover foundation → menus → modals)
 
-- [x] tooltip — base-nova parity (side/align/side_offset/align_offset anchored panel + arrow; instant open with .delay() override, hoverable panel, Escape closes; enter 150ms ease fade+slide, exit TODO; focus-open TODO; :has(kbd) padding via explicit .has_kbd(); RTL mirrored manually in storybook)
+- [x] tooltip — base-nova parity, rhea rounded-xl panel (side/align/side_offset/align_offset anchored panel + arrow; instant open with .delay() override, hoverable panel, Escape closes; enter 150ms ease fade+slide, exit TODO; focus-open TODO; :has(kbd) padding via explicit .has_kbd(); RTL mirrored manually in storybook)
 - [x] hover-card — enter animation (100ms ease fade+slide)
-- [x] popover — enter animation (100ms ease fade+slide)
+- [x] popover — enter animation (100ms ease fade+slide); rhea rounded-3xl panel, centered below trigger (side bottom / align center / sideOffset 4)
 - [x] dropdown-menu — enter animation (100ms ease fade+slide)
 - [x] context-menu — enter animation (100ms ease fade+slide)
 - [x] menubar — enter animation (100ms ease fade+slide)
