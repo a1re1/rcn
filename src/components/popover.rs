@@ -3,16 +3,17 @@
 //! Controlled: the caller owns `open` and receives the next value in
 //! `on_open_change` (trigger clicks toggle it; clicking outside the panel
 //! closes it). The panel renders through `deferred(anchored(...))` so it
-//! paints above surrounding content and snaps inside the window, sitting
-//! below the trigger with a 4px offset like the source's `sideOffset={4}`.
+//! paints above surrounding content and snaps inside the window, centered
+//! below the trigger with a 4px offset like the source's default
+//! `side="bottom" align="center" sideOffset={4}`.
 //! Open/close animations are omitted.
 
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div,
-    prelude::FluentBuilder as _, px,
+    Anchor, AnyElement, App, ElementId, FontWeight, InteractiveElement as _, IntoElement,
+    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, anchored, deferred,
+    div, point, prelude::FluentBuilder as _, px,
 };
 
 use crate::theme::{Theme, alpha};
@@ -87,18 +88,21 @@ impl RenderOnce for Popover {
                     .children(self.trigger),
             )
             .when(open, |el| {
-                // side="bottom" sideOffset={4}: an absolute wrapper pinned just
-                // below the trigger; `anchored` then keeps the panel inside the
-                // window if it would overflow.
+                // side="bottom" align="center" sideOffset={4}: pin a zero-size
+                // wrapper at the trigger's bottom-center, then anchor the
+                // panel's top-center there (same pattern as tooltip);
+                // `anchored` keeps the panel inside the window on overflow.
                 el.child(
                     div()
                         .absolute()
-                        .left_0()
+                        .left(gpui::relative(0.5))
                         .top(gpui::relative(1.))
-                        .pt(px(4.))
                         .child(deferred(
-                            anchored().snap_to_window_with_margin(px(8.)).child(
-                                crate::motion::pop_in(
+                            anchored()
+                                .anchor(Anchor::TopCenter)
+                                .offset(point(px(0.), px(4.)))
+                                .snap_to_window_with_margin(px(8.))
+                                .child(crate::motion::pop_in(
                                     "popover-in",
                                     // w-72 rounded-md bg-popover p-4 text-sm
                                     // text-popover-foreground shadow-md ring-1
@@ -124,8 +128,7 @@ impl RenderOnce for Popover {
                                             })
                                         })
                                         .children(self.content),
-                                ),
-                            ),
+                                )),
                         )),
                 )
             })

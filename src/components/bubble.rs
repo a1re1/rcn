@@ -1,7 +1,7 @@
 //! Bubble — port of shadcn base-vega `ui/bubble.tsx`.
 //!
 //! Chat bubbles for [`Message`](crate::components::Message) content:
-//! variants color the rounded-xl content pill; `BubbleReactions` floats a
+//! variants color the rounded-3xl content pill; `BubbleReactions` floats a
 //! reaction pill on a corner. The `tinted` variant derives chroma/hue from
 //! the theme primary via HSL→sRGB→OKLab→LCh, then rebuilds with
 //! `oklch(l, c*0.4, h)` (light L=0.93 / dark L=0.3).
@@ -279,7 +279,7 @@ fn hsla_to_oklch(c: Hsla) -> (f32, f32, f32) {
     (l, chroma, h_deg)
 }
 
-/// The colored pill: rounded-xl border px-3 py-2 text-sm leading-relaxed.
+/// The colored pill: rounded-3xl border px-3 py-2.5 text-sm leading-relaxed.
 /// Ghost drops padding/rounding (`rounded-none bg-transparent p-0`).
 ///
 /// With `id` set (interactive / `render={<button/>}`), applies tab focus,
@@ -307,9 +307,10 @@ impl RenderOnce for BubbleContent {
             .border_color(gpui::transparent_black())
             .text_size(px(14.))
             .line_height(px(22.75));
+        // rounded-3xl px-3 py-2.5 (base-rhea; measured 22px radius on the docs)
         let base = match self.variant {
             BubbleVariant::Ghost => base.rounded(px(0.)).px(px(0.)).py(px(0.)),
-            _ => base.rounded(theme.radius_xl()).px(px(12.)).py(px(8.)),
+            _ => base.rounded(theme.radius_3xl()).px(px(12.)).py(px(10.)),
         };
 
         // Tinted needs primary chroma/hue for both resting + hover.
@@ -425,7 +426,9 @@ impl BubbleReactions {
     pub fn new() -> Self {
         Self {
             side: BubbleSide::default(),
-            align: BubbleAlign::default(),
+            // Source default is align="end" (Bubble's own align defaults to
+            // start, so the shared enum's #[default] can't be reused here).
+            align: BubbleAlign::End,
             buttons: false,
             children: Vec::new(),
         }

@@ -1393,6 +1393,18 @@ impl Storybook {
             theme.font_heading = Some(font.into());
         }
         theme.icons = self.tokens.icons;
+        // The bubble docs page wraps its previews in `theme-blue`
+        // (--primary: blue-700 light / blue-800 dark, --primary-foreground:
+        // blue-50; ring stays neutral). Mirror that while the bubble story is
+        // active so the examples compare side by side with the docs.
+        if self.story == Story::BubbleStory && self.imported.is_none() {
+            theme.primary = if self.dark {
+                rgb(0x193cb8).into()
+            } else {
+                rgb(0x1447e6).into()
+            };
+            theme.primary_foreground = rgb(0xeff6ff).into();
+        }
         cx.set_global(theme);
         cx.notify();
     }
@@ -1500,6 +1512,7 @@ impl Storybook {
                                     .active(self.story == Story::Tokens)
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.story = Story::Tokens;
+                                        this.apply_tokens(cx);
                                         cx.notify();
                                     }))
                                     .child(Story::Tokens.label()),
@@ -1515,6 +1528,7 @@ impl Storybook {
                                     .active(self.story == story)
                                     .on_click(cx.listener(move |this, _, _, cx| {
                                         this.story = story;
+                                        this.apply_tokens(cx);
                                         cx.notify();
                                     }))
                                     .child(label)
@@ -6183,6 +6197,7 @@ impl Storybook {
                         BreadcrumbLink::new("bc-home")
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.story = Story::Tokens;
+                                this.apply_tokens(cx);
                                 cx.notify();
                             }))
                             .child("Home"),
@@ -8971,6 +8986,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(32.))
@@ -9036,6 +9052,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(48.))
@@ -9125,6 +9142,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(32.))
@@ -9145,6 +9163,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(32.))
@@ -9184,6 +9203,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(32.))
@@ -9238,6 +9258,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(48.))
@@ -9318,6 +9339,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(32.))
@@ -9369,6 +9391,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(16.))
@@ -9399,6 +9422,7 @@ impl Storybook {
         div()
             .w_full()
             .max_w(px(384.))
+            .py(px(48.))
             .flex()
             .flex_col()
             .gap(px(16.))
