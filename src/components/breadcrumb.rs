@@ -3,11 +3,13 @@
 //! Path navigation: List of Items with Links (hover to foreground),
 //! the current Page, chevron Separators (following the active icon
 //! library), and an Ellipsis for collapsed middles.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _,
-    px, svg,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    div, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::assets::ICON_ELLIPSIS;
@@ -20,12 +22,14 @@ type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 #[derive(IntoElement)]
 pub struct Breadcrumb {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Breadcrumb {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -42,9 +46,17 @@ impl ParentElement for Breadcrumb {
     }
 }
 
+impl Styled for Breadcrumb {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Breadcrumb {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().children(self.children)
+        let mut root = div().children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -52,12 +64,14 @@ impl RenderOnce for Breadcrumb {
 #[derive(IntoElement)]
 pub struct BreadcrumbList {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl BreadcrumbList {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -74,10 +88,16 @@ impl ParentElement for BreadcrumbList {
     }
 }
 
+impl Styled for BreadcrumbList {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BreadcrumbList {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .flex_wrap()
@@ -86,7 +106,9 @@ impl RenderOnce for BreadcrumbList {
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -94,12 +116,14 @@ impl RenderOnce for BreadcrumbList {
 #[derive(IntoElement)]
 pub struct BreadcrumbItem {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl BreadcrumbItem {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -116,14 +140,22 @@ impl ParentElement for BreadcrumbItem {
     }
 }
 
+impl Styled for BreadcrumbItem {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BreadcrumbItem {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
             .gap(px(6.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -133,6 +165,7 @@ pub struct BreadcrumbLink {
     id: ElementId,
     on_click: Option<ClickHandler>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl BreadcrumbLink {
@@ -141,6 +174,7 @@ impl BreadcrumbLink {
             id: id.into(),
             on_click: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -159,17 +193,25 @@ impl ParentElement for BreadcrumbLink {
     }
 }
 
+impl Styled for BreadcrumbLink {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BreadcrumbLink {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         let ring = motion::focus_ring(&theme);
-        div()
+        let mut root = div()
             .id(self.id)
             .tab_index(0)
             .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
             .hover(move |s| s.text_color(theme.foreground))
             .when_some(self.on_click, |el, on_click| el.on_click(on_click))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -177,12 +219,14 @@ impl RenderOnce for BreadcrumbLink {
 #[derive(IntoElement)]
 pub struct BreadcrumbPage {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl BreadcrumbPage {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -199,20 +243,32 @@ impl ParentElement for BreadcrumbPage {
     }
 }
 
+impl Styled for BreadcrumbPage {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BreadcrumbPage {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div().text_color(theme.foreground).children(self.children)
+        let mut root = div().text_color(theme.foreground).children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// li: the chevron between items ([&>svg]:size-3.5).
 #[derive(IntoElement)]
-pub struct BreadcrumbSeparator;
+pub struct BreadcrumbSeparator {
+    style: StyleRefinement,
+}
 
 impl BreadcrumbSeparator {
     pub fn new() -> Self {
-        Self
+        Self {
+            style: StyleRefinement::default(),
+        }
     }
 }
 
@@ -222,24 +278,36 @@ impl Default for BreadcrumbSeparator {
     }
 }
 
+impl Styled for BreadcrumbSeparator {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BreadcrumbSeparator {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        svg()
+        let mut root = svg()
             .path(theme.icons.chevron_right())
             .size(px(14.))
             .flex_shrink_0()
-            .text_color(theme.muted_foreground)
+            .text_color(theme.muted_foreground);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// span: flex size-5 items-center justify-center — collapsed middle.
 #[derive(IntoElement)]
-pub struct BreadcrumbEllipsis;
+pub struct BreadcrumbEllipsis {
+    style: StyleRefinement,
+}
 
 impl BreadcrumbEllipsis {
     pub fn new() -> Self {
-        Self
+        Self {
+            style: StyleRefinement::default(),
+        }
     }
 }
 
@@ -249,10 +317,16 @@ impl Default for BreadcrumbEllipsis {
     }
 }
 
+impl Styled for BreadcrumbEllipsis {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for BreadcrumbEllipsis {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .size(px(20.))
             .items_center()
@@ -262,6 +336,8 @@ impl RenderOnce for BreadcrumbEllipsis {
                     .path(ICON_ELLIPSIS)
                     .size(px(16.))
                     .text_color(theme.muted_foreground),
-            )
+            );
+        root.style().refine(&self.style);
+        root
     }
 }
