@@ -2,12 +2,13 @@
 //!
 //! Controlled: the caller owns `open`, the trigger reports clicks via
 //! `on_toggle`, and the content reveals with a 200ms expand animation
-//! (same clock as accordion).
+//! (same clock as accordion). Sizing and shape overrides come from the
+//! caller via [`Styled`].
 
 use gpui::{
     AnimationExt as _, AnyElement, App, ClickEvent, ElementId, InteractiveElement as _,
-    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    IntoElement, ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -15,6 +16,7 @@ use crate::motion;
 type ToggleHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 
 /// The root: renders the trigger row, then the content when open.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Collapsible {
     id: ElementId,
@@ -22,6 +24,7 @@ pub struct Collapsible {
     trigger: Option<AnyElement>,
     content: Option<AnyElement>,
     on_toggle: Option<ToggleHandler>,
+    style: StyleRefinement,
 }
 
 impl Collapsible {
@@ -32,6 +35,7 @@ impl Collapsible {
             trigger: None,
             content: None,
             on_toggle: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -61,31 +65,36 @@ impl Collapsible {
     }
 }
 
+impl Styled for Collapsible {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Collapsible {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // Clone before moving into the trigger child (same as accordion).
         let id = self.id.clone();
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(8.))
-            .child(
+        let mut root = div().flex().flex_col().gap(px(8.));
+        // Caller refinement applied last so sizing/shape overrides win.
+        root.style().refine(&self.style);
+        root.child(
+            div()
+                .id(self.id)
+                .when_some(self.on_toggle, |el, on_toggle| el.on_click(on_toggle))
+                .children(self.trigger),
+        )
+        // Content: overflow-hidden wrapper + 200ms expand (fade + slide).
+        // True height animation needs pre-measured content (TODO(rcn)).
+        .when(self.open, |el| {
+            el.child(
                 div()
-                    .id(self.id)
-                    .when_some(self.on_toggle, |el, on_toggle| el.on_click(on_toggle))
-                    .children(self.trigger),
+                    .overflow_hidden()
+                    .child(div().children(self.content))
+                    .with_animation(id, motion::expand(), |el, delta| {
+                        el.opacity(delta).mt(px(-8. * (1. - delta)))
+                    }),
             )
-            // Content: overflow-hidden wrapper + 200ms expand (fade + slide).
-            // True height animation needs pre-measured content (TODO(rcn)).
-            .when(self.open, |el| {
-                el.child(
-                    div()
-                        .overflow_hidden()
-                        .child(div().children(self.content))
-                        .with_animation(id, motion::expand(), |el, delta| {
-                            el.opacity(delta).mt(px(-8. * (1. - delta)))
-                        }),
-                )
-            })
+        })
     }
 }
