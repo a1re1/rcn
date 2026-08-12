@@ -5,24 +5,30 @@
 //! bare [`Input`](crate::components::Input): the group draws the border,
 //! focus ring, and padding; the input supplies the editing core. Block
 //! (multi-row) alignments are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
-    AnyElement, App, Entity, Focusable as _, IntoElement, ParentElement as _, RenderOnce, Styled,
-    Window, div, prelude::FluentBuilder as _, px,
+    AnyElement, App, Entity, Focusable as _, IntoElement, ParentElement as _, Refineable as _,
+    RenderOnce, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::components::input::Input;
 use crate::theme::{Theme, alpha};
 
 /// A leading or trailing addon cluster (muted, non-editing).
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct InputGroupAddon {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl InputGroupAddon {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -39,10 +45,16 @@ impl Default for InputGroupAddon {
     }
 }
 
+impl Styled for InputGroupAddon {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for InputGroupAddon {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .flex_shrink_0()
@@ -51,12 +63,18 @@ impl RenderOnce for InputGroupAddon {
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
+/// Input-styled shell around a bare [`Input`].
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct InputGroup {
+    style: StyleRefinement,
     input: Entity<Input>,
     leading: Option<AnyElement>,
     trailing: Option<AnyElement>,
@@ -66,6 +84,7 @@ impl InputGroup {
     /// Wraps a bare [`Input`] entity (`input.set_bare(true)`).
     pub fn new(input: Entity<Input>) -> Self {
         Self {
+            style: StyleRefinement::default(),
             input,
             leading: None,
             trailing: None,
@@ -83,6 +102,12 @@ impl InputGroup {
     }
 }
 
+impl Styled for InputGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for InputGroup {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -93,7 +118,7 @@ impl RenderOnce for InputGroup {
         // overlay, not a box shadow — gpui paints shadows behind the quad,
         // so they show through transparent backgrounds as a fill (see
         // motion::focus_ring_overlay).
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
@@ -110,6 +135,8 @@ impl RenderOnce for InputGroup {
             .children(self.trailing)
             .when(focused, |el| {
                 el.child(crate::motion::focus_ring_overlay(&theme, theme.radius_lg()))
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
