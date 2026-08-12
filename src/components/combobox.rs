@@ -5,13 +5,16 @@
 //! embedded [`Input`] filters; picking an option reports its index and
 //! closes. The caller owns value/open state and the search input entity
 //! (bare mode, observed for live filtering).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`] (applied
+//! to the component root wrapper).
 
 use std::rc::Rc;
 
 use gpui::{
-    App, ElementId, Entity, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
-    SharedString, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div,
-    prelude::FluentBuilder as _, px, relative, svg,
+    App, ElementId, Entity, InteractiveElement as _, IntoElement, ParentElement as _,
+    Refineable as _, RenderOnce, SharedString, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, anchored, deferred, div, prelude::FluentBuilder as _, px, relative, svg,
 };
 
 use crate::components::input::Input;
@@ -31,6 +34,7 @@ pub struct Combobox {
     open: bool,
     on_change: Option<ChangeHandler>,
     on_open_change: Option<OpenChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Combobox {
@@ -46,6 +50,7 @@ impl Combobox {
             open: false,
             on_change: None,
             on_open_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -85,6 +90,12 @@ impl Combobox {
     ) -> Self {
         self.on_open_change = Some(Rc::new(handler));
         self
+    }
+}
+
+impl Styled for Combobox {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -233,26 +244,22 @@ impl RenderOnce for Combobox {
                 )
         });
 
-        div()
-            .relative()
-            .flex()
-            .flex_col()
-            .w(px(200.))
-            .child(trigger)
-            .when_some(panel, |el, panel| {
-                el.child(
-                    div()
-                        .absolute()
-                        .left_0()
-                        .top(relative(1.))
-                        .pt(px(4.))
-                        .w_full()
-                        .child(deferred(
-                            anchored()
-                                .snap_to_window_with_margin(px(8.))
-                                .child(crate::motion::pop_in("combobox-in", panel)),
-                        )),
-                )
-            })
+        let mut root = div().child(trigger).when_some(panel, |el, panel| {
+            el.child(
+                div()
+                    .absolute()
+                    .left_0()
+                    .top(relative(1.))
+                    .pt(px(4.))
+                    .w_full()
+                    .child(deferred(
+                        anchored()
+                            .snap_to_window_with_margin(px(8.))
+                            .child(crate::motion::pop_in("combobox-in", panel)),
+                    )),
+            )
+        });
+        root.style().refine(&self.style);
+        root
     }
 }
