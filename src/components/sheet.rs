@@ -4,11 +4,15 @@
 //! Controlled like Dialog (backdrop click and the close button dismiss).
 //! Header/Title/Description/Footer share the Dialog shapes; the slide
 //! animation is omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`] and apply
+//! to the sliding sheet panel (the element carrying background, border, and
+//! shadow), not the dimmed backdrop.
 
 use gpui::{
-    AnyElement, App, ElementId, InteractiveElement as _, IntoElement, ParentElement, RenderOnce,
-    StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div, point,
-    prelude::FluentBuilder as _, px, svg,
+    AnyElement, App, ElementId, InteractiveElement as _, IntoElement, ParentElement,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    anchored, deferred, div, point, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::components::dialog::OpenChangeHandler;
@@ -27,6 +31,8 @@ pub enum SheetSide {
     Left,
 }
 
+/// Sliding edge panel. Sizing and shape overrides via [`Styled`] target the
+/// sheet panel root (bg/border/shadow), not the backdrop.
 #[derive(IntoElement)]
 pub struct Sheet {
     id: ElementId,
@@ -34,6 +40,7 @@ pub struct Sheet {
     side: SheetSide,
     on_open_change: Option<OpenChangeHandler>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Sheet {
@@ -44,6 +51,7 @@ impl Sheet {
             side: SheetSide::default(),
             on_open_change: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -72,6 +80,12 @@ impl ParentElement for Sheet {
     }
 }
 
+impl Styled for Sheet {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Sheet {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         if !self.open {
@@ -84,7 +98,7 @@ impl RenderOnce for Sheet {
 
         // Panel: bg-background flex-col gap-4; side rails are w-3/4 max-w-sm
         // full height with the shared edge bordered.
-        let panel = div()
+        let mut panel = div()
             .occlude()
             .relative()
             .flex()
@@ -133,6 +147,7 @@ impl RenderOnce for Sheet {
                         )
                 })
             });
+        panel.style().refine(&self.style);
 
         deferred(
             anchored().position(point(px(0.), px(0.))).child(
@@ -169,15 +184,19 @@ impl RenderOnce for Sheet {
 
 /// flex flex-col gap-1.5 p-4 — sheet headers carry their own padding in
 /// the source; here the panel pads, so this is just the stack.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SheetHeader {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SheetHeader {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -194,22 +213,34 @@ impl ParentElement for SheetHeader {
     }
 }
 
+impl Styled for SheetHeader {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SheetHeader {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().flex().flex_col().gap(px(6.)).children(self.children)
+        let mut root = div().flex().flex_col().gap(px(6.)).children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// mt-auto flex flex-col gap-2 — pinned to the bottom of the sheet.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct SheetFooter {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl SheetFooter {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -226,13 +257,21 @@ impl ParentElement for SheetFooter {
     }
 }
 
+impl Styled for SheetFooter {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for SheetFooter {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .mt_auto()
             .flex()
             .flex_col()
             .gap(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
