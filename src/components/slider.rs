@@ -4,11 +4,13 @@
 //! next value in `on_change` while dragging. Single-thumb only (the
 //! source's multi-thumb ranges are omitted). Keyboard control and
 //! focus-visible ring are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     App, AppContext as _, DragMoveEvent, ElementId, InteractiveElement as _, IntoElement,
-    ParentElement as _, Render, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px, relative,
+    ParentElement as _, Refineable as _, Render, RenderOnce, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px, relative,
 };
 
 use crate::motion;
@@ -38,6 +40,7 @@ pub struct Slider {
     step: f32,
     disabled: bool,
     on_change: Option<ChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Slider {
@@ -50,6 +53,7 @@ impl Slider {
             step: 1.,
             disabled: false,
             on_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -85,6 +89,12 @@ impl Slider {
     }
 }
 
+impl Styled for Slider {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Slider {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -92,7 +102,7 @@ impl RenderOnce for Slider {
         let fraction = ((self.value - self.min) / span).clamp(0., 1.);
         let (id, min, step) = (self.id.clone(), self.min, self.step);
 
-        div()
+        let mut root = div()
             .id(self.id)
             .h(px(16.))
             .w_full()
@@ -166,6 +176,8 @@ impl RenderOnce for Slider {
                             .bg(theme.background)
                             .shadow_sm(),
                     ),
-            )
+            );
+        root.style().refine(&self.style);
+        root
     }
 }
