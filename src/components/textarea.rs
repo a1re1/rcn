@@ -7,11 +7,14 @@
 //! is currently single-line — TODO(rcn): wrapped multi-line shaping and
 //! cursor movement; Enter inserts no newline yet. shadcn's
 //! `field-sizing-content` auto-grow is also TODO(rcn).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     App, AppContext as _, Context, CursorStyle, DragMoveEvent, Entity, EntityId, Focusable as _,
-    InteractiveElement as _, IntoElement, ParentElement, Pixels, Render, RenderOnce,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px,
+    InteractiveElement as _, IntoElement, ParentElement, Pixels, Refineable as _, Render,
+    RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div,
+    prelude::FluentBuilder as _, px,
 };
 
 use crate::components::Icon;
@@ -32,6 +35,9 @@ impl Render for ResizeDragPreview {
     }
 }
 
+/// shadcn textarea shell around the [`Input`] machinery.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Textarea {
     input: Entity<Input>,
@@ -39,6 +45,7 @@ pub struct Textarea {
     disabled: bool,
     invalid: bool,
     resizable: bool,
+    style: StyleRefinement,
 }
 
 impl Textarea {
@@ -50,6 +57,7 @@ impl Textarea {
             disabled: false,
             invalid: false,
             resizable: true,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -93,6 +101,12 @@ impl Textarea {
     }
 }
 
+impl Styled for Textarea {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Textarea {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -112,7 +126,9 @@ impl RenderOnce for Textarea {
             window.use_keyed_state(("textarea-size", entity_id), cx, |_, _| None);
         let dragged_height = *resize_state.read(cx);
 
-        div()
+        // Caller refinement applied last (after the chain) so Styled
+        // overrides win over shell defaults.
+        let mut root = div()
             .w_full()
             .map(|el| match dragged_height {
                 Some(h) => el.h(h),
@@ -198,6 +214,8 @@ impl RenderOnce for Textarea {
                             |_, _, _, cx| cx.new(|_| ResizeDragPreview),
                         ),
                 )
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
