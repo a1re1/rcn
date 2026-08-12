@@ -4,11 +4,13 @@
 //! substring match, with an empty state. The caller owns the input entity
 //! (bare mode) and should `cx.observe` it so filtering re-renders live.
 //! Keyboard selection (arrows/enter) and dialog mode are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, Entity, InteractiveElement as _, IntoElement,
-    ParentElement as _, RenderOnce, SharedString, StatefulInteractiveElement as _, Styled, Window,
-    div, prelude::FluentBuilder as _, px, svg,
+    ParentElement as _, Refineable as _, RenderOnce, SharedString, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::components::input::Input;
@@ -66,11 +68,13 @@ impl CommandGroup {
     }
 }
 
+/// Command palette shell. Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Command {
     input: Entity<Input>,
     groups: Vec<CommandGroup>,
     empty_message: SharedString,
+    style: StyleRefinement,
 }
 
 impl Command {
@@ -80,6 +84,7 @@ impl Command {
             input,
             groups: Vec::new(),
             empty_message: "No results found.".into(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -91,6 +96,12 @@ impl Command {
     pub fn empty_message(mut self, message: impl Into<SharedString>) -> Self {
         self.empty_message = message.into();
         self
+    }
+}
+
+impl Styled for Command {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -158,8 +169,9 @@ impl RenderOnce for Command {
             .collect();
 
         // Shell: rounded-lg border bg-popover; search row with icon +
-        // bordered bottom; then the scrollable list.
-        div()
+        // bordered bottom; then the scrollable list. Caller refinement
+        // applied last so sizing/shape overrides win over component defaults.
+        let mut root = div()
             .flex()
             .flex_col()
             .w_full()
@@ -168,46 +180,47 @@ impl RenderOnce for Command {
             .border_color(theme.border)
             .bg(theme.popover)
             .text_color(theme.popover_foreground)
-            .overflow_hidden()
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .px(px(12.))
-                    .h(px(44.))
-                    .border_b_1()
-                    .border_color(theme.border)
-                    .child(
-                        svg()
-                            .path(theme.icons.chevron_right())
-                            .size(px(16.))
-                            .flex_shrink_0()
-                            .text_color(theme.muted_foreground),
-                    )
-                    .child(div().flex_1().child(self.input.clone())),
-            )
-            .child(
-                div()
-                    .id("command-list")
-                    .max_h(px(300.))
-                    .overflow_y_scroll()
-                    .map(|el| {
-                        if any_match {
-                            el.children(groups)
-                        } else {
-                            el.child(
-                                div()
-                                    .py(px(24.))
-                                    .text_size(px(14.))
-                                    .text_color(theme.muted_foreground)
-                                    .flex()
-                                    .justify_center()
-                                    .child(self.empty_message),
-                            )
-                        }
-                    }),
-            )
+            .overflow_hidden();
+        root.style().refine(&self.style);
+        root.child(
+            div()
+                .flex()
+                .flex_row()
+                .items_center()
+                .gap(px(8.))
+                .px(px(12.))
+                .h(px(44.))
+                .border_b_1()
+                .border_color(theme.border)
+                .child(
+                    svg()
+                        .path(theme.icons.chevron_right())
+                        .size(px(16.))
+                        .flex_shrink_0()
+                        .text_color(theme.muted_foreground),
+                )
+                .child(div().flex_1().child(self.input.clone())),
+        )
+        .child(
+            div()
+                .id("command-list")
+                .max_h(px(300.))
+                .overflow_y_scroll()
+                .map(|el| {
+                    if any_match {
+                        el.children(groups)
+                    } else {
+                        el.child(
+                            div()
+                                .py(px(24.))
+                                .text_size(px(14.))
+                                .text_color(theme.muted_foreground)
+                                .flex()
+                                .justify_center()
+                                .child(self.empty_message),
+                        )
+                    }
+                }),
+        )
     }
 }
