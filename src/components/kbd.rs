@@ -11,18 +11,23 @@
 //! selectors). SVG children should be passed pre-sized `px(12.)` — there is no cascade
 //! equivalent of `[&_svg:not([class*='size-'])]:size-3`. `pointer-events-none` /
 //! `select-none` are inherent in gpui (plain divs, unselectable text).
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
-    AnyElement, App, FontWeight, IntoElement, ParentElement, RenderOnce, Styled, Window, div, px,
+    AnyElement, App, FontWeight, IntoElement, ParentElement, Refineable as _, RenderOnce,
+    StyleRefinement, Styled, Window, div, px,
 };
 
 use crate::theme::{Theme, alpha};
 
 /// Inline keyboard-key chip.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Kbd {
     children: Vec<AnyElement>,
     in_tooltip: bool,
+    style: StyleRefinement,
 }
 
 impl Kbd {
@@ -30,6 +35,7 @@ impl Kbd {
         Self {
             children: Vec::new(),
             in_tooltip: false,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -45,6 +51,12 @@ impl Kbd {
 impl Default for Kbd {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for Kbd {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -71,7 +83,7 @@ impl RenderOnce for Kbd {
             (theme.muted, theme.muted_foreground)
         };
 
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .h(px(20.))
@@ -86,20 +98,26 @@ impl RenderOnce for Kbd {
             .line_height(px(16.))
             .font_weight(FontWeight::MEDIUM)
             .text_color(fg)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// Group of keyboard-key chips (`inline-flex items-center gap-1`).
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct KbdGroup {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl KbdGroup {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -107,6 +125,12 @@ impl KbdGroup {
 impl Default for KbdGroup {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for KbdGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -119,11 +143,13 @@ impl ParentElement for KbdGroup {
 impl RenderOnce for KbdGroup {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // inline-flex items-center gap-1
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
             .gap(px(4.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
