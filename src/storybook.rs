@@ -740,6 +740,7 @@ pub struct Storybook {
     input_demo: gpui::Entity<Input>,
     input_disabled: gpui::Entity<Input>,
     input_basic: gpui::Entity<Input>,
+    sidebar_filter: gpui::Entity<Input>,
     input_field: gpui::Entity<Input>,
     input_fieldgroup_name: gpui::Entity<Input>,
     input_fieldgroup_email: gpui::Entity<Input>,
@@ -899,6 +900,11 @@ impl Storybook {
         let input_basic = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Enter text");
+            input
+        });
+        let sidebar_filter = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search components...");
             input
         });
         let input_field = cx.new(|cx| {
@@ -1157,6 +1163,7 @@ impl Storybook {
             &card_password_input,
             &card_spacing_email,
             &card_spacing_password,
+            &sidebar_filter,
         ] {
             cx.observe(input, |_, _, cx| cx.notify()).detach();
         }
@@ -1237,6 +1244,7 @@ impl Storybook {
             input_demo,
             input_disabled,
             input_basic,
+            sidebar_filter,
             input_field,
             input_fieldgroup_name,
             input_fieldgroup_email,
@@ -1432,59 +1440,86 @@ impl Storybook {
 
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        let query = self.sidebar_filter.read(cx).text().trim().to_lowercase();
         let mut components: Vec<Story> = Story::ALL
             .into_iter()
             .filter(|story| *story != Story::Tokens)
+            .filter(|story| query.is_empty() || story.label().to_lowercase().contains(&query))
             .collect();
         components.sort_by_key(|story| story.label());
 
+        let show_theme = query.is_empty() || Story::Tokens.label().to_lowercase().contains(&query);
+        let show_components = !components.is_empty();
+        let no_results = !show_theme && !show_components;
+
         Sidebar::new()
             .child(
-                SidebarHeader::new().child(
-                    div()
-                        .px(px(8.))
-                        .py(px(6.))
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .when_some(theme.heading_font(), |el, font| el.font_family(font))
-                        .child("rcn"),
-                ),
+                SidebarHeader::new()
+                    .child(
+                        div()
+                            .px(px(8.))
+                            .py(px(6.))
+                            .text_size(px(15.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .when_some(theme.heading_font(), |el, font| el.font_family(font))
+                            .child("rcn"),
+                    )
+                    .child(
+                        div()
+                            .px(px(8.))
+                            .pb(px(6.))
+                            .child(self.sidebar_filter.clone()),
+                    ),
             )
             .child(
                 SidebarContent::new()
-                    .child(
-                        SidebarGroup::new().label("Theme").child(
-                            SidebarMenuButton::new("nav-tokens")
-                                .active(self.story == Story::Tokens)
-                                .on_click(cx.listener(|this, _, _, cx| {
-                                    this.story = Story::Tokens;
-                                    cx.notify();
-                                }))
-                                .child(Story::Tokens.label()),
-                        ),
-                    )
-                    .child(SidebarGroup::new().label("Components").children(
-                        components.into_iter().enumerate().map(|(index, story)| {
-                            let label = story.label();
-                            let verified = self.verified.contains_key(label);
-                            SidebarMenuButton::new(("nav-component", index))
-                                .active(self.story == story)
-                                .on_click(cx.listener(move |this, _, _, cx| {
-                                    this.story = story;
-                                    cx.notify();
-                                }))
-                                .child(label)
-                                .when(verified, |btn| {
-                                    btn.child(
-                                        div().ml_auto().child(
-                                            Icon::new(theme.icons.check())
-                                                .size(px(14.))
-                                                .text_color(theme.muted_foreground),
-                                        ),
-                                    )
-                                })
-                        }),
-                    )),
+                    .when(show_theme, |el| {
+                        el.child(
+                            SidebarGroup::new().label("Theme").child(
+                                SidebarMenuButton::new("nav-tokens")
+                                    .active(self.story == Story::Tokens)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.story = Story::Tokens;
+                                        cx.notify();
+                                    }))
+                                    .child(Story::Tokens.label()),
+                            ),
+                        )
+                    })
+                    .when(show_components, |el| {
+                        el.child(SidebarGroup::new().label("Components").children(
+                            components.into_iter().enumerate().map(|(index, story)| {
+                                let label = story.label();
+                                let verified = self.verified.contains_key(label);
+                                SidebarMenuButton::new(("nav-component", index))
+                                    .active(self.story == story)
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.story = story;
+                                        cx.notify();
+                                    }))
+                                    .child(label)
+                                    .when(verified, |btn| {
+                                        btn.child(
+                                            div().ml_auto().child(
+                                                Icon::new(theme.icons.check())
+                                                    .size(px(14.))
+                                                    .text_color(theme.muted_foreground),
+                                            ),
+                                        )
+                                    })
+                            }),
+                        ))
+                    })
+                    .when(no_results, |el| {
+                        el.child(
+                            div()
+                                .px(px(8.))
+                                .py(px(6.))
+                                .text_size(px(13.))
+                                .text_color(theme.muted_foreground)
+                                .child("No results"),
+                        )
+                    }),
             )
             .child(
                 SidebarFooter::new().child(
