@@ -4,23 +4,27 @@
 //! the boxes left to right; clicking any slot focuses the hidden field.
 //! The active slot (next to fill) shows the ring border while focused.
 //! Paste works through the input; slot-level caret animation is omitted.
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     App, Entity, Focusable as _, InteractiveElement as _, IntoElement, ParentElement as _,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _,
-    px,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    div, prelude::FluentBuilder as _, px,
 };
 
 use crate::components::input::Input;
 use crate::components::separator::Separator;
 use crate::theme::{Theme, alpha};
 
+/// OTP slot row bound to a hidden [`Input`]. Sizing and shape overrides come
+/// from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct InputOtp {
     input: Entity<Input>,
     slots: usize,
     /// Slot count per group; a separator renders between groups.
     group: usize,
+    style: StyleRefinement,
 }
 
 impl InputOtp {
@@ -30,6 +34,7 @@ impl InputOtp {
             input,
             slots: slots.max(1),
             group: usize::MAX,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -37,6 +42,12 @@ impl InputOtp {
     pub fn group(mut self, size: usize) -> Self {
         self.group = size.max(1);
         self
+    }
+}
+
+impl Styled for InputOtp {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -49,7 +60,7 @@ impl RenderOnce for InputOtp {
         let active = value.len().min(self.slots - 1);
         let focus_handle = input.focus_handle(cx);
 
-        div()
+        let mut root = div()
             .id("input-otp")
             .flex()
             .flex_row()
@@ -102,6 +113,8 @@ impl RenderOnce for InputOtp {
                         .into_any_element(),
                 );
                 parts
-            }))
+            }));
+        root.style().refine(&self.style);
+        root
     }
 }
