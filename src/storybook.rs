@@ -677,6 +677,12 @@ pub struct Storybook {
     table_selected: Option<usize>,
     // Checkbox controls
     checkbox_checked: bool,
+    checkbox_read_only: bool,
+    checkbox_indeterminate: bool,
+    /// Choice-card example in checkbox demo: "Enable notifications"
+    checkbox_notifications: bool,
+    /// Row selection state for checkbox table example
+    checkbox_table_selected: [bool; 4],
     // Label story state
     label_disabled: bool,
     label_terms_checked: bool,
@@ -741,6 +747,7 @@ pub struct Storybook {
     input_demo: gpui::Entity<Input>,
     input_disabled: gpui::Entity<Input>,
     input_basic: gpui::Entity<Input>,
+    sidebar_filter: gpui::Entity<Input>,
     input_field: gpui::Entity<Input>,
     input_fieldgroup_name: gpui::Entity<Input>,
     input_fieldgroup_email: gpui::Entity<Input>,
@@ -900,6 +907,11 @@ impl Storybook {
         let input_basic = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Enter text");
+            input
+        });
+        let sidebar_filter = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search components...");
             input
         });
         let input_field = cx.new(|cx| {
@@ -1158,6 +1170,7 @@ impl Storybook {
             &card_password_input,
             &card_spacing_email,
             &card_spacing_password,
+            &sidebar_filter,
         ] {
             cx.observe(input, |_, _, cx| cx.notify()).detach();
         }
@@ -1197,6 +1210,10 @@ impl Storybook {
             item_size: ItemSize::Default,
             table_selected: Some(1),
             checkbox_checked: true,
+            checkbox_read_only: false,
+            checkbox_indeterminate: false,
+            checkbox_notifications: false,
+            checkbox_table_selected: [true, false, false, false],
             label_disabled: false,
             label_terms_checked: false,
             label_email_input,
@@ -1239,6 +1256,7 @@ impl Storybook {
             input_demo,
             input_disabled,
             input_basic,
+            sidebar_filter,
             input_field,
             input_fieldgroup_name,
             input_fieldgroup_email,
@@ -1434,59 +1452,86 @@ impl Storybook {
 
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        let query = self.sidebar_filter.read(cx).text().trim().to_lowercase();
         let mut components: Vec<Story> = Story::ALL
             .into_iter()
             .filter(|story| *story != Story::Tokens)
+            .filter(|story| query.is_empty() || story.label().to_lowercase().contains(&query))
             .collect();
         components.sort_by_key(|story| story.label());
 
+        let show_theme = query.is_empty() || Story::Tokens.label().to_lowercase().contains(&query);
+        let show_components = !components.is_empty();
+        let no_results = !show_theme && !show_components;
+
         Sidebar::new()
             .child(
-                SidebarHeader::new().child(
-                    div()
-                        .px(px(8.))
-                        .py(px(6.))
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .when_some(theme.heading_font(), |el, font| el.font_family(font))
-                        .child("rcn"),
-                ),
+                SidebarHeader::new()
+                    .child(
+                        div()
+                            .px(px(8.))
+                            .py(px(6.))
+                            .text_size(px(15.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .when_some(theme.heading_font(), |el, font| el.font_family(font))
+                            .child("rcn"),
+                    )
+                    .child(
+                        div()
+                            .px(px(8.))
+                            .pb(px(6.))
+                            .child(self.sidebar_filter.clone()),
+                    ),
             )
             .child(
                 SidebarContent::new()
-                    .child(
-                        SidebarGroup::new().label("Theme").child(
-                            SidebarMenuButton::new("nav-tokens")
-                                .active(self.story == Story::Tokens)
-                                .on_click(cx.listener(|this, _, _, cx| {
-                                    this.story = Story::Tokens;
-                                    cx.notify();
-                                }))
-                                .child(Story::Tokens.label()),
-                        ),
-                    )
-                    .child(SidebarGroup::new().label("Components").children(
-                        components.into_iter().enumerate().map(|(index, story)| {
-                            let label = story.label();
-                            let verified = self.verified.contains_key(label);
-                            SidebarMenuButton::new(("nav-component", index))
-                                .active(self.story == story)
-                                .on_click(cx.listener(move |this, _, _, cx| {
-                                    this.story = story;
-                                    cx.notify();
-                                }))
-                                .child(label)
-                                .when(verified, |btn| {
-                                    btn.child(
-                                        div().ml_auto().child(
-                                            Icon::new(theme.icons.check())
-                                                .size(px(14.))
-                                                .text_color(theme.muted_foreground),
-                                        ),
-                                    )
-                                })
-                        }),
-                    )),
+                    .when(show_theme, |el| {
+                        el.child(
+                            SidebarGroup::new().label("Theme").child(
+                                SidebarMenuButton::new("nav-tokens")
+                                    .active(self.story == Story::Tokens)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.story = Story::Tokens;
+                                        cx.notify();
+                                    }))
+                                    .child(Story::Tokens.label()),
+                            ),
+                        )
+                    })
+                    .when(show_components, |el| {
+                        el.child(SidebarGroup::new().label("Components").children(
+                            components.into_iter().enumerate().map(|(index, story)| {
+                                let label = story.label();
+                                let verified = self.verified.contains_key(label);
+                                SidebarMenuButton::new(("nav-component", index))
+                                    .active(self.story == story)
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.story = story;
+                                        cx.notify();
+                                    }))
+                                    .child(label)
+                                    .when(verified, |btn| {
+                                        btn.child(
+                                            div().ml_auto().child(
+                                                Icon::new(theme.icons.check())
+                                                    .size(px(14.))
+                                                    .text_color(theme.muted_foreground),
+                                            ),
+                                        )
+                                    })
+                            }),
+                        ))
+                    })
+                    .when(no_results, |el| {
+                        el.child(
+                            div()
+                                .px(px(8.))
+                                .py(px(6.))
+                                .text_size(px(13.))
+                                .text_color(theme.muted_foreground)
+                                .child("No results"),
+                        )
+                    }),
             )
             .child(
                 SidebarFooter::new().child(
@@ -2451,58 +2496,32 @@ impl Storybook {
                     .into_any_element(),
                 ),
             ],
-            Story::Checkbox => vec![(
-                "States",
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(8.))
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(Checkbox::new("ex-cb-unchecked").checked(false))
-                            .child(Label::new().child("Unchecked")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(Checkbox::new("ex-cb-checked").checked(true))
-                            .child(Label::new().child("Checked")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(
-                                Checkbox::new("ex-cb-disabled")
-                                    .checked(false)
-                                    .disabled(true),
-                            )
-                            .child(Label::new().disabled(true).child("Disabled")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(
-                                Checkbox::new("ex-cb-disabled-checked")
-                                    .checked(true)
-                                    .disabled(true),
-                            )
-                            .child(Label::new().disabled(true).child("Disabled checked")),
-                    )
-                    .into_any_element(),
-            )],
+            Story::Checkbox => vec![
+                (
+                    "Invalid",
+                    self.checkbox_example_invalid(cx).into_any_element(),
+                ),
+                (
+                    "Basic",
+                    self.checkbox_example_basic(cx).into_any_element(),
+                ),
+                (
+                    "Description",
+                    self.checkbox_example_description(cx).into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    self.checkbox_example_disabled(cx).into_any_element(),
+                ),
+                (
+                    "Group",
+                    self.checkbox_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Table",
+                    self.checkbox_example_table(cx).into_any_element(),
+                ),
+            ],
             Story::Toggle => vec![
                 (
                     "Outline",
@@ -4164,18 +4183,44 @@ impl Storybook {
             ],
             Story::Table => Vec::new(),
             Story::Breadcrumb => Vec::new(),
-            Story::Checkbox => vec![Self::control_row(
-                "checked",
-                Switch::new("ctl-checkbox-checked")
-                    .checked(self.checkbox_checked)
-                    .size(SwitchSize::Sm)
-                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
-                        this.checkbox_checked = *checked;
-                        cx.notify();
-                    }))
-                    .into_any_element(),
-                &theme,
-            )],
+            Story::Checkbox => vec![
+                Self::control_row(
+                    "checked",
+                    Switch::new("ctl-checkbox-checked")
+                        .checked(self.checkbox_checked)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.checkbox_checked = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "read_only",
+                    Switch::new("ctl-checkbox-read-only")
+                        .checked(self.checkbox_read_only)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.checkbox_read_only = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "indeterminate",
+                    Switch::new("ctl-checkbox-indeterminate")
+                        .checked(self.checkbox_indeterminate)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.checkbox_indeterminate = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+            ],
             Story::RadioGroup => Vec::new(),
             Story::Toggle => Vec::new(),
             Story::ToggleGroup => Vec::new(),
@@ -5289,7 +5334,7 @@ impl Storybook {
                 Checkbox::new("label-terms")
                     .checked(self.label_terms_checked)
                     .disabled(self.label_disabled)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.label_terms_checked = *checked;
                         cx.notify();
                     })),
@@ -6113,47 +6158,245 @@ impl Storybook {
     }
 
     fn checkbox_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(12.))
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
+        // Port of checkbox-demo.tsx
+        div().w(px(384.)).child(
+            FieldGroup::new()
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(
+                            Checkbox::new("checkbox-terms")
+                                .checked(self.checkbox_checked)
+                                .read_only(self.checkbox_read_only)
+                                .indeterminate(self.checkbox_indeterminate)
+                                .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                                    this.checkbox_checked = *checked;
+                                    cx.notify();
+                                })),
+                        )
+                        .child(Label::new().child("Accept terms and conditions")),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Checkbox::new("checkbox-terms-2").default_checked(true))
+                        .child(
+                            FieldContent::new()
+                                .child(FieldLabel::new().child("Accept terms and conditions"))
+                                .child(
+                                    FieldDescription::new().child(
+                                        "By clicking this checkbox, you agree to the terms.",
+                                    ),
+                                ),
+                        ),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Checkbox::new("checkbox-toggle").disabled(true))
+                        .child(
+                            FieldLabel::new()
+                                .disabled(true)
+                                .child("Enable notifications"),
+                        ),
+                )
+                .child(
+                    FieldLabel::new()
+                        .choice_card(self.checkbox_notifications)
+                        .child(
+                            Field::new()
+                                .orientation(FieldOrientation::Horizontal)
+                                .child(
+                                    Checkbox::new("checkbox-toggle-2")
+                                        .checked(self.checkbox_notifications)
+                                        .on_checked_change(cx.listener(
+                                            |this, checked: &bool, _, cx| {
+                                                this.checkbox_notifications = *checked;
+                                                cx.notify();
+                                            },
+                                        )),
+                                )
+                                .child(
+                                    FieldContent::new()
+                                        .child(FieldTitle::new().child("Enable notifications"))
+                                        .child(FieldDescription::new().child(
+                                            "You can enable or disable notifications at any time.",
+                                        )),
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    fn checkbox_example_invalid(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-invalid.tsx
+        div().w(px(224.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .invalid(true)
+                    .child(Checkbox::new("checkbox-ex-invalid").invalid(true))
+                    .child(FieldLabel::new().child("Accept terms and conditions")),
+            ),
+        )
+    }
+
+    fn checkbox_example_basic(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-basic.tsx
+        div().w(px(224.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .child(Checkbox::new("checkbox-ex-basic"))
+                    .child(FieldLabel::new().child("Accept terms and conditions")),
+            ),
+        )
+    }
+
+    fn checkbox_example_description(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-description.tsx
+        div().w(px(288.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .child(Checkbox::new("checkbox-ex-description").default_checked(true))
                     .child(
-                        Checkbox::new("checkbox-terms")
-                            .checked(self.checkbox_checked)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
-                                this.checkbox_checked = *checked;
-                                cx.notify();
-                            })),
-                    )
-                    .child(Label::new().child("Accept terms and conditions")),
+                        FieldContent::new()
+                            .child(FieldLabel::new().child("Accept terms and conditions"))
+                            .child(FieldDescription::new().child(
+                                "By clicking this checkbox, you agree to the terms and conditions.",
+                            )),
+                    ),
+            ),
+        )
+    }
+
+    fn checkbox_example_disabled(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-disabled.tsx
+        div().w(px(224.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .child(Checkbox::new("checkbox-ex-disabled").disabled(true))
+                    .child(
+                        FieldLabel::new()
+                            .disabled(true)
+                            .child("Enable notifications"),
+                    ),
+            ),
+        )
+    }
+
+    fn checkbox_example_group(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-group.tsx
+        FieldSet::new()
+            .legend(
+                FieldLegend::new()
+                    .variant(FieldLegendVariant::Label)
+                    .child("Show these items on the desktop:"),
+            )
+            .description(
+                FieldDescription::new().child("Select the items you want to show on the desktop."),
             )
             .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(Checkbox::new("checkbox-disabled").disabled(true))
-                    .child(Label::new().disabled(true).child("Disabled")),
+                FieldGroup::new()
+                    .gap(px(12.))
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(
+                                Checkbox::new("checkbox-ex-group-hard-disks").default_checked(true),
+                            )
+                            .child(FieldLabel::new().font_normal().child("Hard disks")),
+                    )
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(
+                                Checkbox::new("checkbox-ex-group-external-disks")
+                                    .default_checked(true),
+                            )
+                            .child(FieldLabel::new().font_normal().child("External disks")),
+                    )
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(Checkbox::new("checkbox-ex-group-cds"))
+                            .child(
+                                FieldLabel::new()
+                                    .font_normal()
+                                    .child("CDs, DVDs, and iPods"),
+                            ),
+                    )
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(Checkbox::new("checkbox-ex-group-servers"))
+                            .child(FieldLabel::new().font_normal().child("Connected servers")),
+                    ),
+            )
+    }
+
+    fn checkbox_example_table(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-table.tsx
+        let rows = [
+            ("Sarah Chen", "sarah.chen@example.com", "Admin"),
+            ("Marcus Rodriguez", "marcus.rodriguez@example.com", "User"),
+            ("Priya Patel", "priya.patel@example.com", "User"),
+            ("David Kim", "david.kim@example.com", "Editor"),
+        ];
+        let count = rows.len();
+        let all_selected = self.checkbox_table_selected.iter().all(|s| *s);
+        Table::new()
+            .child(
+                TableHeader::new().child(
+                    TableRow::new()
+                        .child(
+                            TableHead::new().w(px(32.)).child(
+                                Checkbox::new("checkbox-ex-table-select-all")
+                                    .checked(all_selected)
+                                    .on_checked_change(cx.listener(
+                                        |this, checked: &bool, _, cx| {
+                                            this.checkbox_table_selected = [*checked; 4];
+                                            cx.notify();
+                                        },
+                                    )),
+                            ),
+                        )
+                        .child(TableHead::new().child("Name"))
+                        .child(TableHead::new().child("Email"))
+                        .child(TableHead::new().child("Role")),
+                ),
             )
             .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Checkbox::new("checkbox-disabled-checked")
-                            .checked(true)
-                            .disabled(true),
-                    )
-                    .child(Label::new().disabled(true).child("Disabled checked")),
+                TableBody::new().children(rows.into_iter().enumerate().map(
+                    |(index, (name, email, role))| {
+                        let selected = self.checkbox_table_selected[index];
+                        TableRow::new()
+                            .id(("checkbox-table-row", index))
+                            .selected(selected)
+                            .last(index + 1 == count)
+                            .child(
+                                TableCell::new().child(
+                                    Checkbox::new(("checkbox-ex-table-row", index))
+                                        .checked(selected)
+                                        .on_checked_change(cx.listener(
+                                            move |this, checked: &bool, _, cx| {
+                                                this.checkbox_table_selected[index] = *checked;
+                                                cx.notify();
+                                            },
+                                        )),
+                                ),
+                            )
+                            .child(
+                                TableCell::new()
+                                    .child(div().font_weight(FontWeight::MEDIUM).child(name)),
+                            )
+                            .child(TableCell::new().child(email))
+                            .child(TableCell::new().child(role))
+                            .into_any_element()
+                    },
+                )),
             )
     }
     fn radio_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
@@ -7675,7 +7918,7 @@ impl Storybook {
                                     .child(
                                         Checkbox::new("field-same-shipping")
                                             .checked(self.field_same_shipping)
-                                            .on_change(cx.listener(
+                                            .on_checked_change(cx.listener(
                                                 |this, checked: &bool, _, cx| {
                                                     this.field_same_shipping = *checked;
                                                     cx.notify();
@@ -7877,7 +8120,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-hard-disks")
                                                 .checked(self.field_hard_disks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_hard_disks = *checked;
                                                         cx.notify();
@@ -7896,7 +8139,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-external-disks")
                                                 .checked(self.field_external_disks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_external_disks = *checked;
                                                         cx.notify();
@@ -7915,7 +8158,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-cds")
                                                 .checked(self.field_cds)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_cds = *checked;
                                                         cx.notify();
@@ -7934,7 +8177,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-connected-servers")
                                                 .checked(self.field_connected_servers)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_connected_servers = *checked;
                                                         cx.notify();
@@ -7956,7 +8199,7 @@ impl Storybook {
                         .child(
                             Checkbox::new("field-sync-folders")
                                 .checked(self.field_sync_folders)
-                                .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                                .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                                     this.field_sync_folders = *checked;
                                     cx.notify();
                                 })),
@@ -8137,7 +8380,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-push-tasks")
                                                 .checked(self.field_push_tasks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_push_tasks = *checked;
                                                         cx.notify();
@@ -8156,7 +8399,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-email-tasks")
                                                 .checked(self.field_email_tasks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_email_tasks = *checked;
                                                         cx.notify();
