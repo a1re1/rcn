@@ -13,11 +13,13 @@
 //! TODO: nova's `transition-all` hover transition (150ms
 //! `cubic-bezier(0.4,0,0.2,1)`, `motion::ease_transition`) is omitted because
 //! gpui hover styles are instant.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ElementId, Entity, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -64,6 +66,7 @@ pub struct Toggle {
     icon_inline_end: bool,
     on_pressed_change: Option<ChangeHandler>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Toggle {
@@ -79,6 +82,7 @@ impl Toggle {
             icon_inline_end: false,
             on_pressed_change: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -138,6 +142,12 @@ impl Toggle {
 impl ParentElement for Toggle {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
+    }
+}
+
+impl Styled for Toggle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -204,7 +214,8 @@ impl RenderOnce for Toggle {
         // inline-flex items-center justify-center gap-1 rounded-lg text-sm
         // font-medium hover:bg-muted hover:text-foreground
         // aria-pressed:bg-muted; outline: border border-input (no shadow)
-        div()
+        // Caller refinement applied last so Styled overrides win over defaults.
+        let mut root = div()
             .id(self.id)
             .flex()
             .flex_row()
@@ -247,6 +258,8 @@ impl RenderOnce for Toggle {
                         }
                     })
             })
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
