@@ -3,10 +3,15 @@
 //! The dropdown-menu panel opened at the pointer on right-click over the
 //! trigger area. Controlled: the caller stores the open position from
 //! `on_request_open` and clears it via `on_open_change(false)`.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`] and apply
+//! to the floating menu panel (the element carrying background, border, and
+//! shadow), not the trigger wrapper.
 
 use gpui::{
     AnyElement, App, ElementId, InteractiveElement as _, IntoElement, MouseButton, ParentElement,
-    Pixels, Point, RenderOnce, Window, anchored, deferred, div, prelude::FluentBuilder as _,
+    Pixels, Point, Refineable as _, RenderOnce, StyleRefinement, Styled, Window, anchored,
+    deferred, div, prelude::FluentBuilder as _,
 };
 
 pub use crate::components::dropdown_menu::DropdownMenuItem as ContextMenuItem;
@@ -14,6 +19,8 @@ use crate::components::dropdown_menu::{DropdownMenuEntry, OpenChangeHandler, men
 
 type RequestOpenHandler = Box<dyn Fn(&Point<Pixels>, &mut Window, &mut App) + 'static>;
 
+/// Right-click menu surface. Sizing and shape overrides via [`Styled`] target
+/// the floating menu panel root (bg/border/shadow), not the trigger.
 #[derive(IntoElement)]
 pub struct ContextMenu {
     id: ElementId,
@@ -22,6 +29,7 @@ pub struct ContextMenu {
     entries: Vec<DropdownMenuEntry>,
     on_request_open: Option<RequestOpenHandler>,
     on_open_change: Option<OpenChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl ContextMenu {
@@ -33,6 +41,7 @@ impl ContextMenu {
             entries: Vec::new(),
             on_request_open: None,
             on_open_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -83,17 +92,23 @@ impl ContextMenu {
     }
 }
 
+impl Styled for ContextMenu {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ContextMenu {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let panel = self.open_at.map(|position| {
+            let mut panel = menu_panel(self.entries, self.on_open_change, cx);
+            // Caller styles win over panel defaults; refine before deferred/anchored/motion wrap.
+            panel.style().refine(&self.style);
             deferred(
                 anchored()
                     .position(position)
                     .snap_to_window_with_margin(gpui::px(8.))
-                    .child(crate::motion::pop_in(
-                        "contextmenu-in",
-                        gpui::div().child(menu_panel(self.entries, self.on_open_change, cx)),
-                    )),
+                    .child(crate::motion::pop_in("contextmenu-in", panel)),
             )
         });
 
