@@ -5,8 +5,9 @@
 //! `read_only`, `invalid` (aria-invalid destructive border + ring; when also
 //! checked, border/bg stay primary while the destructive ring remains), and
 //! `indeterminate` (check icon on unchecked chrome; `aria-checked="mixed"` has
-//! no gpui a11y-tree equivalent). Size is fixed at 16×16 with a 14px check icon.
-//! Extended hit area mirrors `after:-inset-x-3 after:-inset-y-2`.
+//! no gpui a11y-tree equivalent). Default size is 16×16 with a 14px check icon;
+//! sizing and shape overrides come from the caller via [`Styled`]. Extended hit
+//! area mirrors `after:-inset-x-3 after:-inset-y-2`.
 //!
 //! Omitted (no gpui form-submission equivalent): `name`, `value`, `required`,
 //! `uncheckedValue`, `inputRef`, `parent` (checkbox-group not ported),
@@ -21,8 +22,8 @@ use std::rc::Rc;
 
 use gpui::{
     App, ClickEvent, ElementId, Entity, InteractiveElement as _, IntoElement, ParentElement as _,
-    RenderOnce, StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _,
-    px, svg,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    div, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::motion;
@@ -41,6 +42,7 @@ pub struct Checkbox {
     invalid: bool,
     indeterminate: bool,
     on_checked_change: Option<ChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Checkbox {
@@ -54,6 +56,7 @@ impl Checkbox {
             invalid: false,
             indeterminate: false,
             on_checked_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -108,6 +111,12 @@ impl Checkbox {
     }
 }
 
+impl Styled for Checkbox {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Checkbox {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -154,7 +163,7 @@ impl RenderOnce for Checkbox {
         // checked: border-primary bg-primary text-primary-foreground;
         // dark unchecked: bg-input/30
         // indeterminate && !checked: unchecked chrome + foreground check icon
-        div()
+        let mut root = div()
             .id(self.id)
             .relative()
             .flex()
@@ -237,6 +246,8 @@ impl RenderOnce for Checkbox {
                         .size(px(14.))
                         .text_color(icon_color),
                 )
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
