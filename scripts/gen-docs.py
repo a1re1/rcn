@@ -58,8 +58,10 @@ def compact_signature(path: Path):
     i = 0
     while i < len(lines):
         line = lines[i].strip()
-        m = re.match(r"impl (\w+)\s*\{?", line)
-        if m:
+        # Trait impls (`impl Styled for X`) attribute to the target type X so
+        # a following free fn isn't credited to the trait (e.g. "Styled").
+        m = re.match(r"impl (?:\w+ for )?(\w+)\s*\{?", line)
+        if m and not line.startswith("impl<"):
             current_type = m.group(1)
             doc = []
             i += 1
