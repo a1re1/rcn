@@ -2,11 +2,12 @@
 //!
 //! A value-driven bar: optional label and percentage readout above a muted
 //! track with a primary indicator. The source's indeterminate state and
-//! width transition are omitted.
+//! width transition are omitted. Sizing and shape overrides come from the
+//! caller via [`Styled`].
 
 use gpui::{
-    App, IntoElement, ParentElement, RenderOnce, SharedString, Styled, Window, div,
-    prelude::FluentBuilder as _, px, relative,
+    App, IntoElement, ParentElement, Refineable as _, RenderOnce, SharedString, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px, relative,
 };
 
 use crate::theme::Theme;
@@ -17,6 +18,7 @@ pub struct Progress {
     value: f32,
     label: Option<SharedString>,
     show_value: bool,
+    style: StyleRefinement,
 }
 
 impl Progress {
@@ -25,6 +27,7 @@ impl Progress {
             value: value.clamp(0., 100.),
             label: None,
             show_value: false,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -41,13 +44,19 @@ impl Progress {
     }
 }
 
+impl Styled for Progress {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Progress {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         let has_header = self.label.is_some() || self.show_value;
 
         // Root: flex flex-wrap gap-3 (label/value row + track)
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(px(12.))
@@ -98,6 +107,8 @@ impl RenderOnce for Progress {
                             .rounded_full()
                             .bg(theme.primary),
                     ),
-            )
+            );
+        root.style().refine(&self.style);
+        root
     }
 }
