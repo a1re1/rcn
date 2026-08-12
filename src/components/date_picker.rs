@@ -4,13 +4,16 @@
 //! A select-style trigger showing the chosen date, opening a [`Calendar`]
 //! in a popover panel. Controlled: the caller owns the value, the visible
 //! month, and the open flag.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`] (applied
+//! to the component root wrapper).
 
 use std::rc::Rc;
 
 use gpui::{
-    App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
-    SharedString, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div,
-    prelude::FluentBuilder as _, px, relative, svg,
+    App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, Refineable as _,
+    RenderOnce, SharedString, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    anchored, deferred, div, prelude::FluentBuilder as _, px, relative, svg,
 };
 
 use crate::components::calendar::{Calendar, CalendarDate};
@@ -30,6 +33,7 @@ pub struct DatePicker {
     on_select: Option<SelectHandler>,
     on_month_change: Option<MonthChangeHandler>,
     on_open_change: Option<OpenChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl DatePicker {
@@ -43,6 +47,7 @@ impl DatePicker {
             on_select: None,
             on_month_change: None,
             on_open_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -83,6 +88,12 @@ impl DatePicker {
     ) -> Self {
         self.on_open_change = Some(Rc::new(handler));
         self
+    }
+}
+
+impl Styled for DatePicker {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -161,25 +172,21 @@ impl RenderOnce for DatePicker {
                 )
         });
 
-        div()
-            .relative()
-            .flex()
-            .flex_col()
-            .w(px(220.))
-            .child(trigger)
-            .when_some(panel, |el, panel| {
-                el.child(
-                    div()
-                        .absolute()
-                        .left_0()
-                        .top(relative(1.))
-                        .pt(px(4.))
-                        .child(deferred(
-                            anchored()
-                                .snap_to_window_with_margin(px(8.))
-                                .child(crate::motion::pop_in("datepicker-in", panel)),
-                        )),
-                )
-            })
+        let mut root = div().child(trigger).when_some(panel, |el, panel| {
+            el.child(
+                div()
+                    .absolute()
+                    .left_0()
+                    .top(relative(1.))
+                    .pt(px(4.))
+                    .child(deferred(
+                        anchored()
+                            .snap_to_window_with_margin(px(8.))
+                            .child(crate::motion::pop_in("datepicker-in", panel)),
+                    )),
+            )
+        });
+        root.style().refine(&self.style);
+        root
     }
 }
