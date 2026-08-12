@@ -8,12 +8,12 @@
 //! uses a full radius. Icons inside a badge render at 12px (`[&>svg]:size-3!`).
 //! The hover transition (`transition-all`, 150ms) is omitted because gpui
 //! hover styles are instant — same omission as Button. Aria-invalid styles
-//! are omitted.
+//! are omitted. Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, FontWeight, Hsla, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -42,6 +42,7 @@ pub struct Badge {
     bg: Option<Hsla>,
     text_color: Option<Hsla>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Badge {
@@ -55,6 +56,7 @@ impl Badge {
             bg: None,
             text_color: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -115,6 +117,12 @@ impl Default for Badge {
 impl ParentElement for Badge {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
+    }
+}
+
+impl Styled for Badge {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -220,6 +228,7 @@ impl RenderOnce for Badge {
         // focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50
         // destructive: focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40
         // `.id()` turns Div into Stateful<Div>, so branch + into_any_element to unify types.
+        // Caller refinement applied last so Styled overrides win over defaults.
         if let (Some(id), Some(on_click)) = (self.id, self.on_click) {
             let (ring_border, ring_shadow) = if self.variant == BadgeVariant::Destructive {
                 (
@@ -229,15 +238,18 @@ impl RenderOnce for Badge {
             } else {
                 (theme.ring, motion::focus_ring(&theme))
             };
-            styled
+            let mut root = styled
                 .id(id)
                 .tab_index(0)
                 .focus_visible(move |s| s.border_color(ring_border).shadow(ring_shadow.clone()))
                 .on_click(on_click)
-                .children(self.children)
-                .into_any_element()
+                .children(self.children);
+            root.style().refine(&self.style);
+            root.into_any_element()
         } else {
-            styled.children(self.children).into_any_element()
+            let mut root = styled.children(self.children);
+            root.style().refine(&self.style);
+            root.into_any_element()
         }
     }
 }
