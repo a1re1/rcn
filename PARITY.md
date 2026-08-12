@@ -41,7 +41,7 @@ solid before the molecules that compose them.
 - [x] skeleton — Styled sizing passthrough (className equivalent), animate-pulse wired (2s opacity breathing, cosine approx of Tailwind's cubic-bezier(0.4,0,0.6,1)); docs examples: demo, avatar, card, text, form, table (RTL omitted — no direction infra)
 - [x] spinner — (1s rotate animation; matches source spin)
 - [x] aspect-ratio — (static presentation — matches source, no interactive surface)
-- [x] avatar — (static presentation — matches source; image+fallback+group)
+- [x] avatar — (image+fallback+badge+group+count; badge ring & group ring as background discs, border overlay approximated by plain border (no mix-blend), RTL omitted — no direction infra; docs examples: demo, basic, badge, badge-icon, group, group-count, group-count-icon, size, dropdown)
 - [x] checkbox — (keyboard focus + ring)
 - [x] radio-group — (keyboard focus + ring)
 - [x] switch — (keyboard focus + ring)

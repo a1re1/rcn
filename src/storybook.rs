@@ -26,16 +26,16 @@ use crate::components::tooltip::{TooltipAlign, TooltipSide};
 use crate::components::{
     Accordion, AccordionContent, AccordionItem, AccordionTrigger, Alert, AlertDescription,
     AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-    AlertTitle, AlertVariant, AspectRatio, Attachment, AttachmentState, Avatar, AvatarGroup,
-    AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb, BreadcrumbEllipsis,
-    BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Bubble,
-    BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button, ButtonGroup,
-    ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar, CalendarDate, Card,
-    CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Carousel,
-    ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem, ContextMenu,
-    ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader,
-    DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu,
-    DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
+    AlertTitle, AlertVariant, AspectRatio, Attachment, AttachmentState, Avatar, AvatarBadge,
+    AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb,
+    BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator, Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button,
+    ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar,
+    CalendarDate, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
+    Carousel, ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem,
+    ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
+    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
     EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
     FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
     FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
@@ -46,14 +46,13 @@ use crate::components::{
     NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
     PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
     PopoverTitle, Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice,
-    QuestionnaireChoices,
-    QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
-    RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
-    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
-    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
-    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
-    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
-    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
+    QuestionnaireChoices, QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle,
+    RadioGroup, RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel,
+    ResizablePanelGroup, ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter,
+    SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
+    SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner,
+    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
+    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
     ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, alpha, oklch};
@@ -722,6 +721,8 @@ pub struct Storybook {
     dropdown_status_checked: bool,
     // Item story state
     item_dropdown_open: bool,
+    // Avatar story state
+    avatar_dropdown_open: bool,
     // Context menu story state
     context_menu_at: Option<gpui::Point<gpui::Pixels>>,
     // Menubar story state
@@ -1226,6 +1227,7 @@ impl Storybook {
             dropdown_open: false,
             dropdown_status_checked: true,
             item_dropdown_open: false,
+            avatar_dropdown_open: false,
             context_menu_at: None,
             menubar_open: None,
             select_value: None,
@@ -1506,7 +1508,7 @@ impl Storybook {
             Story::Tokens => self.tokens_preview(cx).into_any_element(),
             Story::Button => self.button_preview(cx).into_any_element(),
             Story::Badge => self.badge_preview().into_any_element(),
-            Story::Avatar => self.avatar_preview().into_any_element(),
+            Story::Avatar => self.avatar_preview(cx).into_any_element(),
             Story::Switch => self.switch_preview(cx).into_any_element(),
             Story::Accordion => self.accordion_preview(cx).into_any_element(),
             Story::Popover => self.popover_preview(cx).into_any_element(),
@@ -3013,18 +3015,40 @@ impl Storybook {
                     )
                     .into_any_element(),
             )],
-            Story::Avatar => vec![(
-                "Sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(12.))
-                    .child(Avatar::new("SM").size(AvatarSize::Sm))
-                    .child(Avatar::new("DF").size(AvatarSize::Default))
-                    .child(Avatar::new("LG").size(AvatarSize::Lg))
-                    .into_any_element(),
-            )],
+            Story::Avatar => vec![
+                (
+                    "Basic",
+                    self.avatar_example_basic(cx).into_any_element(),
+                ),
+                (
+                    "Badge",
+                    self.avatar_example_badge(cx).into_any_element(),
+                ),
+                (
+                    "Badge with Icon",
+                    self.avatar_example_badge_icon(cx).into_any_element(),
+                ),
+                (
+                    "Avatar Group",
+                    self.avatar_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Avatar Group Count",
+                    self.avatar_example_group_count(cx).into_any_element(),
+                ),
+                (
+                    "Avatar Group with Icon",
+                    self.avatar_example_group_icon(cx).into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    self.avatar_example_sizes(cx).into_any_element(),
+                ),
+                (
+                    "Dropdown",
+                    self.avatar_example_dropdown(cx).into_any_element(),
+                ),
+            ],
             Story::Kbd => vec![
                 (
                     "Group",
@@ -4938,20 +4962,208 @@ impl Storybook {
         Badge::new().variant(self.badge_variant).child("Badge")
     }
 
-    fn avatar_preview(&self) -> impl IntoElement + use<> {
+    /// Port of avatar-demo — grayscale avatar, badged avatar, and group + count.
+    fn avatar_preview(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let size = self.avatar_size;
+        let green = if theme.dark {
+            rgb(0x166534).into()
+        } else {
+            rgb(0x16a34a).into()
+        };
         div()
             .flex()
-            .flex_col()
+            .flex_row()
+            .flex_wrap()
             .items_center()
-            .gap(px(24.))
-            .child(Avatar::new("CN").size(self.avatar_size))
+            .gap(px(48.))
+            .child(
+                Avatar::new("CN")
+                    .size(size)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .size(size)
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .badge(AvatarBadge::new().color(green)),
+            )
             .child(
                 AvatarGroup::new()
-                    .size(self.avatar_size)
-                    .child(Avatar::new("CN").size(self.avatar_size))
-                    .child(Avatar::new("ER").size(self.avatar_size))
-                    .child(Avatar::new("LR").size(self.avatar_size))
-                    .child(AvatarGroupCount::new(3).size(self.avatar_size)),
+                    .size(size)
+                    .child(
+                        Avatar::new("CN")
+                            .size(size)
+                            .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                            .grayscale(true),
+                    )
+                    .child(
+                        Avatar::new("LR")
+                            .size(size)
+                            .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                            .grayscale(true),
+                    )
+                    .child(
+                        Avatar::new("ER")
+                            .size(size)
+                            .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                            .grayscale(true),
+                    )
+                    .child(AvatarGroupCount::new().size(size).child("+3")),
+            )
+    }
+
+    /// Port of avatar-basic — single grayscale shadcn avatar.
+    fn avatar_example_basic(&self, _cx: &App) -> impl IntoElement + use<> {
+        Avatar::new("CN")
+            .image(crate::assets::IMAGE_AVATAR_SHADCN)
+            .grayscale(true)
+    }
+
+    /// Port of avatar-badge — shadcn avatar with a green status badge.
+    fn avatar_example_badge(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let green = if theme.dark {
+            rgb(0x166534).into()
+        } else {
+            rgb(0x16a34a).into()
+        };
+        Avatar::new("CN")
+            .image(crate::assets::IMAGE_AVATAR_SHADCN)
+            .badge(AvatarBadge::new().color(green))
+    }
+
+    /// Port of avatar-badge-icon — pranathip avatar with a primary plus badge.
+    fn avatar_example_badge_icon(&self, _cx: &App) -> impl IntoElement + use<> {
+        Avatar::new("PP")
+            .image(crate::assets::IMAGE_AVATAR_PRANATHIP)
+            .grayscale(true)
+            .badge(AvatarBadge::new().icon(crate::assets::ICON_PLUS))
+    }
+
+    /// Port of avatar-group — three grayscale avatars overlapped.
+    fn avatar_example_group(&self, _cx: &App) -> impl IntoElement + use<> {
+        AvatarGroup::new()
+            .child(
+                Avatar::new("CN")
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("LR")
+                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .grayscale(true),
+            )
+    }
+
+    /// Port of avatar-group-count — group plus a "+3" counter.
+    fn avatar_example_group_count(&self, _cx: &App) -> impl IntoElement + use<> {
+        AvatarGroup::new()
+            .child(
+                Avatar::new("CN")
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("LR")
+                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .grayscale(true),
+            )
+            .child(AvatarGroupCount::new().child("+3"))
+    }
+
+    /// Port of avatar-group-count-icon — group plus a plus-icon counter.
+    fn avatar_example_group_icon(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        AvatarGroup::new()
+            .child(
+                Avatar::new("CN")
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("LR")
+                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .grayscale(true),
+            )
+            .child(
+                AvatarGroupCount::new().child(
+                    Icon::new(crate::assets::ICON_PLUS)
+                        .size(px(16.))
+                        .text_color(theme.muted_foreground),
+                ),
+            )
+    }
+
+    /// Port of avatar-size — Sm / Default / Lg grayscale shadcn avatars.
+    fn avatar_example_sizes(&self, _cx: &App) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(px(8.))
+            .child(
+                Avatar::new("CN")
+                    .size(AvatarSize::Sm)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("CN")
+                    .size(AvatarSize::Default)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("CN")
+                    .size(AvatarSize::Lg)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+    }
+
+    /// Port of avatar-dropdown — avatar as the trigger of a profile menu.
+    ///
+    /// shadcn wraps the avatar in a ghost icon rounded-full button; we do the
+    /// same via Button (Ghost + Icon + rounded_full).
+    fn avatar_example_dropdown(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        DropdownMenu::new("avatar-dropdown")
+            .open(self.avatar_dropdown_open)
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.avatar_dropdown_open = *open;
+                cx.notify();
+            }))
+            .trigger(
+                Button::new("avatar-dropdown-trigger")
+                    .variant(ButtonVariant::Ghost)
+                    .size(ButtonSize::Icon)
+                    .rounded_full()
+                    .child(Avatar::new("CN").image(crate::assets::IMAGE_AVATAR_SHADCN)),
+            )
+            .item(DropdownMenuItem::new("avatar-dd-profile").child("Profile"))
+            .item(DropdownMenuItem::new("avatar-dd-billing").child("Billing"))
+            .item(DropdownMenuItem::new("avatar-dd-settings").child("Settings"))
+            .separator()
+            .item(
+                DropdownMenuItem::new("avatar-dd-logout")
+                    .destructive(true)
+                    .child("Log out"),
             )
     }
 
@@ -5795,13 +6007,15 @@ impl Storybook {
                         Item::new()
                             .size(ItemSize::Xs)
                             .flush(true)
-                            .child(ItemMedia::new().child(
-                                // Closest AvatarSize to the docs' ~26px tile is Default (32).
-                                Avatar::new(initials)
-                                    .size(AvatarSize::Default)
-                                    .image(photo)
-                                    .grayscale(true),
-                            ))
+                            .child(
+                                ItemMedia::new().child(
+                                    // Closest AvatarSize to the docs' ~26px tile is Default (32).
+                                    Avatar::new(initials)
+                                        .size(AvatarSize::Default)
+                                        .image(photo)
+                                        .grayscale(true),
+                                ),
+                            )
                             .child(
                                 ItemContent::new()
                                     .size(ItemSize::Xs)

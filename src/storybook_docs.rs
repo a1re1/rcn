@@ -204,6 +204,26 @@ pub static AVATAR_API: &[ApiEntry] = &[
         doc: "Image source. Embedded asset paths (e.g. `images/avatar.png`) work; remote URLs would need an http client, which gpui's plain Application does not have.",
     },
     ApiEntry {
+        type_name: "Avatar",
+        signature: "pub fn badge(mut self, badge: AvatarBadge) -> Self",
+        doc: "Attach an [`AvatarBadge`] (shadcn renders it as a child of `<Avatar>`; the builder API hangs it off the root).",
+    },
+    ApiEntry {
+        type_name: "AvatarBadge",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "AvatarBadge",
+        signature: "pub fn color(mut self, color: Hsla) -> Self",
+        doc: "Override the default `theme.primary` fill (e.g. docs green status).",
+    },
+    ApiEntry {
+        type_name: "AvatarBadge",
+        signature: "pub fn icon(mut self, path: impl Into<SharedString>) -> Self",
+        doc: "Convenience for an icon child (rendered at 8px when the parent avatar is Default/Lg; hidden for Sm). Use [`ParentElement::child`] for arbitrary content.",
+    },
+    ApiEntry {
         type_name: "AvatarGroup",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -215,7 +235,7 @@ pub static AVATAR_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "AvatarGroupCount",
-        signature: "pub fn new(count: usize) -> Self",
+        signature: "pub fn new() -> Self",
         doc: "",
     },
     ApiEntry {
@@ -223,9 +243,14 @@ pub static AVATAR_API: &[ApiEntry] = &[
         signature: "pub fn size(mut self, size: AvatarSize) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "AvatarGroupCount",
+        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
+        doc: "",
+    },
 ];
 
-pub static AVATAR_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .items_center()\n    .gap(px(24.))\n    .child(Avatar::new(\"CN\").size(self.avatar_size))\n    .child(\n        AvatarGroup::new()\n            .size(self.avatar_size)\n            .child(Avatar::new(\"CN\").size(self.avatar_size))\n            .child(Avatar::new(\"ER\").size(self.avatar_size))\n            .child(Avatar::new(\"LR\").size(self.avatar_size))\n            .child(AvatarGroupCount::new(3).size(self.avatar_size)),\n    )\n    ";
+pub static AVATAR_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet size = self.avatar_size;\nlet green = if theme.dark {\n    rgb(0x166534).into()\n} else {\n    rgb(0x16a34a).into()\n};\ndiv()\n    .flex()\n    .flex_row()\n    .flex_wrap()\n    .items_center()\n    .gap(px(48.))\n    .child(\n        Avatar::new(\"CN\")\n            .size(size)\n            .image(crate::assets::IMAGE_AVATAR_SHADCN)\n            .grayscale(true),\n    )\n    .child(\n        Avatar::new(\"ER\")\n            .size(size)\n            .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)\n            .badge(AvatarBadge::new().color(green)),\n    )\n    .child(\n        AvatarGroup::new()\n            .size(size)\n            .child(\n                Avatar::new(\"CN\")\n                    .size(size)\n                    .image(crate::assets::IMAGE_AVATAR_SHADCN)\n                    .grayscale(true),\n            )\n            .child(\n                Avatar::new(\"LR\")\n                    .size(size)\n                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)\n                    .grayscale(true),\n            )\n            .child(\n                Avatar::new(\"ER\")\n                    .size(size)\n                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)\n                    .grayscale(true),\n            )\n            .child(AvatarGroupCount::new().size(size).child(\"+3\")),\n    )\n    ";
 
 pub static BADGE_API: &[ApiEntry] = &[
     ApiEntry {
