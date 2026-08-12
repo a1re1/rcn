@@ -11,8 +11,14 @@
 //! `Theme` global.
 
 use std::collections::HashMap;
+#[cfg(not(target_family = "wasm"))]
 use std::fs;
+#[cfg(not(target_family = "wasm"))]
 use std::time::{SystemTime, UNIX_EPOCH};
+// std::time::SystemTime panics on wasm32-unknown-unknown; web-time mirrors the
+// API on top of performance.now()/Date.
+#[cfg(target_family = "wasm")]
+use web_time::{SystemTime, UNIX_EPOCH};
 
 use serde::Deserialize;
 
@@ -881,10 +887,18 @@ struct VerificationEntry {
 /// Load verification.json into a name -> date map. Missing or malformed files
 /// degrade to an empty map so startup never panics on tracker data.
 fn load_verification() -> HashMap<String, String> {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/verification.json");
-    let Ok(raw) = fs::read_to_string(path) else {
-        return HashMap::new();
+    // Native reads the tracker at startup so edits show without a rebuild;
+    // wasm has no filesystem, so the same file is embedded at compile time.
+    #[cfg(not(target_family = "wasm"))]
+    let raw = {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/verification.json");
+        let Ok(raw) = fs::read_to_string(path) else {
+            return HashMap::new();
+        };
+        raw
     };
+    #[cfg(target_family = "wasm")]
+    let raw = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/verification.json"));
     let Ok(entries) = serde_json::from_str::<Vec<VerificationEntry>>(&raw) else {
         return HashMap::new();
     };

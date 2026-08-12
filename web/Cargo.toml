@@ -1,0 +1,36 @@
+# Standalone workspace: the wasm build needs nightly + atomics rustflags +
+# build-std (see .cargo/config.toml here), which must not leak into the native
+# macOS build of the parent workspace. Mirrors gpui_web's hello_web example.
+[workspace]
+
+[package]
+name = "rcn-web"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "rcn-web"
+path = "main.rs"
+
+# Boot-path smoke test: same platform boot, one div instead of the storybook.
+[[bin]]
+name = "min"
+path = "min.rs"
+
+[dependencies]
+rcn = { path = ".." }
+# Same pinned rev as the parent crate so gpui types unify across the boundary.
+gpui = { git = "https://github.com/zed-industries/zed", rev = "027cf0def75e5c027504f402a6a6c0dcac11f178", package = "gpui" }
+gpui_platform = { git = "https://github.com/zed-industries/zed", rev = "027cf0def75e5c027504f402a6a6c0dcac11f178", package = "gpui_platform" }
+web-sys = { version = "0.3", features = ["Location", "Window"] }
+
+# Dependencies are optimized even in dev so the storybook is usable while
+# iterating (same policy as the parent workspace).
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3
