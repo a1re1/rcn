@@ -4,10 +4,13 @@
 //! A month grid with previous/next navigation and single-day selection.
 //! Controlled: the caller owns the visible month and the selected day.
 //! Range selection, multiple months, and dropdown navigation are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
-    App, FontWeight, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px, svg,
+    App, FontWeight, InteractiveElement as _, IntoElement, ParentElement as _, Refineable as _,
+    RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div,
+    prelude::FluentBuilder as _, px, svg,
 };
 use std::rc::Rc;
 
@@ -78,6 +81,7 @@ const MONTH_NAMES: [&str; 12] = [
 type MonthChangeHandler = Rc<dyn Fn(&(i32, u32), &mut Window, &mut App) + 'static>;
 type SelectHandler = Rc<dyn Fn(&CalendarDate, &mut Window, &mut App) + 'static>;
 
+/// Month grid with prev/next navigation. Sizing/shape overrides via [`Styled`].
 #[derive(IntoElement)]
 pub struct Calendar {
     /// Visible (year, month).
@@ -85,6 +89,7 @@ pub struct Calendar {
     selected: Option<CalendarDate>,
     on_month_change: Option<MonthChangeHandler>,
     on_select: Option<SelectHandler>,
+    style: StyleRefinement,
 }
 
 impl Calendar {
@@ -94,6 +99,7 @@ impl Calendar {
             selected: None,
             on_month_change: None,
             on_select: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -117,6 +123,12 @@ impl Calendar {
     ) -> Self {
         self.on_select = Some(Rc::new(handler));
         self
+    }
+}
+
+impl Styled for Calendar {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -159,7 +171,7 @@ impl RenderOnce for Calendar {
         };
 
         // p-3 panel: header (prev / month year / next), weekday row, grid.
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(px(12.))
@@ -167,33 +179,37 @@ impl RenderOnce for Calendar {
             .rounded(theme.radius_lg())
             .border_1()
             .border_color(theme.border)
-            .bg(theme.background)
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .justify_between()
-                    .child(nav_button(
-                        "calendar-prev",
-                        theme.icons.chevron_left(),
-                        prev,
-                    ))
-                    .child(
-                        div()
-                            .text_size(px(14.))
-                            .line_height(px(20.))
-                            .font_weight(FontWeight::MEDIUM)
-                            .child(format!("{} {year}", MONTH_NAMES[(month - 1) as usize])),
-                    )
-                    .child(nav_button(
-                        "calendar-next",
-                        theme.icons.chevron_right(),
-                        next,
-                    )),
-            )
-            .child(div().flex().flex_row().children(
-                ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(|name| {
+            .bg(theme.background);
+        root.style().refine(&self.style);
+        root.child(
+            div()
+                .flex()
+                .flex_row()
+                .items_center()
+                .justify_between()
+                .child(nav_button(
+                    "calendar-prev",
+                    theme.icons.chevron_left(),
+                    prev,
+                ))
+                .child(
+                    div()
+                        .text_size(px(14.))
+                        .line_height(px(20.))
+                        .font_weight(FontWeight::MEDIUM)
+                        .child(format!("{} {year}", MONTH_NAMES[(month - 1) as usize])),
+                )
+                .child(nav_button(
+                    "calendar-next",
+                    theme.icons.chevron_right(),
+                    next,
+                )),
+        )
+        .child(
+            div()
+                .flex()
+                .flex_row()
+                .children(["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(|name| {
                     div()
                         .flex()
                         .w(px(32.))
@@ -203,63 +219,63 @@ impl RenderOnce for Calendar {
                         .text_size(px(12.))
                         .text_color(theme.muted_foreground)
                         .child(name)
-                }),
-            ))
-            .children({
-                // Six week rows cover every month layout.
-                (0u32..6).map(move |week| {
-                    let theme = theme.clone();
-                    let selected = self.selected;
-                    let on_select = self.on_select.clone();
-                    div()
-                        .flex()
-                        .flex_row()
-                        .children((0u32..7).map(move |weekday| {
-                            let cell: u32 = week * 7 + weekday;
-                            let day = (cell + 1).checked_sub(lead + 1).map(|d| d + 1);
-                            let day = day.filter(|d| *d <= total_days);
-                            let base = div()
-                                .flex()
-                                .w(px(32.))
-                                .h(px(32.))
-                                .items_center()
-                                .justify_center()
-                                .text_size(px(14.))
-                                .line_height(px(20.));
-                            match day {
-                                None => base.into_any_element(),
-                                Some(day) => {
-                                    let date = CalendarDate::new(year, month, day);
-                                    let is_selected = selected == Some(date);
-                                    let on_select = on_select.clone();
-                                    let ring = motion::focus_ring(&theme);
-                                    base.id(("calendar-day", cell as usize))
-                                        .rounded(theme.radius_md())
-                                        .tab_index(0)
-                                        .focus_visible(move |s| {
-                                            s.border_color(theme.ring).shadow(ring.clone())
+                })),
+        )
+        .children({
+            // Six week rows cover every month layout.
+            (0u32..6).map(move |week| {
+                let theme = theme.clone();
+                let selected = self.selected;
+                let on_select = self.on_select.clone();
+                div()
+                    .flex()
+                    .flex_row()
+                    .children((0u32..7).map(move |weekday| {
+                        let cell: u32 = week * 7 + weekday;
+                        let day = (cell + 1).checked_sub(lead + 1).map(|d| d + 1);
+                        let day = day.filter(|d| *d <= total_days);
+                        let base = div()
+                            .flex()
+                            .w(px(32.))
+                            .h(px(32.))
+                            .items_center()
+                            .justify_center()
+                            .text_size(px(14.))
+                            .line_height(px(20.));
+                        match day {
+                            None => base.into_any_element(),
+                            Some(day) => {
+                                let date = CalendarDate::new(year, month, day);
+                                let is_selected = selected == Some(date);
+                                let on_select = on_select.clone();
+                                let ring = motion::focus_ring(&theme);
+                                base.id(("calendar-day", cell as usize))
+                                    .rounded(theme.radius_md())
+                                    .tab_index(0)
+                                    .focus_visible(move |s| {
+                                        s.border_color(theme.ring).shadow(ring.clone())
+                                    })
+                                    .map(|el| {
+                                        if is_selected {
+                                            el.bg(theme.primary)
+                                                .text_color(theme.primary_foreground)
+                                        } else {
+                                            el.text_color(theme.foreground)
+                                                .hover(|s| s.bg(theme.muted))
+                                        }
+                                    })
+                                    .when_some(on_select, |el, on_select| {
+                                        el.on_click(move |_, window, cx| {
+                                            on_select(&date, window, cx)
                                         })
-                                        .map(|el| {
-                                            if is_selected {
-                                                el.bg(theme.primary)
-                                                    .text_color(theme.primary_foreground)
-                                            } else {
-                                                el.text_color(theme.foreground)
-                                                    .hover(|s| s.bg(theme.muted))
-                                            }
-                                        })
-                                        .when_some(on_select, |el, on_select| {
-                                            el.on_click(move |_, window, cx| {
-                                                on_select(&date, window, cx)
-                                            })
-                                        })
-                                        .child(day.to_string())
-                                        .into_any_element()
-                                }
+                                    })
+                                    .child(day.to_string())
+                                    .into_any_element()
                             }
-                        }))
-                })
+                        }
+                    }))
             })
+        })
     }
 }
 
