@@ -335,7 +335,7 @@ pub static BREADCRUMB_API: &[ApiEntry] = &[
     },
 ];
 
-pub static BREADCRUMB_USAGE: &str = "Breadcrumb::new().child(\n    BreadcrumbList::new()\n        .child(\n            BreadcrumbItem::new().child(\n                BreadcrumbLink::new(\"bc-home\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.story = Story::Tokens;\n                        cx.notify();\n                    }))\n                    .child(\"Home\"),\n            ),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))\n        .child(BreadcrumbSeparator::new())\n        .child(\n            BreadcrumbItem::new()\n                .child(BreadcrumbLink::new(\"bc-components\").child(\"Components\")),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbPage::new().child(\"Breadcrumb\"))),\n)\n    ";
+pub static BREADCRUMB_USAGE: &str = "Breadcrumb::new().child(\n    BreadcrumbList::new()\n        .child(\n            BreadcrumbItem::new().child(\n                BreadcrumbLink::new(\"bc-home\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.story = Story::Tokens;\n                        this.apply_tokens(cx);\n                        cx.notify();\n                    }))\n                    .child(\"Home\"),\n            ),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))\n        .child(BreadcrumbSeparator::new())\n        .child(\n            BreadcrumbItem::new()\n                .child(BreadcrumbLink::new(\"bc-components\").child(\"Components\")),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbPage::new().child(\"Breadcrumb\"))),\n)\n    ";
 
 pub static BUBBLE_API: &[ApiEntry] = &[
     ApiEntry {
@@ -350,8 +350,28 @@ pub static BUBBLE_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Bubble",
+        signature: "pub fn align(mut self, align: BubbleAlign) -> Self",
+        doc: "Horizontal alignment within a column flex parent (`data-align`). Start → `self-start`, End → `self-end` (content-hugging + side).",
+    },
+    ApiEntry {
+        type_name: "Bubble",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Element id for interactive content (shadcn `render={<button/>}`). Required with [`Bubble::on_click`] so the pill is focusable.",
+    },
+    ApiEntry {
+        type_name: "Bubble",
+        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Click handler for interactive content. With [`Bubble::id`], the content pill becomes a real control: tab-focus, focus-visible ring, cursor, and per-variant hover (instant — see module docs).",
+    },
+    ApiEntry {
+        type_name: "Bubble",
         signature: "pub fn content(mut self, content: impl IntoElement) -> Self",
         doc: "The bubble body text/content (`BubbleContent`).",
+    },
+    ApiEntry {
+        type_name: "BubbleGroup",
+        signature: "pub fn new() -> Self",
+        doc: "",
     },
     ApiEntry {
         type_name: "BubbleReactions",
@@ -368,9 +388,14 @@ pub static BUBBLE_API: &[ApiEntry] = &[
         signature: "pub fn align(mut self, align: BubbleAlign) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "BubbleReactions",
+        signature: "pub fn buttons(mut self) -> Self",
+        doc: "Zero the pill padding — equivalent of shadcn `has-[button]:p-0`. Use when children are Buttons (e.g. action chips inside reactions).",
+    },
 ];
 
-pub static BUBBLE_USAGE: &str = "div().w(px(384.)).child(\n    MessageGroup::new()\n        .child(\n            Message::new().child(\n                MessageContent::new().child(\n                    Bubble::new()\n                        .variant(self.bubble_variant)\n                        .content(\"This bubble follows the variant control.\")\n                        .child(\n                            BubbleReactions::new()\n                                .side(BubbleSide::Bottom)\n                                .align(BubbleAlign::End)\n                                .child(\"\\u{2764}\\u{fe0f} 2\"),\n                        ),\n                ),\n            ),\n        )\n        .child(\n            Message::new().align(MessageAlign::End).child(\n                MessageContent::new().align(MessageAlign::End).child(\n                    Bubble::new()\n                        .variant(BubbleVariant::Default)\n                        .content(\"And this one is the sender side.\")\n                        .child(\n                            BubbleReactions::new()\n                                .side(BubbleSide::Top)\n                                .align(BubbleAlign::Start)\n                                .child(\"\\u{1f44d}\"),\n                        ),\n                ),\n            ),\n        ),\n)\n    ";
+pub static BUBBLE_USAGE: &str = "div()\n    .w_full()\n    .max_w(px(384.))\n    .py(px(48.))\n    .flex()\n    .flex_col()\n    .gap(px(32.))\n    .child(\n        Bubble::new()\n            .align(BubbleAlign::End)\n            .content(\"Hey there! what's up?\"),\n    )\n    .child(\n        BubbleGroup::new()\n            .child(\n                Bubble::new()\n                    .variant(BubbleVariant::Muted)\n                    .content(\"Hey! Want to see chat bubbles?\"),\n            )\n            .child(\n                Bubble::new()\n                    .variant(BubbleVariant::Muted)\n                    .content(\n                        \"I can group messages, switch sides, and keep the whole thread easy to scan.\",\n                    )\n                    .child(BubbleReactions::new().child(\"👍\")),\n            ),\n    )\n    .child(\n        Bubble::new()\n            .align(BubbleAlign::End)\n            .content(\"Sure. Hit me with your best demo.\"),\n    )\n    .child(\n        Bubble::new()\n            .variant(self.bubble_variant)\n            .content(\n                \"Yes. You are reading a demo that is demoing itself. Very meta. Very on-brand.\",\n            )\n            .child(\n                BubbleReactions::new()\n                    .child(\"👍\")\n                    .child(\"🔥\")\n                    .child(\"👀\")\n                    .child(\"+2\"),\n            ),\n    )\n    .when_some(self.bubble_toast, |el, msg| {\n        el.child(\n            ToastViewport::new().child(\n                Toast::new(\"bubble-toast\", msg).on_close(cx.listener(\n                    |this, _: &ClickEvent, _, cx| {\n                        this.bubble_toast = None;\n                        cx.notify();\n                    },\n                )),\n            ),\n        )\n    })\n    ";
 
 pub static BUTTON_API: &[ApiEntry] = &[
     ApiEntry {
@@ -402,6 +427,11 @@ pub static BUTTON_API: &[ApiEntry] = &[
         type_name: "Button",
         signature: "pub fn rounded_full(mut self) -> Self",
         doc: "`rounded-full` — pill corners (px(9999.)).",
+    },
+    ApiEntry {
+        type_name: "Button",
+        signature: "pub fn flush(mut self) -> Self",
+        doc: "Zero horizontal padding — the docs' `className=\"p-0\"` override on inline link buttons (e.g. a show-more trigger inside flowing text).",
     },
     ApiEntry {
         type_name: "Button",

@@ -65,6 +65,7 @@ pub struct Button {
     variant: ButtonVariant,
     size: ButtonSize,
     disabled: bool,
+    flush: bool,
     rounded_full: bool,
     icon_inline_start: bool,
     icon_inline_end: bool,
@@ -82,6 +83,7 @@ impl Button {
             variant: ButtonVariant::default(),
             size: ButtonSize::default(),
             disabled: false,
+            flush: false,
             rounded_full: false,
             icon_inline_start: false,
             icon_inline_end: false,
@@ -119,6 +121,13 @@ impl Button {
     /// `rounded-full` — pill corners (px(9999.)).
     pub fn rounded_full(mut self) -> Self {
         self.rounded_full = true;
+        self
+    }
+
+    /// Zero horizontal padding — the docs' `className="p-0"` override on
+    /// inline link buttons (e.g. a show-more trigger inside flowing text).
+    pub fn flush(mut self) -> Self {
+        self.flush = true;
         self
     }
 
@@ -243,6 +252,9 @@ impl RenderOnce for Button {
             }
             ButtonSize::Icon | ButtonSize::IconXs | ButtonSize::IconSm | ButtonSize::IconLg => base,
         };
+
+        // p-0 (flush) — zero the size padding, after size + inline-icon insets.
+        let base = if self.flush { base.px(px(0.)) } else { base };
 
         // rounded-full — applied after size-based rounding, before group_position.
         let base = if self.rounded_full {

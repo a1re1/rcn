@@ -17,8 +17,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
-    SharedString, Window, div, hsla, img, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, HighlightStyle,
+    Hsla, ObjectFit, SharedString, StyledText, Window, div, hsla, img, prelude::*, px, relative,
+    rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -29,30 +30,31 @@ use crate::components::{
     AlertTitle, AlertVariant, AspectRatio, Attachment, AttachmentState, Avatar, AvatarBadge,
     AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb,
     BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
-    BreadcrumbSeparator, Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button,
-    ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar,
-    CalendarDate, Card, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
-    Carousel, ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem,
-    ContextMenu, ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle,
-    DropdownMenu, DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
-    FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
-    ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
-    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
-    MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
-    NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
-    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice,
-    QuestionnaireChoices, QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle,
-    RadioGroup, RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel,
-    ResizablePanelGroup, ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter,
-    SheetHeader, SheetSide, SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
-    SidebarHeader, SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner,
-    Switch, SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead,
-    TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
+    BreadcrumbSeparator, Bubble, BubbleAlign, BubbleGroup, BubbleReactions, BubbleSide,
+    BubbleVariant, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
+    ButtonVariant, Calendar, CalendarDate, Card, CardContent, CardDescription, CardFooter,
+    CardHeader, CardSize, CardTitle, Carousel, ChartSeries, Checkbox, Collapsible, Combobox,
+    Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog,
+    DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
+    DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field, FieldContent,
+    FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldLegendVariant,
+    FieldOrientation, FieldSeparator, FieldSet, FieldTitle, HoverCard, Icon, Input, InputGroup,
+    InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemGroup,
+    ItemHeader, ItemMedia, ItemMediaVariant, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup,
+    Label, Marker, MarkerVariant, Menubar, MenubarItem, MenubarMenu, Message, MessageAlign,
+    MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader, MessageScroller,
+    NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination,
+    PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext,
+    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
+    Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
+    QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
+    RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
+    ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
+    SheetTitle, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader,
+    SidebarMenuButton, SidebarProvider, SidebarTrigger, Skeleton, Slider, Spinner, Switch,
+    SwitchSize, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader,
+    TableRow, Tabs, TabsContent, TabsList, TabsTrigger, TabsVariant, Textarea, Toast,
     ToastViewport, Toggle, ToggleGroup, ToggleGroupItem, ToggleSize, ToggleVariant, Tooltip,
 };
 use crate::theme::{BaseColor, Theme, alpha, oklch};
@@ -842,6 +844,9 @@ pub struct Storybook {
     data_table_desc: bool,
     // Bubble story state
     bubble_variant: BubbleVariant,
+    bubble_toast: Option<&'static str>,
+    bubble_collapsible_open: bool,
+    bubble_popover_open: bool,
     // Attachment story state
     attachment_visible: bool,
     // Questionnaire story state
@@ -1331,6 +1336,9 @@ impl Storybook {
             sidebar_active: 0,
             data_table_desc: true,
             bubble_variant: BubbleVariant::Muted,
+            bubble_toast: None,
+            bubble_collapsible_open: false,
+            bubble_popover_open: false,
             attachment_visible: true,
             questionnaire_selected: Some(0),
             focus_handle,
@@ -1385,6 +1393,18 @@ impl Storybook {
             theme.font_heading = Some(font.into());
         }
         theme.icons = self.tokens.icons;
+        // The bubble docs page wraps its previews in `theme-blue`
+        // (--primary: blue-700 light / blue-800 dark, --primary-foreground:
+        // blue-50; ring stays neutral). Mirror that while the bubble story is
+        // active so the examples compare side by side with the docs.
+        if self.story == Story::BubbleStory && self.imported.is_none() {
+            theme.primary = if self.dark {
+                rgb(0x193cb8).into()
+            } else {
+                rgb(0x1447e6).into()
+            };
+            theme.primary_foreground = rgb(0xeff6ff).into();
+        }
         cx.set_global(theme);
         cx.notify();
     }
@@ -1492,6 +1512,7 @@ impl Storybook {
                                     .active(self.story == Story::Tokens)
                                     .on_click(cx.listener(|this, _, _, cx| {
                                         this.story = Story::Tokens;
+                                        this.apply_tokens(cx);
                                         cx.notify();
                                     }))
                                     .child(Story::Tokens.label()),
@@ -1507,6 +1528,7 @@ impl Storybook {
                                     .active(self.story == story)
                                     .on_click(cx.listener(move |this, _, _, cx| {
                                         this.story = story;
+                                        this.apply_tokens(cx);
                                         cx.notify();
                                     }))
                                     .child(label)
@@ -1608,7 +1630,7 @@ impl Storybook {
             Story::DataTableStory => self.data_table_preview(cx).into_any_element(),
             Story::ChartStory => self.chart_preview(cx).into_any_element(),
             Story::MessageStory => self.message_preview(cx).into_any_element(),
-            Story::BubbleStory => self.bubble_preview().into_any_element(),
+            Story::BubbleStory => self.bubble_preview(cx).into_any_element(),
             Story::AttachmentStory => self.attachment_preview(cx).into_any_element(),
             Story::MarkerStory => self.marker_preview(cx).into_any_element(),
             Story::MessageScrollerStory => self.message_scroller_preview(cx).into_any_element(),
@@ -3839,6 +3861,40 @@ impl Storybook {
                         .into_any_element(),
                 ),
             ],
+            Story::BubbleStory => vec![
+                (
+                    "Variants",
+                    self.bubble_example_variants(cx).into_any_element(),
+                ),
+                (
+                    "Alignment",
+                    self.bubble_example_alignment(cx).into_any_element(),
+                ),
+                (
+                    "Bubble Group",
+                    self.bubble_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Links and Buttons",
+                    self.bubble_example_links(cx).into_any_element(),
+                ),
+                (
+                    "Reactions",
+                    self.bubble_example_reactions(cx).into_any_element(),
+                ),
+                (
+                    "Show More / Collapsible",
+                    self.bubble_example_collapsible(cx).into_any_element(),
+                ),
+                (
+                    "Tooltip",
+                    self.bubble_example_tooltip(cx).into_any_element(),
+                ),
+                (
+                    "Popover",
+                    self.bubble_example_popover(cx).into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -4388,6 +4444,7 @@ impl Storybook {
                         ("tinted", BubbleVariant::Tinted),
                         ("outline", BubbleVariant::Outline),
                         ("ghost", BubbleVariant::Ghost),
+                        ("destructive", BubbleVariant::Destructive),
                     ],
                     self.bubble_variant,
                     cx,
@@ -6140,6 +6197,7 @@ impl Storybook {
                         BreadcrumbLink::new("bc-home")
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.story = Story::Tokens;
+                                this.apply_tokens(cx);
                                 cx.notify();
                             }))
                             .child("Home"),
@@ -8921,41 +8979,502 @@ impl Storybook {
                 ),
         )
     }
-    fn bubble_preview(&self) -> impl IntoElement + use<> {
-        div().w(px(384.)).child(
-            MessageGroup::new()
-                .child(
-                    Message::new().child(
-                        MessageContent::new().child(
-                            Bubble::new()
-                                .variant(self.bubble_variant)
-                                .content("This bubble follows the variant control.")
-                                .child(
-                                    BubbleReactions::new()
-                                        .side(BubbleSide::Bottom)
-                                        .align(BubbleAlign::End)
-                                        .child("\u{2764}\u{fe0f} 2"),
-                                ),
-                        ),
+    /// Port of bubble-demo.tsx — main docs demo (gap 32px). Last bubble
+    /// follows the variant control. Toast viewport hosts clicks from the
+    /// Links/Buttons and Reactions examples.
+    fn bubble_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Hey there! what's up?"),
+            )
+            .child(
+                BubbleGroup::new()
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Muted)
+                            .content("Hey! Want to see chat bubbles?"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Muted)
+                            .content(
+                                "I can group messages, switch sides, and keep the whole thread easy to scan.",
+                            )
+                            .child(BubbleReactions::new().child("👍")),
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Sure. Hit me with your best demo."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(self.bubble_variant)
+                    .content(
+                        "Yes. You are reading a demo that is demoing itself. Very meta. Very on-brand.",
+                    )
+                    .child(
+                        BubbleReactions::new()
+                            .child("👍")
+                            .child("🔥")
+                            .child("👀")
+                            .child("+2"),
+                    ),
+            )
+            .when_some(self.bubble_toast, |el, msg| {
+                el.child(
+                    ToastViewport::new().child(
+                        Toast::new("bubble-toast", msg).on_close(cx.listener(
+                            |this, _: &ClickEvent, _, cx| {
+                                this.bubble_toast = None;
+                                cx.notify();
+                            },
+                        )),
                     ),
                 )
-                .child(
-                    Message::new().align(MessageAlign::End).child(
-                        MessageContent::new().align(MessageAlign::End).child(
-                            Bubble::new()
-                                .variant(BubbleVariant::Default)
-                                .content("And this one is the sender side.")
-                                .child(
-                                    BubbleReactions::new()
-                                        .side(BubbleSide::Top)
-                                        .align(BubbleAlign::Start)
-                                        .child("\u{1f44d}"),
+            })
+    }
+
+    /// Port of bubble-variants.tsx — all 7 variants (gap 48px). Ghost body is
+    /// hand-styled (no Markdown component); bold + inline-code spans approximate
+    /// the docs Markdown demo.
+    fn bubble_example_variants(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(48.))
+            .child(
+                Bubble::new()
+                    .content("This is the default primary bubble."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Secondary)
+                    .align(BubbleAlign::End)
+                    .content("This is the secondary variant."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content(
+                        "This one is muted. It uses a lower emphasis color for the chat bubble.",
+                    )
+                    .child(BubbleReactions::new().child("👍")),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Tinted)
+                    .align(BubbleAlign::End)
+                    .content(
+                        "This one is tinted. The tint is a softer color derived from the primary color.",
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Outline)
+                    .content("We can also use an outlined variant."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Destructive)
+                    .align(BubbleAlign::End)
+                    .content("Or a destructive variant with a reaction.")
+                    .child(BubbleReactions::new().child("🔥")),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Ghost)
+                    .content({
+                        // Hand-styled stand-in for the docs Markdown demo (no
+                        // Markdown component): StyledText highlight runs give
+                        // mid-sentence bold + mono/muted inline code.
+                        let p1 = "Ghost bubbles work for assistant text, markdown, and other content that should not be framed.";
+                        let bold = p1.find("markdown").expect("markdown in p1");
+                        let p2 = "This is perfect for assistant messages that should not have a frame and can take the full width of the container. You can also render code in it.";
+                        let code = p2.find("code").expect("code in p2");
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(8.))
+                            .child(StyledText::new(p1).with_highlights([(
+                                bold..bold + "markdown".len(),
+                                HighlightStyle {
+                                    font_weight: Some(FontWeight::SEMIBOLD),
+                                    ..Default::default()
+                                },
+                            )]))
+                            .child(
+                                StyledText::new(p2)
+                                    .with_highlights([(
+                                        code..code + "code".len(),
+                                        HighlightStyle {
+                                            background_color: Some(theme.muted),
+                                            ..Default::default()
+                                        },
+                                    )])
+                                    .with_font_family_overrides([(
+                                        code..code + "code".len(),
+                                        "Menlo".into(),
+                                    )]),
+                            )
+                            .child(
+                                "Ghost bubbles are full width and can take the full width of the container.",
+                            )
+                    }),
+            )
+    }
+
+    /// Port of bubble-alignment.tsx — start vs end (gap 32px).
+    fn bubble_example_alignment(&self, _cx: &App) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("This bubble is aligned to the start. This is the default alignment."),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("This bubble is aligned to the end. Use this for user messages."),
+            )
+    }
+
+    /// Port of bubble-group-demo.tsx — BubbleGroup of end-aligned replies (gap 32px).
+    fn bubble_example_group(&self, _cx: &App) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("Can you tell me what's the issue?"),
+            )
+            .child(
+                BubbleGroup::new()
+                    .child(
+                        Bubble::new()
+                            .align(BubbleAlign::End)
+                            .content("You tell me!"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .align(BubbleAlign::End)
+                            .content("It worked yesterday. You broke it!"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .align(BubbleAlign::End)
+                            .content("Find the bug and fix it.")
+                            .child(BubbleReactions::new().align(BubbleAlign::Start).child("👀")),
+                    ),
+            )
+            .child(Bubble::new().variant(BubbleVariant::Muted).content(
+                "Want me to diff yesterday's you against today's you? It's a bit embarrassing.",
+            ))
+    }
+
+    /// Port of bubble-link-button.tsx — interactive tinted bubbles (gap 32px).
+    /// Clicks surface a Toast via `bubble_toast` (instant hover vs transition-colors
+    /// noted on Bubble).
+    fn bubble_example_links(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("How can I help you today?"),
+            )
+            .child(
+                BubbleGroup::new()
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Tinted)
+                            .align(BubbleAlign::End)
+                            .id("bubble-link-password")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.bubble_toast = Some("You clicked forgot password");
+                                cx.notify();
+                            }))
+                            .content("I forgot my password"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Tinted)
+                            .align(BubbleAlign::End)
+                            .id("bubble-link-subscription")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.bubble_toast = Some("You clicked help with subscription");
+                                cx.notify();
+                            }))
+                            .content("I need help with my subscription"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Tinted)
+                            .align(BubbleAlign::End)
+                            .id("bubble-link-human")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.bubble_toast =
+                                    Some("You clicked something else. Talk to a human.");
+                                cx.notify();
+                            }))
+                            .content("Something else. Talk to a human."),
+                    ),
+            )
+    }
+
+    /// Port of bubble-reactions.tsx — reaction pills on corners (gap 48px).
+    /// The last bubble uses `.buttons()` (`has-[button]:p-0`) with a Ghost Xs
+    /// Button that fires a toast.
+    fn bubble_example_reactions(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(48.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .align(BubbleAlign::End)
+                    .content("I don't need tests, I know my code works.")
+                    .child(
+                        BubbleReactions::new()
+                            .align(BubbleAlign::Start)
+                            .child("👍")
+                            .child("😮"),
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("Bold. Fine I'll add some tests. I'll let you know when they're done.")
+                    .child(BubbleReactions::new().child("👀").child("🚀").child("+2")),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Tests passed on the first try. All 142 of them. Looking good!")
+                    .child(
+                        BubbleReactions::new()
+                            .side(BubbleSide::Top)
+                            .align(BubbleAlign::Start)
+                            .child("🎉")
+                            .child("👏"),
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Destructive)
+                    .content("Are you sure I can run this command?")
+                    .child(
+                        BubbleReactions::new().buttons().child(
+                            Button::new("bubble-rxn-run")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Xs)
+                                .child("Yes, run it")
+                                .on_click(cx.listener(|this, _: &ClickEvent, _, cx| {
+                                    this.bubble_toast = Some("You clicked yes, running command...");
+                                    cx.notify();
+                                })),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of bubble-collapsible.tsx — show more/less on long bubble text (gap 32px).
+    /// Uses a plain toggle (not Collapsible) because the docs pattern swaps the
+    /// visible string length rather than hiding a collapsible panel; the Link
+    /// button + chevron match the visible trigger.
+    fn bubble_example_collapsible(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let p1 = "The accessibility review found two focus states that were visually too subtle in dark mode.";
+        let p2 = "I checked the dialog, menu, and drawer paths because each one renders focusable controls inside a layered surface.";
+        let p3 = "The dialog and drawer are fine. The menu needs the hover and focus tokens split so keyboard focus stays visible when the pointer is not involved.";
+        let p4 = "I also recommend keeping the change in the style file instead of the primitive so the other themes can choose their own focus treatment later.";
+        let full = format!("{p1}\n\n{p2}\n\n{p3}\n\n{p4}");
+        let open = self.bubble_collapsible_open;
+        let body = if open {
+            full.clone()
+        } else {
+            let mut preview: String = full.chars().take(180).collect();
+            preview.push_str("...");
+            preview
+        };
+        let label = if open { "Show less" } else { "Show more" };
+        let chevron = if open {
+            theme.icons.chevron_up()
+        } else {
+            theme.icons.chevron_down()
+        };
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("How can I help you today?"),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .align(BubbleAlign::End)
+                    .content(
+                        div()
+                            .flex()
+                            .flex_col()
+                            // items-start + p-0: the docs trigger is a
+                            // `gap-1 p-0` link button flush with the text.
+                            .items_start()
+                            .gap(px(8.))
+                            .child(div().child(body))
+                            .child(
+                                Button::new("bubble-collapsible-toggle")
+                                    .variant(ButtonVariant::Link)
+                                    .flush()
+                                    .on_click(cx.listener(|this, _: &ClickEvent, _, cx| {
+                                        this.bubble_collapsible_open =
+                                            !this.bubble_collapsible_open;
+                                        cx.notify();
+                                    }))
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap(px(4.))
+                                            .text_color(theme.muted_foreground)
+                                            .child(label)
+                                            .child(
+                                                Icon::new(chevron)
+                                                    .size(px(16.))
+                                                    .text_color(theme.muted_foreground),
+                                            ),
+                                    ),
+                            ),
+                    ),
+            )
+    }
+
+    /// Port of bubble-tooltip.tsx — reaction check button with read-receipt tooltip (gap 16px).
+    fn bubble_example_tooltip(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Secondary)
+                    .content("Did you remove the stale route?"),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Yes, removed it from the registry.")
+                    .child(
+                        BubbleReactions::new().buttons().child(
+                            Tooltip::new("bubble-tt-read", "Read on Jan 5, 2026 at 4:32 PM").child(
+                                Button::new("bubble-tt-check")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::IconXs)
+                                    .child(Icon::new(theme.icons.check()).size(px(14.))),
+                            ),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of bubble-popover.tsx — destructive bubble with info popover details (gap 16px).
+    fn bubble_example_popover(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Run the build script."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Destructive)
+                    .content("Failed to run the command.")
+                    .child(
+                        BubbleReactions::new().buttons().child(
+                            Popover::new("bubble-popover-error")
+                                .open(self.bubble_popover_open)
+                                .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                    this.bubble_popover_open = *open;
+                                    cx.notify();
+                                }))
+                                .trigger(
+                                    Button::new("bubble-popover-info")
+                                        .variant(ButtonVariant::Ghost)
+                                        .size(ButtonSize::IconXs)
+                                        .child(Icon::new(crate::assets::ICON_INFO).size(px(14.))),
+                                )
+                                .content(
+                                    PopoverHeader::new()
+                                        .child(
+                                            PopoverTitle::new().child(
+                                                div()
+                                                    .text_size(px(14.))
+                                                    .child("Command failed with exit code 1"),
+                                            ),
+                                        )
+                                        .child(
+                                            PopoverDescription::new().child(
+                                                div().text_size(px(14.)).child(
+                                                    "ENOENT: no such file or directory, open pnpm-lock.yaml",
+                                                ),
+                                            ),
+                                        ),
                                 ),
                         ),
                     ),
-                ),
-        )
+            )
     }
+
     fn attachment_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div()
             .flex()

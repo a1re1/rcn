@@ -85,6 +85,12 @@ impl Theme {
         self.radius * 1.4
     }
 
+    /// shadcn `--radius-3xl` = radius × 2.2 (22px at the default radius,
+    /// measured on the docs site; used by rhea-rounded surfaces like bubble).
+    pub fn radius_3xl(&self) -> Pixels {
+        self.radius * 2.2
+    }
+
     /// shadcn `:root` (light), neutral palette.
     pub fn light() -> Self {
         Self {
