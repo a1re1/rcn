@@ -5,6 +5,11 @@
 //! `default_open` + keyed state and an optional `trigger`. Backdrop click,
 //! Escape, and the close button all share the same close path.
 //!
+//! Sizing and shape overrides come from the caller via [`Styled`] and apply
+//! to the floating panel (the element carrying background, border, and shadow),
+//! not the full-viewport backdrop. Header/Title/Description/Footer also accept
+//! caller styles via [`Styled`].
+//!
 //! # Omitted / TODO(rcn)
 //! - Exit animations (unportable on unmount in gpui)
 //! - Overlay `supports-backdrop-filter:backdrop-blur-xs` (unportable in gpui)
@@ -17,8 +22,9 @@ use std::rc::Rc;
 
 use gpui::{
     AnimationExt as _, AnyElement, App, ElementId, Entity, FontWeight, InteractiveElement as _,
-    IntoElement, ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window,
-    anchored, deferred, div, point, prelude::FluentBuilder as _, px, svg,
+    IntoElement, ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, anchored, deferred, div, point, prelude::FluentBuilder as _,
+    px, svg,
 };
 
 use crate::components::button::{Button, ButtonSize, ButtonVariant};
@@ -28,7 +34,8 @@ use crate::theme::{Theme, alpha};
 pub type OpenChangeHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 
 /// The modal root: optional inline trigger + centered content panel over a
-/// dimmed backdrop when open.
+/// dimmed backdrop when open. Sizing and shape overrides via [`Styled`] target
+/// the floating panel root (bg/border/shadow), not the backdrop.
 #[derive(IntoElement)]
 pub struct Dialog {
     id: ElementId,
@@ -43,6 +50,7 @@ pub struct Dialog {
     /// Optional inline trigger element (uncontrolled open pattern).
     trigger: Option<AnyElement>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Dialog {
@@ -56,6 +64,7 @@ impl Dialog {
             max_w: None,
             trigger: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -106,15 +115,18 @@ impl ParentElement for Dialog {
     }
 }
 
+impl Styled for Dialog {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Dialog {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         let viewport = window.viewport_size();
         let show_close_button = self.show_close_button;
-        let content_w = self
-            .max_w
-            .unwrap_or(px(448.))
-            .min(viewport.width - px(32.));
+        let content_w = self.max_w.unwrap_or(px(448.)).min(viewport.width - px(32.));
 
         // Controlled snapshot vs keyed-state (accordion pattern).
         let (is_open, uncontrolled_state): (bool, Option<Entity<bool>>) =
@@ -206,7 +218,7 @@ impl RenderOnce for Dialog {
                 // max-w-[calc(100%-2rem)] sm:max-w-md; duration-100 fade+zoom-in-95
                 // (zoom approximated as opacity + small settle — see dialog_in).
                 // Escape closes in-component (focus trap / initial focus = TODO).
-                let content = div()
+                let mut content = div()
                     .id("dialog-content")
                     .occlude()
                     .track_focus(&focus_handle)
@@ -233,28 +245,23 @@ impl RenderOnce for Dialog {
                     // Close: ghost icon-sm Button, absolute top-4 right-4
                     .when(show_close_button, |el| {
                         el.child(
-                            div()
-                                .absolute()
-                                .top(px(16.))
-                                .right(px(16.))
-                                .child(
-                                    Button::new("dialog-close")
-                                        .variant(ButtonVariant::Ghost)
-                                        .size(ButtonSize::IconSm)
-                                        .on_click(move |_, window, cx| {
-                                            close_button(false, window, cx)
-                                        })
-                                        .child(
-                                            // base-nova ghost has no own text color —
-                                            // the X inherits the content's foreground.
-                                            svg()
-                                                .path(theme.icons.x())
-                                                .size(px(16.))
-                                                .text_color(theme.popover_foreground),
-                                        ),
-                                ),
+                            div().absolute().top(px(16.)).right(px(16.)).child(
+                                Button::new("dialog-close")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::IconSm)
+                                    .on_click(move |_, window, cx| close_button(false, window, cx))
+                                    .child(
+                                        // base-nova ghost has no own text color —
+                                        // the X inherits the content's foreground.
+                                        svg()
+                                            .path(theme.icons.x())
+                                            .size(px(16.))
+                                            .text_color(theme.popover_foreground),
+                                    ),
+                            ),
                         )
                     });
+                content.style().refine(&self.style);
                 content.with_animation("dialog-in", motion::enter_fast(), |el, delta| {
                     el.opacity(delta).mt(px(8. * (1. - delta)))
                 })
@@ -268,15 +275,18 @@ impl RenderOnce for Dialog {
 }
 
 /// flex flex-col gap-2 text-center sm:text-left.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct DialogHeader {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl DialogHeader {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -293,22 +303,33 @@ impl ParentElement for DialogHeader {
     }
 }
 
+impl Styled for DialogHeader {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for DialogHeader {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().flex().flex_col().gap(px(8.)).children(self.children)
+        let mut root = div().flex().flex_col().gap(px(8.)).children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// leading-none font-medium — inherits content's 14px text size.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct DialogTitle {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl DialogTitle {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -325,26 +346,37 @@ impl ParentElement for DialogTitle {
     }
 }
 
+impl Styled for DialogTitle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for DialogTitle {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .text_size(px(14.))
             .line_height(px(14.))
             .font_weight(FontWeight::MEDIUM)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// text-sm text-muted-foreground.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct DialogDescription {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl DialogDescription {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -361,19 +393,28 @@ impl ParentElement for DialogDescription {
     }
 }
 
+impl Styled for DialogDescription {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for DialogDescription {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// flex flex-row justify-end gap-2 (desktop). Optional outline Close via
 /// `show_close_button` (default false, matching shadcn DialogFooter).
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct DialogFooter {
     children: Vec<AnyElement>,
@@ -383,6 +424,7 @@ pub struct DialogFooter {
     on_close: Option<Rc<dyn Fn(&mut Window, &mut App) + 'static>>,
     /// `sm:justify-start` override (default is `justify-end`).
     justify_start: bool,
+    style: StyleRefinement,
 }
 
 impl DialogFooter {
@@ -392,6 +434,7 @@ impl DialogFooter {
             show_close_button: false,
             on_close: None,
             justify_start: false,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -402,10 +445,7 @@ impl DialogFooter {
     }
 
     /// Handler invoked when the footer's Close button is clicked.
-    pub fn on_close(
-        mut self,
-        handler: impl Fn(&mut Window, &mut App) + 'static,
-    ) -> Self {
+    pub fn on_close(mut self, handler: impl Fn(&mut Window, &mut App) + 'static) -> Self {
         self.on_close = Some(Rc::new(handler));
         self
     }
@@ -429,12 +469,18 @@ impl ParentElement for DialogFooter {
     }
 }
 
+impl Styled for DialogFooter {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for DialogFooter {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         let justify_start = self.justify_start;
         let show_close = self.show_close_button;
         let on_close = self.on_close;
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .when(justify_start, |el| el.justify_start())
@@ -451,6 +497,8 @@ impl RenderOnce for DialogFooter {
                             btn.on_click(move |_, window, cx| cb(window, cx))
                         }),
                 )
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
