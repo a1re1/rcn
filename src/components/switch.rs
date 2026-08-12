@@ -7,6 +7,7 @@
 //! Thumb slides 150ms on toggle (`transition-transform` + ease-transition);
 //! track/thumb color cross-fade during the slide is omitted (snap to target).
 //! Extended hit area mirrors `after:-inset-x-3 after:-inset-y-2`.
+//! Sizing and shape overrides come from the caller via [`Styled`].
 //!
 //! Omitted (no gpui form-submission equivalent): `name`, `required`,
 //! `uncheckedValue`, `inputRef`, `id` as a form field id. RTL is out of scope
@@ -16,8 +17,8 @@ use std::rc::Rc;
 
 use gpui::{
     AnimationExt as _, App, ClickEvent, ElementId, Entity, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -69,6 +70,7 @@ pub struct Switch {
     read_only: bool,
     invalid: bool,
     on_checked_change: Option<ChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Switch {
@@ -82,6 +84,7 @@ impl Switch {
             read_only: false,
             invalid: false,
             on_checked_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -130,6 +133,12 @@ impl Switch {
     ) -> Self {
         self.on_checked_change = Some(Box::new(handler));
         self
+    }
+}
+
+impl Styled for Switch {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -269,7 +278,7 @@ impl RenderOnce for Switch {
                 }) as Rc<dyn Fn(&mut Window, &mut App)>
             });
 
-        div()
+        let mut root = div()
             .id(self.id)
             .relative()
             .flex_shrink_0()
@@ -325,6 +334,8 @@ impl RenderOnce for Switch {
                         s.on_click(move |_, window, cx| toggle(window, cx))
                     }),
             )
-            .child(thumb_child)
+            .child(thumb_child);
+        root.style().refine(&self.style);
+        root
     }
 }
