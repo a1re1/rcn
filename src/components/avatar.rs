@@ -5,6 +5,8 @@
 //! attached via [`Avatar::badge`]. `AvatarGroup` overlaps its avatars with a
 //! background ring; `AvatarGroupCount` is the trailing "+N" circle.
 //!
+//! Sizing and shape overrides come from the caller via [`Styled`].
+//!
 //! Divergences from the source:
 //! - The shadcn `after:` border overlay with `mix-blend-darken` /
 //!   `mix-blend-lighten` is approximated by a plain 1px `theme.border` border.
@@ -14,8 +16,9 @@
 //!   CSS `ring-*` utility).
 
 use gpui::{
-    AnyElement, App, Hsla, ImageSource, IntoElement, ObjectFit, ParentElement, RenderOnce,
-    SharedString, Styled, StyledImage as _, Window, div, img, prelude::FluentBuilder as _, px,
+    AnyElement, App, Hsla, ImageSource, IntoElement, ObjectFit, ParentElement, Refineable as _,
+    RenderOnce, SharedString, StyleRefinement, Styled, StyledImage as _, Window, div, img,
+    prelude::FluentBuilder as _, px,
 };
 
 use crate::components::Icon;
@@ -65,6 +68,7 @@ impl AvatarSize {
     }
 }
 
+/// Avatar image or initials fallback. Sizing/shape overrides via [`Styled`].
 #[derive(IntoElement)]
 pub struct Avatar {
     size: AvatarSize,
@@ -72,6 +76,7 @@ pub struct Avatar {
     grayscale: bool,
     fallback: SharedString,
     badge: Option<AvatarBadge>,
+    style: StyleRefinement,
 }
 
 impl Avatar {
@@ -82,6 +87,7 @@ impl Avatar {
             grayscale: false,
             fallback: fallback.into(),
             badge: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -112,6 +118,12 @@ impl Avatar {
     }
 }
 
+impl Styled for Avatar {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Avatar {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -124,7 +136,7 @@ impl RenderOnce for Avatar {
         // relative flex size-8 shrink-0 rounded-full + a border-border ring
         // (the source draws it with an `after:` overlay; a plain border is the
         // closest gpui equivalent).
-        div()
+        let mut root = div()
             .relative()
             .flex()
             .flex_shrink_0()
@@ -163,7 +175,9 @@ impl RenderOnce for Avatar {
             .when_some(self.badge, |el, mut badge| {
                 badge.size = self.size;
                 el.child(badge)
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -175,11 +189,14 @@ impl RenderOnce for Avatar {
 /// `size-2.5` / `size-3`). Tailwind's ring paints *outside* the element, so
 /// the ring is an enclosing `theme.background` disc 2px larger on every side,
 /// overhanging the avatar corner by 2px like the CSS box-shadow does.
+///
+/// Sizing/shape overrides via [`Styled`] apply to the outer ring disc root.
 #[derive(IntoElement)]
 pub struct AvatarBadge {
     size: AvatarSize,
     color: Option<Hsla>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AvatarBadge {
@@ -188,6 +205,7 @@ impl AvatarBadge {
             size: AvatarSize::default(),
             color: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -219,6 +237,12 @@ impl ParentElement for AvatarBadge {
     }
 }
 
+impl Styled for AvatarBadge {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AvatarBadge {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -231,7 +255,7 @@ impl RenderOnce for AvatarBadge {
         // The ring disc is 2px larger than the badge on every side and offset
         // -2px so the badge itself sits at right-0 bottom-0 while the ring
         // overhangs, matching the outside-painted CSS box-shadow.
-        div()
+        let mut root = div()
             .absolute()
             .right(px(-2.))
             .bottom(px(-2.))
@@ -251,7 +275,9 @@ impl RenderOnce for AvatarBadge {
                     .bg(fill)
                     .text_color(theme.primary_foreground)
                     .when(show_icon, |el| el.children(self.children)),
-            )
+            );
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -260,10 +286,13 @@ impl RenderOnce for AvatarBadge {
 /// The group sizes its rings itself (gpui can't restyle children the way the
 /// source's `*:data-[slot=avatar]:ring-2` selector does), so give it the same
 /// size as the avatars inside.
+///
+/// Sizing/shape overrides via [`Styled`].
 #[derive(IntoElement)]
 pub struct AvatarGroup {
     size: AvatarSize,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AvatarGroup {
@@ -271,6 +300,7 @@ impl AvatarGroup {
         Self {
             size: AvatarSize::default(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -292,6 +322,12 @@ impl ParentElement for AvatarGroup {
     }
 }
 
+impl Styled for AvatarGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AvatarGroup {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -306,7 +342,7 @@ impl RenderOnce for AvatarGroup {
         // ItemMedia), letting siblings draw over the avatars.
         let count = self.children.len().max(1) as f32;
         let width = px((self.size.pixels() + 4.) + (count - 1.) * (self.size.pixels() - 4.));
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .flex_shrink_0()
@@ -323,7 +359,9 @@ impl RenderOnce for AvatarGroup {
                     .bg(theme.background)
                     .when(index > 0, |el| el.ml(px(-8.)))
                     .child(child)
-            }))
+            }));
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -334,10 +372,13 @@ impl RenderOnce for AvatarGroup {
 /// should be sized by the caller: Sm 12px / Default 16px / Lg 20px.
 ///
 /// The enclosing [`AvatarGroup`] supplies the ring and overlap.
+///
+/// Sizing/shape overrides via [`Styled`].
 #[derive(IntoElement)]
 pub struct AvatarGroupCount {
     size: AvatarSize,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AvatarGroupCount {
@@ -345,6 +386,7 @@ impl AvatarGroupCount {
         Self {
             size: AvatarSize::default(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -371,12 +413,18 @@ impl ParentElement for AvatarGroupCount {
     }
 }
 
+impl Styled for AvatarGroupCount {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AvatarGroupCount {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         // relative flex size-8 shrink-0 items-center justify-center rounded-full
         // bg-muted text-sm text-muted-foreground (ring supplied by AvatarGroup)
-        div()
+        let mut root = div()
             .relative()
             .flex()
             .flex_shrink_0()
@@ -387,6 +435,8 @@ impl RenderOnce for AvatarGroupCount {
             .bg(theme.muted)
             .text_color(theme.muted_foreground)
             .text_size(px(self.size.text_size()))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
