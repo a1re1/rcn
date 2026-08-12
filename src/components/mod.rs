@@ -73,7 +73,7 @@ pub use alert_dialog::{
 };
 pub use aspect_ratio::AspectRatio;
 pub use attachment::{Attachment, AttachmentState};
-pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
+pub use avatar::{Avatar, AvatarBadge, AvatarGroup, AvatarGroupCount, AvatarSize};
 pub use badge::{Badge, BadgeVariant};
 pub use breadcrumb::{
     Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,

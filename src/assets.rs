@@ -326,6 +326,10 @@ const IMAGES: &[(&str, &[u8])] = &[
         include_bytes!("../assets/images/avatar-evilrabbit.png"),
     ),
     (
+        "images/avatar-pranathip.png",
+        include_bytes!("../assets/images/avatar-pranathip.png"),
+    ),
+    (
         "images/tile-midnight.png",
         include_bytes!("../assets/images/tile-midnight.png"),
     ),
@@ -354,6 +358,7 @@ const IMAGES: &[(&str, &[u8])] = &[
 pub const IMAGE_AVATAR_SHADCN: &str = "images/avatar-shadcn.png";
 pub const IMAGE_AVATAR_MAXLEITER: &str = "images/avatar-maxleiter.png";
 pub const IMAGE_AVATAR_EVILRABBIT: &str = "images/avatar-evilrabbit.png";
+pub const IMAGE_AVATAR_PRANATHIP: &str = "images/avatar-pranathip.png";
 pub const IMAGE_TILE_MIDNIGHT: &str = "images/tile-midnight.png";
 pub const IMAGE_TILE_COFFEE: &str = "images/tile-coffee.png";
 pub const IMAGE_TILE_DIGITAL: &str = "images/tile-digital.png";
