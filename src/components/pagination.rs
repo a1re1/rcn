@@ -13,10 +13,14 @@
 //!   `data-slot` / `data-active`) — gpui exposes no accessibility tree.
 //! - RTL layout (source flips chevrons via `rtl:rotate-180`) — no RTL support
 //!   in rcn yet. TODO.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`]
+//! (delegating parts forward the refinement into their inner [`Button`]).
 
 use gpui::{
-    AnyElement, App, ClickEvent, ElementId, IntoElement, ParentElement, RenderOnce, SharedString,
-    Styled, Window, div, prelude::FluentBuilder as _, px,
+    AnyElement, App, ClickEvent, ElementId, IntoElement, ParentElement, Refineable as _,
+    RenderOnce, SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
+    px,
 };
 
 use crate::assets::ICON_ELLIPSIS;
@@ -32,6 +36,7 @@ pub struct Pagination {
     children: Vec<AnyElement>,
     /// When true, width is auto instead of w-full (Icons Only docs: `w-auto`).
     w_auto: bool,
+    style: StyleRefinement,
 }
 
 impl Pagination {
@@ -39,6 +44,7 @@ impl Pagination {
         Self {
             children: Vec::new(),
             w_auto: false,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -61,15 +67,23 @@ impl ParentElement for Pagination {
     }
 }
 
+impl Styled for Pagination {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Pagination {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .when(self.w_auto, |el| el.w_auto())
             .when(!self.w_auto, |el| el.w_full())
             .justify_center()
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -77,12 +91,14 @@ impl RenderOnce for Pagination {
 #[derive(IntoElement)]
 pub struct PaginationContent {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl PaginationContent {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -99,14 +115,22 @@ impl ParentElement for PaginationContent {
     }
 }
 
+impl Styled for PaginationContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for PaginationContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
             .gap(px(4.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -114,12 +138,14 @@ impl RenderOnce for PaginationContent {
 #[derive(IntoElement)]
 pub struct PaginationItem {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl PaginationItem {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -136,9 +162,17 @@ impl ParentElement for PaginationItem {
     }
 }
 
+impl Styled for PaginationItem {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for PaginationItem {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().children(self.children)
+        let mut root = div().children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -152,6 +186,7 @@ pub struct PaginationLink {
     label: SharedString,
     size: ButtonSize,
     on_click: Option<ClickHandler>,
+    style: StyleRefinement,
 }
 
 impl PaginationLink {
@@ -162,6 +197,7 @@ impl PaginationLink {
             label: label.into(),
             size: ButtonSize::Icon,
             on_click: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -185,9 +221,16 @@ impl PaginationLink {
     }
 }
 
+impl Styled for PaginationLink {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for PaginationLink {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        Button::new(self.id)
+        // Forward the caller refinement into the inner Button (it wins there too).
+        let mut button = Button::new(self.id)
             .variant(if self.active {
                 ButtonVariant::Outline
             } else {
@@ -195,7 +238,9 @@ impl RenderOnce for PaginationLink {
             })
             .size(self.size)
             .when_some(self.on_click, |el, on_click| el.on_click(on_click))
-            .child(self.label)
+            .child(self.label);
+        button.style().refine(&self.style);
+        button
     }
 }
 
@@ -208,6 +253,7 @@ pub struct PaginationPrevious {
     id: ElementId,
     text: SharedString,
     on_click: Option<ClickHandler>,
+    style: StyleRefinement,
 }
 
 impl PaginationPrevious {
@@ -216,6 +262,7 @@ impl PaginationPrevious {
             id: id.into(),
             text: "Previous".into(),
             on_click: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -234,16 +281,25 @@ impl PaginationPrevious {
     }
 }
 
+impl Styled for PaginationPrevious {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for PaginationPrevious {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
         let show_label = window.viewport_size().width >= px(640.);
-        Button::new(self.id)
+        // Forward the caller refinement into the inner Button (it wins there too).
+        let mut button = Button::new(self.id)
             .variant(ButtonVariant::Ghost)
             .icon_inline_start()
             .when_some(self.on_click, |el, on_click| el.on_click(on_click))
             .child(Icon::new(theme.icons.chevron_left()))
-            .when(show_label, |el| el.child(self.text))
+            .when(show_label, |el| el.child(self.text));
+        button.style().refine(&self.style);
+        button
     }
 }
 
@@ -256,6 +312,7 @@ pub struct PaginationNext {
     id: ElementId,
     text: SharedString,
     on_click: Option<ClickHandler>,
+    style: StyleRefinement,
 }
 
 impl PaginationNext {
@@ -264,6 +321,7 @@ impl PaginationNext {
             id: id.into(),
             text: "Next".into(),
             on_click: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -282,16 +340,25 @@ impl PaginationNext {
     }
 }
 
+impl Styled for PaginationNext {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for PaginationNext {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
         let show_label = window.viewport_size().width >= px(640.);
-        Button::new(self.id)
+        // Forward the caller refinement into the inner Button (it wins there too).
+        let mut button = Button::new(self.id)
             .variant(ButtonVariant::Ghost)
             .icon_inline_end()
             .when_some(self.on_click, |el, on_click| el.on_click(on_click))
             .when(show_label, |el| el.child(self.text))
-            .child(Icon::new(theme.icons.chevron_right()))
+            .child(Icon::new(theme.icons.chevron_right()));
+        button.style().refine(&self.style);
+        button
     }
 }
 
@@ -299,11 +366,15 @@ impl RenderOnce for PaginationNext {
 ///
 /// Icon inherits default foreground (no muted color — shadcn has no color class).
 #[derive(IntoElement)]
-pub struct PaginationEllipsis;
+pub struct PaginationEllipsis {
+    style: StyleRefinement,
+}
 
 impl PaginationEllipsis {
     pub fn new() -> Self {
-        Self
+        Self {
+            style: StyleRefinement::default(),
+        }
     }
 }
 
@@ -313,13 +384,21 @@ impl Default for PaginationEllipsis {
     }
 }
 
+impl Styled for PaginationEllipsis {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for PaginationEllipsis {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .size(px(36.))
             .items_center()
             .justify_center()
-            .child(Icon::new(ICON_ELLIPSIS))
+            .child(Icon::new(ICON_ELLIPSIS));
+        root.style().refine(&self.style);
+        root
     }
 }
