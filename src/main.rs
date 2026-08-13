@@ -2,23 +2,15 @@
 //! storybook: browse each component in isolation and play with its options
 //! in the controls panel (see [`storybook`]).
 
-mod assets;
-mod components;
-mod container_query;
-mod motion;
-mod storybook;
-mod storybook_docs;
-mod theme;
-
 use gpui::{
     App, AppContext, Application, Bounds, Focusable as _, QuitMode, WindowBounds, WindowOptions,
     px, size,
 };
 
-use assets::Assets;
-use components::Input;
-use storybook::Storybook;
-use theme::Theme;
+use rcn::assets::Assets;
+use rcn::components::Input;
+use rcn::storybook::Storybook;
+use rcn::theme::Theme;
 
 fn main() {
     // At this gpui rev the platform lives in the gpui_platform crate; zed's own

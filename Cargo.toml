@@ -20,6 +20,11 @@ unicode-segmentation = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+# wasm32 has no std::time clock; web-time mirrors SystemTime/Instant on top of
+# the browser's clocks. Used by the storybook's shuffle seed.
+[target.'cfg(target_family = "wasm")'.dependencies]
+web-time = "1"
+
 # Keep dev builds usable: optimize dependencies even in debug so rendering is
 # snappy during development.
 [profile.dev.package."*"]
