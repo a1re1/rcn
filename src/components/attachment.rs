@@ -4,11 +4,13 @@
 //! optional remove button, on a card border (dashed-idle and upload
 //! states are approximated with border/opacity; vertical orientation and
 //! progress overlays are omitted).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement as _, RenderOnce, SharedString, StatefulInteractiveElement as _, Styled, Window,
-    div, prelude::FluentBuilder as _, px, svg,
+    ParentElement as _, Refineable as _, RenderOnce, SharedString, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::motion;
@@ -22,6 +24,9 @@ pub enum AttachmentState {
     Error,
 }
 
+/// File chip with media tile, name/description, and optional remove control.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Attachment {
     id: ElementId,
@@ -30,6 +35,7 @@ pub struct Attachment {
     state: AttachmentState,
     media: Option<AnyElement>,
     on_remove: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
+    style: StyleRefinement,
 }
 
 impl Attachment {
@@ -41,6 +47,7 @@ impl Attachment {
             state: AttachmentState::default(),
             media: None,
             on_remove: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -67,6 +74,12 @@ impl Attachment {
     ) -> Self {
         self.on_remove = Some(Box::new(handler));
         self
+    }
+}
+
+impl Styled for Attachment {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -106,7 +119,7 @@ impl RenderOnce for Attachment {
                 ),
             });
 
-        div()
+        let mut root = div()
             .id(self.id)
             .flex()
             .flex_row()
@@ -175,6 +188,8 @@ impl RenderOnce for Attachment {
                                 .text_color(theme.muted_foreground),
                         )
                 })
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }

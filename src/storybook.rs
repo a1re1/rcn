@@ -17,8 +17,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Deserialize;
 
 use gpui::{
-    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, Hsla, ObjectFit,
-    SharedString, Window, div, hsla, img, prelude::*, px, relative, rgb,
+    AnyElement, App, ClickEvent, Context, DragMoveEvent, ElementId, FontWeight, HighlightStyle,
+    Hsla, ObjectFit, SharedString, StyledText, Window, div, hsla, img, prelude::*, px, relative,
+    rgb,
 };
 
 use crate::assets::IconLibrary;
@@ -26,27 +27,27 @@ use crate::components::tooltip::{TooltipAlign, TooltipSide};
 use crate::components::{
     Accordion, AccordionContent, AccordionItem, AccordionTrigger, Alert, AlertDescription,
     AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-    AlertTitle, AlertVariant, AspectRatio, Attachment, AttachmentState, Avatar, AvatarGroup,
-    AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb, BreadcrumbEllipsis,
-    BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Bubble,
-    BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant, Button, ButtonGroup,
-    ButtonGroupSeparator, ButtonGroupText, ButtonSize, ButtonVariant, Calendar, CalendarDate, Card,
-    CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle, Carousel,
-    ChartSeries, Checkbox, Collapsible, Combobox, Command, CommandGroup, CommandItem, ContextMenu,
-    ContextMenuItem, DatePicker, Dialog, DialogDescription, DialogFooter, DialogHeader,
-    DialogTitle, Drawer, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu,
-    DropdownMenuItem, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia,
-    EmptyMediaVariant, EmptyTitle, Field, FieldContent, FieldDescription, FieldError, FieldGroup,
-    FieldLabel, FieldLegend, FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet,
-    FieldTitle, HoverCard, Icon, Input, InputGroup, InputGroupAddon, InputOtp, Item, ItemActions,
-    ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemMedia, ItemMediaVariant, ItemSize,
-    ItemTitle, ItemVariant, Kbd, KbdGroup, Label, Marker, MarkerVariant, Menubar, MenubarItem,
-    MenubarMenu, Message, MessageAlign, MessageAvatar, MessageContent, MessageFooter, MessageGroup,
-    MessageHeader, MessageScroller, NativeSelect, NavigationMenu, NavigationMenuEntry,
-    NavigationMenuLink, Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
-    PaginationLink, PaginationNext, PaginationPrevious, Popover, PopoverDescription, PopoverHeader,
-    PopoverTitle, Progress, Questionnaire, QuestionnaireActions, QuestionnaireChoice,
-    QuestionnaireChoices,
+    AlertTitle, AlertVariant, AspectRatio, Attachment, AttachmentState, Avatar, AvatarBadge,
+    AvatarGroup, AvatarGroupCount, AvatarSize, Badge, BadgeVariant, BarChart, Breadcrumb,
+    BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator, Bubble, BubbleAlign, BubbleGroup, BubbleReactions, BubbleSide,
+    BubbleVariant, Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText, ButtonSize,
+    ButtonVariant, Calendar, CalendarDate, Card, CardContent, CardDescription, CardFooter,
+    CardHeader, CardSize, CardTitle, Carousel, ChartSeries, Checkbox, Collapsible, Combobox,
+    Command, CommandGroup, CommandItem, ContextMenu, ContextMenuItem, DatePicker, Dialog,
+    DialogDescription, DialogFooter, DialogHeader, DialogTitle, Drawer, DrawerDescription,
+    DrawerFooter, DrawerHeader, DrawerTitle, DropdownMenu, DropdownMenuItem, Empty, EmptyContent,
+    EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Field, FieldContent,
+    FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldLegendVariant,
+    FieldOrientation, FieldSeparator, FieldSet, FieldTitle, HoverCard, Icon, Input, InputGroup,
+    InputGroupAddon, InputOtp, Item, ItemActions, ItemContent, ItemDescription, ItemGroup,
+    ItemHeader, ItemMedia, ItemMediaVariant, ItemSize, ItemTitle, ItemVariant, Kbd, KbdGroup,
+    Label, Marker, MarkerVariant, Menubar, MenubarItem, MenubarMenu, Message, MessageAlign,
+    MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader, MessageScroller,
+    NativeSelect, NavigationMenu, NavigationMenuEntry, NavigationMenuLink, Pagination,
+    PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext,
+    PaginationPrevious, Popover, PopoverDescription, PopoverHeader, PopoverTitle, Progress,
+    Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoices,
     QuestionnaireDescription, QuestionnaireProgress, QuestionnaireTitle, RadioGroup,
     RadioGroupItem, ResizableDirection, ResizableHandle, ResizablePanel, ResizablePanelGroup,
     ScrollArea, Select, Separator, Sheet, SheetDescription, SheetFooter, SheetHeader, SheetSide,
@@ -678,6 +679,12 @@ pub struct Storybook {
     table_selected: Option<usize>,
     // Checkbox controls
     checkbox_checked: bool,
+    checkbox_read_only: bool,
+    checkbox_indeterminate: bool,
+    /// Choice-card example in checkbox demo: "Enable notifications"
+    checkbox_notifications: bool,
+    /// Row selection state for checkbox table example
+    checkbox_table_selected: [bool; 4],
     // Label story state
     label_disabled: bool,
     label_terms_checked: bool,
@@ -722,6 +729,8 @@ pub struct Storybook {
     dropdown_status_checked: bool,
     // Item story state
     item_dropdown_open: bool,
+    // Avatar story state
+    avatar_dropdown_open: bool,
     // Context menu story state
     context_menu_at: Option<gpui::Point<gpui::Pixels>>,
     // Menubar story state
@@ -740,6 +749,7 @@ pub struct Storybook {
     input_demo: gpui::Entity<Input>,
     input_disabled: gpui::Entity<Input>,
     input_basic: gpui::Entity<Input>,
+    sidebar_filter: gpui::Entity<Input>,
     input_field: gpui::Entity<Input>,
     input_fieldgroup_name: gpui::Entity<Input>,
     input_fieldgroup_email: gpui::Entity<Input>,
@@ -834,6 +844,9 @@ pub struct Storybook {
     data_table_desc: bool,
     // Bubble story state
     bubble_variant: BubbleVariant,
+    bubble_toast: Option<&'static str>,
+    bubble_collapsible_open: bool,
+    bubble_popover_open: bool,
     // Attachment story state
     attachment_visible: bool,
     // Questionnaire story state
@@ -899,6 +912,11 @@ impl Storybook {
         let input_basic = cx.new(|cx| {
             let mut input = Input::new(cx);
             input.placeholder("Enter text");
+            input
+        });
+        let sidebar_filter = cx.new(|cx| {
+            let mut input = Input::new(cx);
+            input.placeholder("Search components...");
             input
         });
         let input_field = cx.new(|cx| {
@@ -1157,6 +1175,7 @@ impl Storybook {
             &card_password_input,
             &card_spacing_email,
             &card_spacing_password,
+            &sidebar_filter,
         ] {
             cx.observe(input, |_, _, cx| cx.notify()).detach();
         }
@@ -1196,6 +1215,10 @@ impl Storybook {
             item_size: ItemSize::Default,
             table_selected: Some(1),
             checkbox_checked: true,
+            checkbox_read_only: false,
+            checkbox_indeterminate: false,
+            checkbox_notifications: false,
+            checkbox_table_selected: [true, false, false, false],
             label_disabled: false,
             label_terms_checked: false,
             label_email_input,
@@ -1226,6 +1249,7 @@ impl Storybook {
             dropdown_open: false,
             dropdown_status_checked: true,
             item_dropdown_open: false,
+            avatar_dropdown_open: false,
             context_menu_at: None,
             menubar_open: None,
             select_value: None,
@@ -1237,6 +1261,7 @@ impl Storybook {
             input_demo,
             input_disabled,
             input_basic,
+            sidebar_filter,
             input_field,
             input_fieldgroup_name,
             input_fieldgroup_email,
@@ -1311,6 +1336,9 @@ impl Storybook {
             sidebar_active: 0,
             data_table_desc: true,
             bubble_variant: BubbleVariant::Muted,
+            bubble_toast: None,
+            bubble_collapsible_open: false,
+            bubble_popover_open: false,
             attachment_visible: true,
             questionnaire_selected: Some(0),
             focus_handle,
@@ -1365,6 +1393,18 @@ impl Storybook {
             theme.font_heading = Some(font.into());
         }
         theme.icons = self.tokens.icons;
+        // The bubble docs page wraps its previews in `theme-blue`
+        // (--primary: blue-700 light / blue-800 dark, --primary-foreground:
+        // blue-50; ring stays neutral). Mirror that while the bubble story is
+        // active so the examples compare side by side with the docs.
+        if self.story == Story::BubbleStory && self.imported.is_none() {
+            theme.primary = if self.dark {
+                rgb(0x193cb8).into()
+            } else {
+                rgb(0x1447e6).into()
+            };
+            theme.primary_foreground = rgb(0xeff6ff).into();
+        }
         cx.set_global(theme);
         cx.notify();
     }
@@ -1432,59 +1472,88 @@ impl Storybook {
 
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
+        let query = self.sidebar_filter.read(cx).text().trim().to_lowercase();
         let mut components: Vec<Story> = Story::ALL
             .into_iter()
             .filter(|story| *story != Story::Tokens)
+            .filter(|story| query.is_empty() || story.label().to_lowercase().contains(&query))
             .collect();
         components.sort_by_key(|story| story.label());
 
+        let show_theme = query.is_empty() || Story::Tokens.label().to_lowercase().contains(&query);
+        let show_components = !components.is_empty();
+        let no_results = !show_theme && !show_components;
+
         Sidebar::new()
             .child(
-                SidebarHeader::new().child(
-                    div()
-                        .px(px(8.))
-                        .py(px(6.))
-                        .text_size(px(15.))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .when_some(theme.heading_font(), |el, font| el.font_family(font))
-                        .child("rcn"),
-                ),
+                SidebarHeader::new()
+                    .child(
+                        div()
+                            .px(px(8.))
+                            .py(px(6.))
+                            .text_size(px(15.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .when_some(theme.heading_font(), |el, font| el.font_family(font))
+                            .child("rcn"),
+                    )
+                    .child(
+                        div()
+                            .px(px(8.))
+                            .pb(px(6.))
+                            .child(self.sidebar_filter.clone()),
+                    ),
             )
             .child(
                 SidebarContent::new()
-                    .child(
-                        SidebarGroup::new().label("Theme").child(
-                            SidebarMenuButton::new("nav-tokens")
-                                .active(self.story == Story::Tokens)
-                                .on_click(cx.listener(|this, _, _, cx| {
-                                    this.story = Story::Tokens;
-                                    cx.notify();
-                                }))
-                                .child(Story::Tokens.label()),
-                        ),
-                    )
-                    .child(SidebarGroup::new().label("Components").children(
-                        components.into_iter().enumerate().map(|(index, story)| {
-                            let label = story.label();
-                            let verified = self.verified.contains_key(label);
-                            SidebarMenuButton::new(("nav-component", index))
-                                .active(self.story == story)
-                                .on_click(cx.listener(move |this, _, _, cx| {
-                                    this.story = story;
-                                    cx.notify();
-                                }))
-                                .child(label)
-                                .when(verified, |btn| {
-                                    btn.child(
-                                        div().ml_auto().child(
-                                            Icon::new(theme.icons.check())
-                                                .size(px(14.))
-                                                .text_color(theme.muted_foreground),
-                                        ),
-                                    )
-                                })
-                        }),
-                    )),
+                    .when(show_theme, |el| {
+                        el.child(
+                            SidebarGroup::new().label("Theme").child(
+                                SidebarMenuButton::new("nav-tokens")
+                                    .active(self.story == Story::Tokens)
+                                    .on_click(cx.listener(|this, _, _, cx| {
+                                        this.story = Story::Tokens;
+                                        this.apply_tokens(cx);
+                                        cx.notify();
+                                    }))
+                                    .child(Story::Tokens.label()),
+                            ),
+                        )
+                    })
+                    .when(show_components, |el| {
+                        el.child(SidebarGroup::new().label("Components").children(
+                            components.into_iter().enumerate().map(|(index, story)| {
+                                let label = story.label();
+                                let verified = self.verified.contains_key(label);
+                                SidebarMenuButton::new(("nav-component", index))
+                                    .active(self.story == story)
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.story = story;
+                                        this.apply_tokens(cx);
+                                        cx.notify();
+                                    }))
+                                    .child(label)
+                                    .when(verified, |btn| {
+                                        btn.child(
+                                            div().ml_auto().child(
+                                                Icon::new(theme.icons.check())
+                                                    .size(px(14.))
+                                                    .text_color(theme.muted_foreground),
+                                            ),
+                                        )
+                                    })
+                            }),
+                        ))
+                    })
+                    .when(no_results, |el| {
+                        el.child(
+                            div()
+                                .px(px(8.))
+                                .py(px(6.))
+                                .text_size(px(13.))
+                                .text_color(theme.muted_foreground)
+                                .child("No results"),
+                        )
+                    }),
             )
             .child(
                 SidebarFooter::new().child(
@@ -1506,7 +1575,7 @@ impl Storybook {
             Story::Tokens => self.tokens_preview(cx).into_any_element(),
             Story::Button => self.button_preview(cx).into_any_element(),
             Story::Badge => self.badge_preview().into_any_element(),
-            Story::Avatar => self.avatar_preview().into_any_element(),
+            Story::Avatar => self.avatar_preview(cx).into_any_element(),
             Story::Switch => self.switch_preview(cx).into_any_element(),
             Story::Accordion => self.accordion_preview(cx).into_any_element(),
             Story::Popover => self.popover_preview(cx).into_any_element(),
@@ -1561,7 +1630,7 @@ impl Storybook {
             Story::DataTableStory => self.data_table_preview(cx).into_any_element(),
             Story::ChartStory => self.chart_preview(cx).into_any_element(),
             Story::MessageStory => self.message_preview(cx).into_any_element(),
-            Story::BubbleStory => self.bubble_preview().into_any_element(),
+            Story::BubbleStory => self.bubble_preview(cx).into_any_element(),
             Story::AttachmentStory => self.attachment_preview(cx).into_any_element(),
             Story::MarkerStory => self.marker_preview(cx).into_any_element(),
             Story::MessageScrollerStory => self.message_scroller_preview(cx).into_any_element(),
@@ -2449,58 +2518,32 @@ impl Storybook {
                     .into_any_element(),
                 ),
             ],
-            Story::Checkbox => vec![(
-                "States",
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(8.))
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(Checkbox::new("ex-cb-unchecked").checked(false))
-                            .child(Label::new().child("Unchecked")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(Checkbox::new("ex-cb-checked").checked(true))
-                            .child(Label::new().child("Checked")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(
-                                Checkbox::new("ex-cb-disabled")
-                                    .checked(false)
-                                    .disabled(true),
-                            )
-                            .child(Label::new().disabled(true).child("Disabled")),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_center()
-                            .gap(px(8.))
-                            .child(
-                                Checkbox::new("ex-cb-disabled-checked")
-                                    .checked(true)
-                                    .disabled(true),
-                            )
-                            .child(Label::new().disabled(true).child("Disabled checked")),
-                    )
-                    .into_any_element(),
-            )],
+            Story::Checkbox => vec![
+                (
+                    "Invalid",
+                    self.checkbox_example_invalid(cx).into_any_element(),
+                ),
+                (
+                    "Basic",
+                    self.checkbox_example_basic(cx).into_any_element(),
+                ),
+                (
+                    "Description",
+                    self.checkbox_example_description(cx).into_any_element(),
+                ),
+                (
+                    "Disabled",
+                    self.checkbox_example_disabled(cx).into_any_element(),
+                ),
+                (
+                    "Group",
+                    self.checkbox_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Table",
+                    self.checkbox_example_table(cx).into_any_element(),
+                ),
+            ],
             Story::Toggle => vec![
                 (
                     "Outline",
@@ -3013,18 +3056,40 @@ impl Storybook {
                     )
                     .into_any_element(),
             )],
-            Story::Avatar => vec![(
-                "Sizes",
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(12.))
-                    .child(Avatar::new("SM").size(AvatarSize::Sm))
-                    .child(Avatar::new("DF").size(AvatarSize::Default))
-                    .child(Avatar::new("LG").size(AvatarSize::Lg))
-                    .into_any_element(),
-            )],
+            Story::Avatar => vec![
+                (
+                    "Basic",
+                    self.avatar_example_basic(cx).into_any_element(),
+                ),
+                (
+                    "Badge",
+                    self.avatar_example_badge(cx).into_any_element(),
+                ),
+                (
+                    "Badge with Icon",
+                    self.avatar_example_badge_icon(cx).into_any_element(),
+                ),
+                (
+                    "Avatar Group",
+                    self.avatar_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Avatar Group Count",
+                    self.avatar_example_group_count(cx).into_any_element(),
+                ),
+                (
+                    "Avatar Group with Icon",
+                    self.avatar_example_group_icon(cx).into_any_element(),
+                ),
+                (
+                    "Sizes",
+                    self.avatar_example_sizes(cx).into_any_element(),
+                ),
+                (
+                    "Dropdown",
+                    self.avatar_example_dropdown(cx).into_any_element(),
+                ),
+            ],
             Story::Kbd => vec![
                 (
                     "Group",
@@ -3796,6 +3861,40 @@ impl Storybook {
                         .into_any_element(),
                 ),
             ],
+            Story::BubbleStory => vec![
+                (
+                    "Variants",
+                    self.bubble_example_variants(cx).into_any_element(),
+                ),
+                (
+                    "Alignment",
+                    self.bubble_example_alignment(cx).into_any_element(),
+                ),
+                (
+                    "Bubble Group",
+                    self.bubble_example_group(cx).into_any_element(),
+                ),
+                (
+                    "Links and Buttons",
+                    self.bubble_example_links(cx).into_any_element(),
+                ),
+                (
+                    "Reactions",
+                    self.bubble_example_reactions(cx).into_any_element(),
+                ),
+                (
+                    "Show More / Collapsible",
+                    self.bubble_example_collapsible(cx).into_any_element(),
+                ),
+                (
+                    "Tooltip",
+                    self.bubble_example_tooltip(cx).into_any_element(),
+                ),
+                (
+                    "Popover",
+                    self.bubble_example_popover(cx).into_any_element(),
+                ),
+            ],
             _ => Vec::new(),
         }
     }
@@ -4140,18 +4239,44 @@ impl Storybook {
             ],
             Story::Table => Vec::new(),
             Story::Breadcrumb => Vec::new(),
-            Story::Checkbox => vec![Self::control_row(
-                "checked",
-                Switch::new("ctl-checkbox-checked")
-                    .checked(self.checkbox_checked)
-                    .size(SwitchSize::Sm)
-                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
-                        this.checkbox_checked = *checked;
-                        cx.notify();
-                    }))
-                    .into_any_element(),
-                &theme,
-            )],
+            Story::Checkbox => vec![
+                Self::control_row(
+                    "checked",
+                    Switch::new("ctl-checkbox-checked")
+                        .checked(self.checkbox_checked)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.checkbox_checked = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "read_only",
+                    Switch::new("ctl-checkbox-read-only")
+                        .checked(self.checkbox_read_only)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.checkbox_read_only = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+                Self::control_row(
+                    "indeterminate",
+                    Switch::new("ctl-checkbox-indeterminate")
+                        .checked(self.checkbox_indeterminate)
+                        .size(SwitchSize::Sm)
+                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                            this.checkbox_indeterminate = *checked;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    &theme,
+                ),
+            ],
             Story::RadioGroup => Vec::new(),
             Story::Toggle => Vec::new(),
             Story::ToggleGroup => Vec::new(),
@@ -4319,6 +4444,7 @@ impl Storybook {
                         ("tinted", BubbleVariant::Tinted),
                         ("outline", BubbleVariant::Outline),
                         ("ghost", BubbleVariant::Ghost),
+                        ("destructive", BubbleVariant::Destructive),
                     ],
                     self.bubble_variant,
                     cx,
@@ -4938,20 +5064,208 @@ impl Storybook {
         Badge::new().variant(self.badge_variant).child("Badge")
     }
 
-    fn avatar_preview(&self) -> impl IntoElement + use<> {
+    /// Port of avatar-demo — grayscale avatar, badged avatar, and group + count.
+    fn avatar_preview(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let size = self.avatar_size;
+        let green = if theme.dark {
+            rgb(0x166534).into()
+        } else {
+            rgb(0x16a34a).into()
+        };
         div()
             .flex()
-            .flex_col()
+            .flex_row()
+            .flex_wrap()
             .items_center()
-            .gap(px(24.))
-            .child(Avatar::new("CN").size(self.avatar_size))
+            .gap(px(48.))
+            .child(
+                Avatar::new("CN")
+                    .size(size)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .size(size)
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .badge(AvatarBadge::new().color(green)),
+            )
             .child(
                 AvatarGroup::new()
-                    .size(self.avatar_size)
-                    .child(Avatar::new("CN").size(self.avatar_size))
-                    .child(Avatar::new("ER").size(self.avatar_size))
-                    .child(Avatar::new("LR").size(self.avatar_size))
-                    .child(AvatarGroupCount::new(3).size(self.avatar_size)),
+                    .size(size)
+                    .child(
+                        Avatar::new("CN")
+                            .size(size)
+                            .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                            .grayscale(true),
+                    )
+                    .child(
+                        Avatar::new("LR")
+                            .size(size)
+                            .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                            .grayscale(true),
+                    )
+                    .child(
+                        Avatar::new("ER")
+                            .size(size)
+                            .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                            .grayscale(true),
+                    )
+                    .child(AvatarGroupCount::new().size(size).child("+3")),
+            )
+    }
+
+    /// Port of avatar-basic — single grayscale shadcn avatar.
+    fn avatar_example_basic(&self, _cx: &App) -> impl IntoElement + use<> {
+        Avatar::new("CN")
+            .image(crate::assets::IMAGE_AVATAR_SHADCN)
+            .grayscale(true)
+    }
+
+    /// Port of avatar-badge — shadcn avatar with a green status badge.
+    fn avatar_example_badge(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let green = if theme.dark {
+            rgb(0x166534).into()
+        } else {
+            rgb(0x16a34a).into()
+        };
+        Avatar::new("CN")
+            .image(crate::assets::IMAGE_AVATAR_SHADCN)
+            .badge(AvatarBadge::new().color(green))
+    }
+
+    /// Port of avatar-badge-icon — pranathip avatar with a primary plus badge.
+    fn avatar_example_badge_icon(&self, _cx: &App) -> impl IntoElement + use<> {
+        Avatar::new("PP")
+            .image(crate::assets::IMAGE_AVATAR_PRANATHIP)
+            .grayscale(true)
+            .badge(AvatarBadge::new().icon(crate::assets::ICON_PLUS))
+    }
+
+    /// Port of avatar-group — three grayscale avatars overlapped.
+    fn avatar_example_group(&self, _cx: &App) -> impl IntoElement + use<> {
+        AvatarGroup::new()
+            .child(
+                Avatar::new("CN")
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("LR")
+                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .grayscale(true),
+            )
+    }
+
+    /// Port of avatar-group-count — group plus a "+3" counter.
+    fn avatar_example_group_count(&self, _cx: &App) -> impl IntoElement + use<> {
+        AvatarGroup::new()
+            .child(
+                Avatar::new("CN")
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("LR")
+                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .grayscale(true),
+            )
+            .child(AvatarGroupCount::new().child("+3"))
+    }
+
+    /// Port of avatar-group-count-icon — group plus a plus-icon counter.
+    fn avatar_example_group_icon(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        AvatarGroup::new()
+            .child(
+                Avatar::new("CN")
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("LR")
+                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("ER")
+                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)
+                    .grayscale(true),
+            )
+            .child(
+                AvatarGroupCount::new().child(
+                    Icon::new(crate::assets::ICON_PLUS)
+                        .size(px(16.))
+                        .text_color(theme.muted_foreground),
+                ),
+            )
+    }
+
+    /// Port of avatar-size — Sm / Default / Lg grayscale shadcn avatars.
+    fn avatar_example_sizes(&self, _cx: &App) -> impl IntoElement + use<> {
+        div()
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(px(8.))
+            .child(
+                Avatar::new("CN")
+                    .size(AvatarSize::Sm)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("CN")
+                    .size(AvatarSize::Default)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+            .child(
+                Avatar::new("CN")
+                    .size(AvatarSize::Lg)
+                    .image(crate::assets::IMAGE_AVATAR_SHADCN)
+                    .grayscale(true),
+            )
+    }
+
+    /// Port of avatar-dropdown — avatar as the trigger of a profile menu.
+    ///
+    /// shadcn wraps the avatar in a ghost icon rounded-full button; we do the
+    /// same via Button (Ghost + Icon + rounded_full).
+    fn avatar_example_dropdown(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        DropdownMenu::new("avatar-dropdown")
+            .open(self.avatar_dropdown_open)
+            .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                this.avatar_dropdown_open = *open;
+                cx.notify();
+            }))
+            .trigger(
+                Button::new("avatar-dropdown-trigger")
+                    .variant(ButtonVariant::Ghost)
+                    .size(ButtonSize::Icon)
+                    .rounded_full()
+                    .child(Avatar::new("CN").image(crate::assets::IMAGE_AVATAR_SHADCN)),
+            )
+            .item(DropdownMenuItem::new("avatar-dd-profile").child("Profile"))
+            .item(DropdownMenuItem::new("avatar-dd-billing").child("Billing"))
+            .item(DropdownMenuItem::new("avatar-dd-settings").child("Settings"))
+            .separator()
+            .item(
+                DropdownMenuItem::new("avatar-dd-logout")
+                    .destructive(true)
+                    .child("Log out"),
             )
     }
 
@@ -5077,7 +5391,7 @@ impl Storybook {
                 Checkbox::new("label-terms")
                     .checked(self.label_terms_checked)
                     .disabled(self.label_disabled)
-                    .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                    .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                         this.label_terms_checked = *checked;
                         cx.notify();
                     })),
@@ -5795,13 +6109,15 @@ impl Storybook {
                         Item::new()
                             .size(ItemSize::Xs)
                             .flush(true)
-                            .child(ItemMedia::new().child(
-                                // Closest AvatarSize to the docs' ~26px tile is Default (32).
-                                Avatar::new(initials)
-                                    .size(AvatarSize::Default)
-                                    .image(photo)
-                                    .grayscale(true),
-                            ))
+                            .child(
+                                ItemMedia::new().child(
+                                    // Closest AvatarSize to the docs' ~26px tile is Default (32).
+                                    Avatar::new(initials)
+                                        .size(AvatarSize::Default)
+                                        .image(photo)
+                                        .grayscale(true),
+                                ),
+                            )
                             .child(
                                 ItemContent::new()
                                     .size(ItemSize::Xs)
@@ -5881,6 +6197,7 @@ impl Storybook {
                         BreadcrumbLink::new("bc-home")
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.story = Story::Tokens;
+                                this.apply_tokens(cx);
                                 cx.notify();
                             }))
                             .child("Home"),
@@ -5899,47 +6216,245 @@ impl Storybook {
     }
 
     fn checkbox_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(12.))
-            .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
+        // Port of checkbox-demo.tsx
+        div().w(px(384.)).child(
+            FieldGroup::new()
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(
+                            Checkbox::new("checkbox-terms")
+                                .checked(self.checkbox_checked)
+                                .read_only(self.checkbox_read_only)
+                                .indeterminate(self.checkbox_indeterminate)
+                                .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
+                                    this.checkbox_checked = *checked;
+                                    cx.notify();
+                                })),
+                        )
+                        .child(Label::new().child("Accept terms and conditions")),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Checkbox::new("checkbox-terms-2").default_checked(true))
+                        .child(
+                            FieldContent::new()
+                                .child(FieldLabel::new().child("Accept terms and conditions"))
+                                .child(
+                                    FieldDescription::new().child(
+                                        "By clicking this checkbox, you agree to the terms.",
+                                    ),
+                                ),
+                        ),
+                )
+                .child(
+                    Field::new()
+                        .orientation(FieldOrientation::Horizontal)
+                        .child(Checkbox::new("checkbox-toggle").disabled(true))
+                        .child(
+                            FieldLabel::new()
+                                .disabled(true)
+                                .child("Enable notifications"),
+                        ),
+                )
+                .child(
+                    FieldLabel::new()
+                        .choice_card(self.checkbox_notifications)
+                        .child(
+                            Field::new()
+                                .orientation(FieldOrientation::Horizontal)
+                                .child(
+                                    Checkbox::new("checkbox-toggle-2")
+                                        .checked(self.checkbox_notifications)
+                                        .on_checked_change(cx.listener(
+                                            |this, checked: &bool, _, cx| {
+                                                this.checkbox_notifications = *checked;
+                                                cx.notify();
+                                            },
+                                        )),
+                                )
+                                .child(
+                                    FieldContent::new()
+                                        .child(FieldTitle::new().child("Enable notifications"))
+                                        .child(FieldDescription::new().child(
+                                            "You can enable or disable notifications at any time.",
+                                        )),
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    fn checkbox_example_invalid(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-invalid.tsx
+        div().w(px(224.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .invalid(true)
+                    .child(Checkbox::new("checkbox-ex-invalid").invalid(true))
+                    .child(FieldLabel::new().child("Accept terms and conditions")),
+            ),
+        )
+    }
+
+    fn checkbox_example_basic(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-basic.tsx
+        div().w(px(224.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .child(Checkbox::new("checkbox-ex-basic"))
+                    .child(FieldLabel::new().child("Accept terms and conditions")),
+            ),
+        )
+    }
+
+    fn checkbox_example_description(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-description.tsx
+        div().w(px(288.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .child(Checkbox::new("checkbox-ex-description").default_checked(true))
                     .child(
-                        Checkbox::new("checkbox-terms")
-                            .checked(self.checkbox_checked)
-                            .on_change(cx.listener(|this, checked: &bool, _, cx| {
-                                this.checkbox_checked = *checked;
-                                cx.notify();
-                            })),
-                    )
-                    .child(Label::new().child("Accept terms and conditions")),
+                        FieldContent::new()
+                            .child(FieldLabel::new().child("Accept terms and conditions"))
+                            .child(FieldDescription::new().child(
+                                "By clicking this checkbox, you agree to the terms and conditions.",
+                            )),
+                    ),
+            ),
+        )
+    }
+
+    fn checkbox_example_disabled(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-disabled.tsx
+        div().w(px(224.)).child(
+            FieldGroup::new().child(
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .child(Checkbox::new("checkbox-ex-disabled").disabled(true))
+                    .child(
+                        FieldLabel::new()
+                            .disabled(true)
+                            .child("Enable notifications"),
+                    ),
+            ),
+        )
+    }
+
+    fn checkbox_example_group(&self, _cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-group.tsx
+        FieldSet::new()
+            .legend(
+                FieldLegend::new()
+                    .variant(FieldLegendVariant::Label)
+                    .child("Show these items on the desktop:"),
+            )
+            .description(
+                FieldDescription::new().child("Select the items you want to show on the desktop."),
             )
             .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(Checkbox::new("checkbox-disabled").disabled(true))
-                    .child(Label::new().disabled(true).child("Disabled")),
+                FieldGroup::new()
+                    .gap(px(12.))
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(
+                                Checkbox::new("checkbox-ex-group-hard-disks").default_checked(true),
+                            )
+                            .child(FieldLabel::new().font_normal().child("Hard disks")),
+                    )
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(
+                                Checkbox::new("checkbox-ex-group-external-disks")
+                                    .default_checked(true),
+                            )
+                            .child(FieldLabel::new().font_normal().child("External disks")),
+                    )
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(Checkbox::new("checkbox-ex-group-cds"))
+                            .child(
+                                FieldLabel::new()
+                                    .font_normal()
+                                    .child("CDs, DVDs, and iPods"),
+                            ),
+                    )
+                    .child(
+                        Field::new()
+                            .orientation(FieldOrientation::Horizontal)
+                            .child(Checkbox::new("checkbox-ex-group-servers"))
+                            .child(FieldLabel::new().font_normal().child("Connected servers")),
+                    ),
+            )
+    }
+
+    fn checkbox_example_table(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        // Port of checkbox-table.tsx
+        let rows = [
+            ("Sarah Chen", "sarah.chen@example.com", "Admin"),
+            ("Marcus Rodriguez", "marcus.rodriguez@example.com", "User"),
+            ("Priya Patel", "priya.patel@example.com", "User"),
+            ("David Kim", "david.kim@example.com", "Editor"),
+        ];
+        let count = rows.len();
+        let all_selected = self.checkbox_table_selected.iter().all(|s| *s);
+        Table::new()
+            .child(
+                TableHeader::new().child(
+                    TableRow::new()
+                        .child(
+                            TableHead::new().w(px(32.)).child(
+                                Checkbox::new("checkbox-ex-table-select-all")
+                                    .checked(all_selected)
+                                    .on_checked_change(cx.listener(
+                                        |this, checked: &bool, _, cx| {
+                                            this.checkbox_table_selected = [*checked; 4];
+                                            cx.notify();
+                                        },
+                                    )),
+                            ),
+                        )
+                        .child(TableHead::new().child("Name"))
+                        .child(TableHead::new().child("Email"))
+                        .child(TableHead::new().child("Role")),
+                ),
             )
             .child(
-                div()
-                    .flex()
-                    .flex_row()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(
-                        Checkbox::new("checkbox-disabled-checked")
-                            .checked(true)
-                            .disabled(true),
-                    )
-                    .child(Label::new().disabled(true).child("Disabled checked")),
+                TableBody::new().children(rows.into_iter().enumerate().map(
+                    |(index, (name, email, role))| {
+                        let selected = self.checkbox_table_selected[index];
+                        TableRow::new()
+                            .id(("checkbox-table-row", index))
+                            .selected(selected)
+                            .last(index + 1 == count)
+                            .child(
+                                TableCell::new().child(
+                                    Checkbox::new(("checkbox-ex-table-row", index))
+                                        .checked(selected)
+                                        .on_checked_change(cx.listener(
+                                            move |this, checked: &bool, _, cx| {
+                                                this.checkbox_table_selected[index] = *checked;
+                                                cx.notify();
+                                            },
+                                        )),
+                                ),
+                            )
+                            .child(
+                                TableCell::new()
+                                    .child(div().font_weight(FontWeight::MEDIUM).child(name)),
+                            )
+                            .child(TableCell::new().child(email))
+                            .child(TableCell::new().child(role))
+                            .into_any_element()
+                    },
+                )),
             )
     }
     fn radio_group_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
@@ -7461,7 +7976,7 @@ impl Storybook {
                                     .child(
                                         Checkbox::new("field-same-shipping")
                                             .checked(self.field_same_shipping)
-                                            .on_change(cx.listener(
+                                            .on_checked_change(cx.listener(
                                                 |this, checked: &bool, _, cx| {
                                                     this.field_same_shipping = *checked;
                                                     cx.notify();
@@ -7663,7 +8178,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-hard-disks")
                                                 .checked(self.field_hard_disks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_hard_disks = *checked;
                                                         cx.notify();
@@ -7682,7 +8197,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-external-disks")
                                                 .checked(self.field_external_disks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_external_disks = *checked;
                                                         cx.notify();
@@ -7701,7 +8216,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-cds")
                                                 .checked(self.field_cds)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_cds = *checked;
                                                         cx.notify();
@@ -7720,7 +8235,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-connected-servers")
                                                 .checked(self.field_connected_servers)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_connected_servers = *checked;
                                                         cx.notify();
@@ -7742,7 +8257,7 @@ impl Storybook {
                         .child(
                             Checkbox::new("field-sync-folders")
                                 .checked(self.field_sync_folders)
-                                .on_change(cx.listener(|this, checked: &bool, _, cx| {
+                                .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {
                                     this.field_sync_folders = *checked;
                                     cx.notify();
                                 })),
@@ -7923,7 +8438,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-push-tasks")
                                                 .checked(self.field_push_tasks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_push_tasks = *checked;
                                                         cx.notify();
@@ -7942,7 +8457,7 @@ impl Storybook {
                                         .child(
                                             Checkbox::new("field-email-tasks")
                                                 .checked(self.field_email_tasks)
-                                                .on_change(cx.listener(
+                                                .on_checked_change(cx.listener(
                                                     |this, checked: &bool, _, cx| {
                                                         this.field_email_tasks = *checked;
                                                         cx.notify();
@@ -8464,41 +8979,502 @@ impl Storybook {
                 ),
         )
     }
-    fn bubble_preview(&self) -> impl IntoElement + use<> {
-        div().w(px(384.)).child(
-            MessageGroup::new()
-                .child(
-                    Message::new().child(
-                        MessageContent::new().child(
-                            Bubble::new()
-                                .variant(self.bubble_variant)
-                                .content("This bubble follows the variant control.")
-                                .child(
-                                    BubbleReactions::new()
-                                        .side(BubbleSide::Bottom)
-                                        .align(BubbleAlign::End)
-                                        .child("\u{2764}\u{fe0f} 2"),
-                                ),
-                        ),
+    /// Port of bubble-demo.tsx — main docs demo (gap 32px). Last bubble
+    /// follows the variant control. Toast viewport hosts clicks from the
+    /// Links/Buttons and Reactions examples.
+    fn bubble_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Hey there! what's up?"),
+            )
+            .child(
+                BubbleGroup::new()
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Muted)
+                            .content("Hey! Want to see chat bubbles?"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Muted)
+                            .content(
+                                "I can group messages, switch sides, and keep the whole thread easy to scan.",
+                            )
+                            .child(BubbleReactions::new().child("👍")),
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Sure. Hit me with your best demo."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(self.bubble_variant)
+                    .content(
+                        "Yes. You are reading a demo that is demoing itself. Very meta. Very on-brand.",
+                    )
+                    .child(
+                        BubbleReactions::new()
+                            .child("👍")
+                            .child("🔥")
+                            .child("👀")
+                            .child("+2"),
+                    ),
+            )
+            .when_some(self.bubble_toast, |el, msg| {
+                el.child(
+                    ToastViewport::new().child(
+                        Toast::new("bubble-toast", msg).on_close(cx.listener(
+                            |this, _: &ClickEvent, _, cx| {
+                                this.bubble_toast = None;
+                                cx.notify();
+                            },
+                        )),
                     ),
                 )
-                .child(
-                    Message::new().align(MessageAlign::End).child(
-                        MessageContent::new().align(MessageAlign::End).child(
-                            Bubble::new()
-                                .variant(BubbleVariant::Default)
-                                .content("And this one is the sender side.")
-                                .child(
-                                    BubbleReactions::new()
-                                        .side(BubbleSide::Top)
-                                        .align(BubbleAlign::Start)
-                                        .child("\u{1f44d}"),
+            })
+    }
+
+    /// Port of bubble-variants.tsx — all 7 variants (gap 48px). Ghost body is
+    /// hand-styled (no Markdown component); bold + inline-code spans approximate
+    /// the docs Markdown demo.
+    fn bubble_example_variants(&self, cx: &App) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(48.))
+            .child(
+                Bubble::new()
+                    .content("This is the default primary bubble."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Secondary)
+                    .align(BubbleAlign::End)
+                    .content("This is the secondary variant."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content(
+                        "This one is muted. It uses a lower emphasis color for the chat bubble.",
+                    )
+                    .child(BubbleReactions::new().child("👍")),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Tinted)
+                    .align(BubbleAlign::End)
+                    .content(
+                        "This one is tinted. The tint is a softer color derived from the primary color.",
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Outline)
+                    .content("We can also use an outlined variant."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Destructive)
+                    .align(BubbleAlign::End)
+                    .content("Or a destructive variant with a reaction.")
+                    .child(BubbleReactions::new().child("🔥")),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Ghost)
+                    .content({
+                        // Hand-styled stand-in for the docs Markdown demo (no
+                        // Markdown component): StyledText highlight runs give
+                        // mid-sentence bold + mono/muted inline code.
+                        let p1 = "Ghost bubbles work for assistant text, markdown, and other content that should not be framed.";
+                        let bold = p1.find("markdown").expect("markdown in p1");
+                        let p2 = "This is perfect for assistant messages that should not have a frame and can take the full width of the container. You can also render code in it.";
+                        let code = p2.find("code").expect("code in p2");
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(8.))
+                            .child(StyledText::new(p1).with_highlights([(
+                                bold..bold + "markdown".len(),
+                                HighlightStyle {
+                                    font_weight: Some(FontWeight::SEMIBOLD),
+                                    ..Default::default()
+                                },
+                            )]))
+                            .child(
+                                StyledText::new(p2)
+                                    .with_highlights([(
+                                        code..code + "code".len(),
+                                        HighlightStyle {
+                                            background_color: Some(theme.muted),
+                                            ..Default::default()
+                                        },
+                                    )])
+                                    .with_font_family_overrides([(
+                                        code..code + "code".len(),
+                                        "Menlo".into(),
+                                    )]),
+                            )
+                            .child(
+                                "Ghost bubbles are full width and can take the full width of the container.",
+                            )
+                    }),
+            )
+    }
+
+    /// Port of bubble-alignment.tsx — start vs end (gap 32px).
+    fn bubble_example_alignment(&self, _cx: &App) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("This bubble is aligned to the start. This is the default alignment."),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("This bubble is aligned to the end. Use this for user messages."),
+            )
+    }
+
+    /// Port of bubble-group-demo.tsx — BubbleGroup of end-aligned replies (gap 32px).
+    fn bubble_example_group(&self, _cx: &App) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("Can you tell me what's the issue?"),
+            )
+            .child(
+                BubbleGroup::new()
+                    .child(
+                        Bubble::new()
+                            .align(BubbleAlign::End)
+                            .content("You tell me!"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .align(BubbleAlign::End)
+                            .content("It worked yesterday. You broke it!"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .align(BubbleAlign::End)
+                            .content("Find the bug and fix it.")
+                            .child(BubbleReactions::new().align(BubbleAlign::Start).child("👀")),
+                    ),
+            )
+            .child(Bubble::new().variant(BubbleVariant::Muted).content(
+                "Want me to diff yesterday's you against today's you? It's a bit embarrassing.",
+            ))
+    }
+
+    /// Port of bubble-link-button.tsx — interactive tinted bubbles (gap 32px).
+    /// Clicks surface a Toast via `bubble_toast` (instant hover vs transition-colors
+    /// noted on Bubble).
+    fn bubble_example_links(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("How can I help you today?"),
+            )
+            .child(
+                BubbleGroup::new()
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Tinted)
+                            .align(BubbleAlign::End)
+                            .id("bubble-link-password")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.bubble_toast = Some("You clicked forgot password");
+                                cx.notify();
+                            }))
+                            .content("I forgot my password"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Tinted)
+                            .align(BubbleAlign::End)
+                            .id("bubble-link-subscription")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.bubble_toast = Some("You clicked help with subscription");
+                                cx.notify();
+                            }))
+                            .content("I need help with my subscription"),
+                    )
+                    .child(
+                        Bubble::new()
+                            .variant(BubbleVariant::Tinted)
+                            .align(BubbleAlign::End)
+                            .id("bubble-link-human")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.bubble_toast =
+                                    Some("You clicked something else. Talk to a human.");
+                                cx.notify();
+                            }))
+                            .content("Something else. Talk to a human."),
+                    ),
+            )
+    }
+
+    /// Port of bubble-reactions.tsx — reaction pills on corners (gap 48px).
+    /// The last bubble uses `.buttons()` (`has-[button]:p-0`) with a Ghost Xs
+    /// Button that fires a toast.
+    fn bubble_example_reactions(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(48.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .align(BubbleAlign::End)
+                    .content("I don't need tests, I know my code works.")
+                    .child(
+                        BubbleReactions::new()
+                            .align(BubbleAlign::Start)
+                            .child("👍")
+                            .child("😮"),
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("Bold. Fine I'll add some tests. I'll let you know when they're done.")
+                    .child(BubbleReactions::new().child("👀").child("🚀").child("+2")),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Tests passed on the first try. All 142 of them. Looking good!")
+                    .child(
+                        BubbleReactions::new()
+                            .side(BubbleSide::Top)
+                            .align(BubbleAlign::Start)
+                            .child("🎉")
+                            .child("👏"),
+                    ),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Destructive)
+                    .content("Are you sure I can run this command?")
+                    .child(
+                        BubbleReactions::new().buttons().child(
+                            Button::new("bubble-rxn-run")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Xs)
+                                .child("Yes, run it")
+                                .on_click(cx.listener(|this, _: &ClickEvent, _, cx| {
+                                    this.bubble_toast = Some("You clicked yes, running command...");
+                                    cx.notify();
+                                })),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of bubble-collapsible.tsx — show more/less on long bubble text (gap 32px).
+    /// Uses a plain toggle (not Collapsible) because the docs pattern swaps the
+    /// visible string length rather than hiding a collapsible panel; the Link
+    /// button + chevron match the visible trigger.
+    fn bubble_example_collapsible(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        let p1 = "The accessibility review found two focus states that were visually too subtle in dark mode.";
+        let p2 = "I checked the dialog, menu, and drawer paths because each one renders focusable controls inside a layered surface.";
+        let p3 = "The dialog and drawer are fine. The menu needs the hover and focus tokens split so keyboard focus stays visible when the pointer is not involved.";
+        let p4 = "I also recommend keeping the change in the style file instead of the primitive so the other themes can choose their own focus treatment later.";
+        let full = format!("{p1}\n\n{p2}\n\n{p3}\n\n{p4}");
+        let open = self.bubble_collapsible_open;
+        let body = if open {
+            full.clone()
+        } else {
+            let mut preview: String = full.chars().take(180).collect();
+            preview.push_str("...");
+            preview
+        };
+        let label = if open { "Show less" } else { "Show more" };
+        let chevron = if open {
+            theme.icons.chevron_up()
+        } else {
+            theme.icons.chevron_down()
+        };
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(32.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .content("How can I help you today?"),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Muted)
+                    .align(BubbleAlign::End)
+                    .content(
+                        div()
+                            .flex()
+                            .flex_col()
+                            // items-start + p-0: the docs trigger is a
+                            // `gap-1 p-0` link button flush with the text.
+                            .items_start()
+                            .gap(px(8.))
+                            .child(div().child(body))
+                            .child(
+                                Button::new("bubble-collapsible-toggle")
+                                    .variant(ButtonVariant::Link)
+                                    .flush()
+                                    .on_click(cx.listener(|this, _: &ClickEvent, _, cx| {
+                                        this.bubble_collapsible_open =
+                                            !this.bubble_collapsible_open;
+                                        cx.notify();
+                                    }))
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .flex_row()
+                                            .items_center()
+                                            .gap(px(4.))
+                                            .text_color(theme.muted_foreground)
+                                            .child(label)
+                                            .child(
+                                                Icon::new(chevron)
+                                                    .size(px(16.))
+                                                    .text_color(theme.muted_foreground),
+                                            ),
+                                    ),
+                            ),
+                    ),
+            )
+    }
+
+    /// Port of bubble-tooltip.tsx — reaction check button with read-receipt tooltip (gap 16px).
+    fn bubble_example_tooltip(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let theme = Theme::of(cx).clone();
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Secondary)
+                    .content("Did you remove the stale route?"),
+            )
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Yes, removed it from the registry.")
+                    .child(
+                        BubbleReactions::new().buttons().child(
+                            Tooltip::new("bubble-tt-read", "Read on Jan 5, 2026 at 4:32 PM").child(
+                                Button::new("bubble-tt-check")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::IconXs)
+                                    .child(Icon::new(theme.icons.check()).size(px(14.))),
+                            ),
+                        ),
+                    ),
+            )
+    }
+
+    /// Port of bubble-popover.tsx — destructive bubble with info popover details (gap 16px).
+    fn bubble_example_popover(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        div()
+            .w_full()
+            .max_w(px(384.))
+            .py(px(48.))
+            .flex()
+            .flex_col()
+            .gap(px(16.))
+            .child(
+                Bubble::new()
+                    .align(BubbleAlign::End)
+                    .content("Run the build script."),
+            )
+            .child(
+                Bubble::new()
+                    .variant(BubbleVariant::Destructive)
+                    .content("Failed to run the command.")
+                    .child(
+                        BubbleReactions::new().buttons().child(
+                            Popover::new("bubble-popover-error")
+                                .open(self.bubble_popover_open)
+                                .on_open_change(cx.listener(|this, open: &bool, _, cx| {
+                                    this.bubble_popover_open = *open;
+                                    cx.notify();
+                                }))
+                                .trigger(
+                                    Button::new("bubble-popover-info")
+                                        .variant(ButtonVariant::Ghost)
+                                        .size(ButtonSize::IconXs)
+                                        .child(Icon::new(crate::assets::ICON_INFO).size(px(14.))),
+                                )
+                                .content(
+                                    PopoverHeader::new()
+                                        .child(
+                                            PopoverTitle::new().child(
+                                                div()
+                                                    .text_size(px(14.))
+                                                    .child("Command failed with exit code 1"),
+                                            ),
+                                        )
+                                        .child(
+                                            PopoverDescription::new().child(
+                                                div().text_size(px(14.)).child(
+                                                    "ENOENT: no such file or directory, open pnpm-lock.yaml",
+                                                ),
+                                            ),
+                                        ),
                                 ),
                         ),
                     ),
-                ),
-        )
+            )
     }
+
     fn attachment_preview(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         div()
             .flex()

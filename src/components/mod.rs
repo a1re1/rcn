@@ -73,13 +73,13 @@ pub use alert_dialog::{
 };
 pub use aspect_ratio::AspectRatio;
 pub use attachment::{Attachment, AttachmentState};
-pub use avatar::{Avatar, AvatarGroup, AvatarGroupCount, AvatarSize};
+pub use avatar::{Avatar, AvatarBadge, AvatarGroup, AvatarGroupCount, AvatarSize};
 pub use badge::{Badge, BadgeVariant};
 pub use breadcrumb::{
     Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator,
 };
-pub use bubble::{Bubble, BubbleAlign, BubbleReactions, BubbleSide, BubbleVariant};
+pub use bubble::{Bubble, BubbleAlign, BubbleGroup, BubbleReactions, BubbleSide, BubbleVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
 pub use button_group::{ButtonGroup, ButtonGroupSeparator, ButtonGroupText};
 pub use calendar::{Calendar, CalendarDate};

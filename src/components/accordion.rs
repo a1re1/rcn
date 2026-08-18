@@ -10,8 +10,9 @@ use std::rc::Rc;
 
 use gpui::{
     AnimationExt as _, App, Bounds, ClickEvent, ElementId, Entity, FontWeight,
-    InteractiveElement as _, IntoElement, ParentElement, Pixels, RenderOnce,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px, svg,
+    InteractiveElement as _, IntoElement, ParentElement, Pixels, Refineable as _, RenderOnce,
+    StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div,
+    prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::motion;
@@ -66,7 +67,8 @@ fn toggle_value(open: &[ElementId], id: &ElementId, multiple: bool) -> Vec<Eleme
 /// flex w-full flex-col — container for [`AccordionItem`]s.
 ///
 /// Mirrors Base UI `Accordion.Root`: `multiple`, `disabled`, `defaultValue`,
-/// `value`, `onValueChange`.
+/// `value`, `onValueChange`. Sizing and shape overrides come from the caller
+/// via [`Styled`].
 #[derive(IntoElement)]
 pub struct Accordion {
     id: ElementId,
@@ -78,6 +80,7 @@ pub struct Accordion {
     /// `Some` ⇒ controlled mode; render from this set and report toggles.
     value: Option<Vec<ElementId>>,
     on_value_change: Option<ValueChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Accordion {
@@ -91,6 +94,7 @@ impl Accordion {
             default_value: Vec::new(),
             value: None,
             on_value_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -148,6 +152,12 @@ impl Accordion {
     }
 }
 
+impl Styled for Accordion {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Accordion {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -197,7 +207,7 @@ impl RenderOnce for Accordion {
             item
         });
 
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .w_full()
@@ -207,7 +217,9 @@ impl RenderOnce for Accordion {
                     .border_color(theme.border)
                     .rounded(theme.radius_lg())
             })
-            .children(items)
+            .children(items);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -232,6 +244,7 @@ impl From<AccordionContent> for AccordionPart {
 }
 
 /// border-b (unless last); hosts the trigger row and animated panel.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct AccordionItem {
     id: ElementId,
@@ -247,6 +260,7 @@ pub struct AccordionItem {
     /// Horizontal padding when the root is `.bordered(true)`.
     bordered: bool,
     on_toggle: Option<ToggleHandler>,
+    style: StyleRefinement,
 }
 
 impl AccordionItem {
@@ -261,6 +275,7 @@ impl AccordionItem {
             root_disabled: false,
             bordered: false,
             on_toggle: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -287,6 +302,12 @@ impl AccordionItem {
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
+    }
+}
+
+impl Styled for AccordionItem {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -347,7 +368,7 @@ impl RenderOnce for AccordionItem {
 
         let h_pad = if self.bordered { Some(px(16.)) } else { None };
 
-        div()
+        let mut root = div()
             .w_full()
             .when(!self.last, |el| el.border_b_1().border_color(theme.border))
             // Trigger: flex flex-1 items-start justify-between gap-4 rounded-md
@@ -430,7 +451,9 @@ impl RenderOnce for AccordionItem {
                         }),
                     )
                 }
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -438,16 +461,19 @@ impl RenderOnce for AccordionItem {
 
 /// Trigger label/slot — flex-1 so the chevron stays end-aligned.
 ///
-/// Children are arbitrary (`ParentElement`).
+/// Children are arbitrary (`ParentElement`). Sizing and shape overrides come
+/// from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct AccordionTrigger {
     children: Vec<gpui::AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AccordionTrigger {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -464,10 +490,18 @@ impl ParentElement for AccordionTrigger {
     }
 }
 
+impl Styled for AccordionTrigger {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AccordionTrigger {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // flex-1 min-w-0 — shares the trigger row with the chevron.
-        div().flex().flex_1().min_w_0().children(self.children)
+        let mut root = div().flex().flex_1().min_w_0().children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -475,16 +509,19 @@ impl RenderOnce for AccordionTrigger {
 
 /// text-sm pb-4 — padding lives here so height measurement includes it.
 ///
-/// Children are arbitrary (`ParentElement`).
+/// Children are arbitrary (`ParentElement`). Sizing and shape overrides come
+/// from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct AccordionContent {
     children: Vec<gpui::AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AccordionContent {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -501,15 +538,23 @@ impl ParentElement for AccordionContent {
     }
 }
 
+impl Styled for AccordionContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AccordionContent {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
         // pb-4 text-sm — padding inside the measured box (shadcn inner div).
-        div()
+        let mut root = div()
             .pb(px(16.))
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }

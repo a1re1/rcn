@@ -5,13 +5,16 @@
 //! the caller owns `value` (option index) and `open`, receiving changes
 //! via `on_change` / `on_open_change`. Option groups, scroll buttons, and
 //! typeahead are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`] and apply
+//! to the trigger root (the option list panel is internal).
 
 use std::rc::Rc;
 
 use gpui::{
-    App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
-    SharedString, StatefulInteractiveElement as _, Styled, Window, anchored, deferred, div,
-    prelude::FluentBuilder as _, px, relative, svg,
+    App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, Refineable as _,
+    RenderOnce, SharedString, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    anchored, deferred, div, prelude::FluentBuilder as _, px, relative, svg,
 };
 
 use crate::theme::{Theme, alpha};
@@ -29,6 +32,7 @@ pub struct Select {
     disabled: bool,
     on_change: Option<ChangeHandler>,
     on_open_change: Option<OpenChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Select {
@@ -42,6 +46,7 @@ impl Select {
             disabled: false,
             on_change: None,
             on_open_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -90,6 +95,12 @@ impl Select {
     }
 }
 
+impl Styled for Select {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Select {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -102,7 +113,9 @@ impl RenderOnce for Select {
 
         // Trigger: h-9 rounded-md border-input bg-transparent px-3 py-2
         // text-sm shadow-xs, muted placeholder, trailing chevron.
-        let trigger = div()
+        // Caller refinement applied on the trigger so sizing/shape win;
+        // the option list panel is internal.
+        let mut trigger = div()
             .id(self.id)
             .flex()
             .flex_row()
@@ -138,6 +151,7 @@ impl RenderOnce for Select {
                     .flex_shrink_0()
                     .text_color(theme.muted_foreground),
             );
+        trigger.style().refine(&self.style);
 
         // Panel: popover list of options, check on the selected one.
         let panel = open.then(|| {

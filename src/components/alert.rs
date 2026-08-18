@@ -3,6 +3,9 @@
 //! Callout shell with optional leading icon plus Title / Description children.
 //! Variants: `default` | `destructive`.
 //!
+//! Sizing and shape overrides come from the caller via [`Styled`] (gpui's
+//! equivalent of shadcn's `className` passthrough).
+//!
 //! Omissions vs source (no gpui equivalent yet):
 //! - CSS grid template / `has-[>svg]` selectors — layout is an explicit flex row
 //!   when `.icon(..)` is set, otherwise a flex column (no auto-detect of svg children).
@@ -13,8 +16,8 @@
 //!   `theme.muted_foreground`. TODO(rcn): parent-context destructive/90 tint.
 
 use gpui::{
-    AnyElement, App, FontWeight, IntoElement, ParentElement, RenderOnce, SharedString, Styled,
-    Window, div, px, svg,
+    AnyElement, App, FontWeight, IntoElement, ParentElement, Refineable as _, RenderOnce,
+    SharedString, StyleRefinement, Styled, Window, div, px, svg,
 };
 
 use crate::theme::Theme;
@@ -28,11 +31,14 @@ pub enum AlertVariant {
 }
 
 /// w-full rounded-lg border px-4 py-3 text-sm — callout shell.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Alert {
     variant: AlertVariant,
     icon: Option<SharedString>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Alert {
@@ -41,6 +47,7 @@ impl Alert {
             variant: AlertVariant::Default,
             icon: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -68,6 +75,12 @@ impl ParentElement for Alert {
     }
 }
 
+impl Styled for Alert {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Alert {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
@@ -92,7 +105,7 @@ impl RenderOnce for Alert {
             .bg(theme.card)
             .text_color(text);
 
-        if let Some(icon) = self.icon {
+        let mut root = if let Some(icon) = self.icon {
             // has-[>svg]: flex row gap-x-2.5; svg size-4 shrink-0 translate-y-0.5 text-current
             base.flex()
                 .flex_row()
@@ -116,20 +129,26 @@ impl RenderOnce for Alert {
         } else {
             // no icon: flex col gap-0.5 (source gap-0.5 ≈ 2px)
             base.flex().flex_col().gap(px(2.)).children(self.children)
-        }
+        };
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// font-medium title row inside an [`Alert`].
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct AlertTitle {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AlertTitle {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -146,16 +165,26 @@ impl ParentElement for AlertTitle {
     }
 }
 
+impl Styled for AlertTitle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AlertTitle {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // font-medium — color inherits from parent Alert
-        div()
+        let mut root = div()
             .font_weight(FontWeight::MEDIUM)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// text-sm text-muted-foreground description body inside an [`Alert`].
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 ///
 /// TODO(rcn): when nested under a destructive Alert the source tints description
 /// to destructive/90 via parent-context selectors — not available in gpui, so
@@ -163,12 +192,14 @@ impl RenderOnce for AlertTitle {
 #[derive(IntoElement)]
 pub struct AlertDescription {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl AlertDescription {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -185,15 +216,23 @@ impl ParentElement for AlertDescription {
     }
 }
 
+impl Styled for AlertDescription {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for AlertDescription {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
 
         // text-sm text-muted-foreground
-        div()
+        let mut root = div()
             .text_size(px(14.))
             .line_height(px(20.))
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }

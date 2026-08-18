@@ -3,10 +3,13 @@
 //! A flex-row text label for associating copy with controls. Peer/group
 //! disabled cascade is approximated via an explicit `.disabled(bool)` builder
 //! (opacity 0.5); pointer-events and cursor variants are omitted. The RTL
-//! docs example is omitted (LTR-only layout).
+//! docs example is omitted (LTR-only layout). Sizing and shape overrides come
+//! from the caller via [`Styled`] (gpui's equivalent of shadcn's `className`
+//! passthrough).
 
 use gpui::{
-    AnyElement, App, FontWeight, IntoElement, ParentElement, RenderOnce, Styled, Window, div, px,
+    AnyElement, App, FontWeight, IntoElement, ParentElement, Refineable as _, RenderOnce,
+    StyleRefinement, Styled, Window, div, px,
 };
 
 use crate::theme::Theme;
@@ -14,6 +17,7 @@ use crate::theme::Theme;
 #[derive(IntoElement)]
 pub struct Label {
     disabled: bool,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -21,6 +25,7 @@ impl Label {
     pub fn new() -> Self {
         Self {
             disabled: false,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -40,6 +45,12 @@ impl Default for Label {
 impl ParentElement for Label {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
+    }
+}
+
+impl Styled for Label {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -63,6 +74,7 @@ impl RenderOnce for Label {
             base = base.opacity(0.5);
         }
 
+        base.style().refine(&self.style);
         base.children(self.children)
     }
 }

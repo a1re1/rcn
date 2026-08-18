@@ -4,23 +4,29 @@
 //! inside a Header, then a Content area for actions. The source's dashed
 //! border utility is approximated with a plain border (gpui has no dashed
 //! borders yet — TODO(rcn)).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
-    AnyElement, App, FontWeight, IntoElement, ParentElement, RenderOnce, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    AnyElement, App, FontWeight, IntoElement, ParentElement, Refineable as _, RenderOnce,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::theme::Theme;
 
 /// flex w-full flex-col items-center justify-center gap-4 rounded-lg p-12
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Empty {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl Empty {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -29,6 +35,12 @@ impl Empty {
 impl Default for Empty {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for Empty {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -41,7 +53,7 @@ impl ParentElement for Empty {
 impl RenderOnce for Empty {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .w_full()
@@ -53,19 +65,25 @@ impl RenderOnce for Empty {
             .border_1()
             .border_color(theme.border)
             .p(px(48.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// flex max-w-sm flex-col items-center gap-2
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct EmptyHeader {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl EmptyHeader {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -77,6 +95,12 @@ impl Default for EmptyHeader {
     }
 }
 
+impl Styled for EmptyHeader {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for EmptyHeader {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -85,13 +109,15 @@ impl ParentElement for EmptyHeader {
 
 impl RenderOnce for EmptyHeader {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .max_w(px(384.))
             .items_center()
             .gap(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -104,9 +130,12 @@ pub enum EmptyMediaVariant {
 }
 
 /// mb-2 flex shrink-0 items-center justify-center (+ icon tile variant)
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct EmptyMedia {
     variant: EmptyMediaVariant,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -114,6 +143,7 @@ impl EmptyMedia {
     pub fn new() -> Self {
         Self {
             variant: EmptyMediaVariant::default(),
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -130,6 +160,12 @@ impl Default for EmptyMedia {
     }
 }
 
+impl Styled for EmptyMedia {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for EmptyMedia {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -139,7 +175,7 @@ impl ParentElement for EmptyMedia {
 impl RenderOnce for EmptyMedia {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .flex_shrink_0()
             .items_center()
@@ -151,19 +187,25 @@ impl RenderOnce for EmptyMedia {
                     .bg(theme.muted)
                     .text_color(theme.foreground)
             })
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// cn-font-heading text-lg font-medium
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct EmptyTitle {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl EmptyTitle {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -172,6 +214,12 @@ impl EmptyTitle {
 impl Default for EmptyTitle {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for EmptyTitle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -184,24 +232,30 @@ impl ParentElement for EmptyTitle {
 impl RenderOnce for EmptyTitle {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .text_size(px(18.))
             .line_height(px(28.))
             .font_weight(FontWeight::MEDIUM)
             .when_some(theme.heading_font(), |el, font| el.font_family(font))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// text-sm/relaxed text-muted-foreground
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct EmptyDescription {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl EmptyDescription {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -210,6 +264,12 @@ impl EmptyDescription {
 impl Default for EmptyDescription {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for EmptyDescription {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -222,23 +282,29 @@ impl ParentElement for EmptyDescription {
 impl RenderOnce for EmptyDescription {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .text_size(px(14.))
             .line_height(px(22.))
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// flex w-full max-w-sm flex-col items-center gap-4 text-sm
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct EmptyContent {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl EmptyContent {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -250,6 +316,12 @@ impl Default for EmptyContent {
     }
 }
 
+impl Styled for EmptyContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl ParentElement for EmptyContent {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.children.extend(elements);
@@ -258,7 +330,7 @@ impl ParentElement for EmptyContent {
 
 impl RenderOnce for EmptyContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .w_full()
@@ -267,6 +339,8 @@ impl RenderOnce for EmptyContent {
             .gap(px(16.))
             .text_size(px(14.))
             .line_height(px(20.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }

@@ -17,10 +17,13 @@
 //! - `role="group"`/`role="alert"` semantics and the RTL variants have no
 //!   gpui analog and are omitted, as is `FieldError`'s Standard Schema
 //!   `issues` overload (pass message strings to `.errors(..)`).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
-    AnyElement, App, ElementId, FontWeight, IntoElement, ParentElement, Pixels, RenderOnce,
-    SharedString, Styled, Window, div, prelude::FluentBuilder as _, px,
+    AnyElement, App, ElementId, FontWeight, IntoElement, ParentElement, Pixels, Refineable as _,
+    RenderOnce, SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
+    px,
 };
 
 use crate::container_query::container_query;
@@ -44,6 +47,8 @@ pub enum FieldOrientation {
 
 /// group/field flex w-full gap-2 data-[invalid=true]:text-destructive —
 /// one labeled control.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Field {
     id: ElementId,
@@ -51,6 +56,7 @@ pub struct Field {
     breakpoint: Pixels,
     invalid: bool,
     has_content: bool,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -62,6 +68,7 @@ impl Field {
             breakpoint: RESPONSIVE_BREAKPOINT,
             invalid: false,
             has_content: false,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -104,7 +111,7 @@ impl Field {
 
     fn render_oriented(self, horizontal: bool, cx: &mut App) -> AnyElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .flex()
             .w_full()
             .gap(px(8.))
@@ -123,8 +130,15 @@ impl Field {
                 }
             })
             .when(self.invalid, |el| el.text_color(theme.destructive))
-            .children(self.children)
-            .into_any_element()
+            .children(self.children);
+        root.style().refine(&self.style);
+        root.into_any_element()
+    }
+}
+
+impl Styled for Field {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -163,12 +177,15 @@ impl RenderOnce for Field {
 /// destructive onto it. With `.choice_card(checked)` it becomes the
 /// selectable bordered card the docs build by nesting a `Field` inside a
 /// `FieldLabel`.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldLabel {
     choice_card: bool,
     checked: bool,
     font_normal: bool,
     disabled: bool,
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
@@ -179,6 +196,7 @@ impl FieldLabel {
             checked: false,
             font_normal: false,
             disabled: false,
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
     }
@@ -203,6 +221,12 @@ impl FieldLabel {
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
+    }
+}
+
+impl Styled for FieldLabel {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -236,7 +260,7 @@ impl RenderOnce for FieldLabel {
                 FontWeight::MEDIUM
             })
             .when(self.disabled, |el| el.opacity(0.5));
-        let base = if self.choice_card {
+        let mut root = if self.choice_card {
             // has-[>[data-slot=field]]:w-full flex-col rounded-lg border;
             // the source pads the nested field (*:data-[slot=field]:p-2.5) —
             // padding the card is the same box.
@@ -258,22 +282,34 @@ impl RenderOnce for FieldLabel {
         } else {
             base
         };
-        base.children(self.children)
+        root = root.children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// group/field-content flex flex-1 flex-col gap-0.5 — stacks a title/label
 /// and description beside a control.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldContent {
+    style: StyleRefinement,
     children: Vec<AnyElement>,
 }
 
 impl FieldContent {
     pub fn new() -> Self {
         Self {
+            style: StyleRefinement::default(),
             children: Vec::new(),
         }
+    }
+}
+
+impl Styled for FieldContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -291,7 +327,7 @@ impl ParentElement for FieldContent {
 
 impl RenderOnce for FieldContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .flex_1()
@@ -301,23 +337,35 @@ impl RenderOnce for FieldContent {
             // out of the card instead of wrapping.
             .min_w(px(0.))
             .gap(px(2.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// flex w-fit items-center gap-2 text-sm font-medium — label-styled title
 /// inside a [`FieldContent`] (used when the row's real label is elsewhere,
 /// e.g. choice cards). Inherits text color for the invalid cascade.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldTitle {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldTitle {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
+    }
+}
+
+impl Styled for FieldTitle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -335,7 +383,7 @@ impl ParentElement for FieldTitle {
 
 impl RenderOnce for FieldTitle {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
@@ -343,21 +391,33 @@ impl RenderOnce for FieldTitle {
             .text_size(px(14.))
             .line_height(px(20.))
             .font_weight(FontWeight::MEDIUM)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// text-sm leading-normal font-normal text-muted-foreground.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldDescription {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldDescription {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
+    }
+}
+
+impl Styled for FieldDescription {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -377,22 +437,27 @@ impl RenderOnce for FieldDescription {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
         // leading-normal: 1.5 × 14px
-        div()
+        let mut root = div()
             .text_size(px(14.))
             .line_height(px(21.))
             .font_weight(FontWeight::NORMAL)
             .text_color(theme.muted_foreground)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// text-sm font-normal text-destructive — validation feedback. One error
 /// renders as a line; several render as a disc list (duplicates dropped),
 /// matching the TSX `errors` array handling.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldError {
     errors: Vec<SharedString>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldError {
@@ -400,6 +465,7 @@ impl FieldError {
         Self {
             errors: Vec::new(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -408,6 +474,12 @@ impl FieldError {
     pub fn errors(mut self, errors: impl IntoIterator<Item = impl Into<SharedString>>) -> Self {
         self.errors = errors.into_iter().map(Into::into).collect();
         self
+    }
+}
+
+impl Styled for FieldError {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -426,11 +498,12 @@ impl ParentElement for FieldError {
 impl RenderOnce for FieldError {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        let base = div()
+        let mut base = div()
             .text_size(px(14.))
             .line_height(px(20.))
             .font_weight(FontWeight::NORMAL)
             .text_color(theme.destructive);
+        base.style().refine(&self.style);
         if !self.children.is_empty() || self.errors.is_empty() {
             return base.children(self.children);
         }
@@ -444,30 +517,28 @@ impl RenderOnce for FieldError {
             return base.child(unique.remove(0));
         }
         // ml-4 flex list-disc flex-col gap-1
-        base.child(
-            div()
-                .ml(px(16.))
-                .flex()
-                .flex_col()
-                .gap(px(4.))
-                .children(unique.into_iter().map(|message| {
-                    div()
-                        .flex()
-                        .flex_row()
-                        .gap(px(8.))
-                        .child("•")
-                        .child(message)
-                })),
-        )
+        base.child(div().ml(px(16.)).flex().flex_col().gap(px(4.)).children(
+            unique.into_iter().map(|message| {
+                div()
+                    .flex()
+                    .flex_row()
+                    .gap(px(8.))
+                    .child("•")
+                    .child(message)
+            }),
+        ))
     }
 }
 
 /// group/field-group flex w-full flex-col gap-5 — stacks fields into a form
 /// section. `.gap(..)` covers the docs' tighter checkbox-group stacks.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldGroup {
     gap: Pixels,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldGroup {
@@ -475,6 +546,7 @@ impl FieldGroup {
         Self {
             gap: px(20.),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -483,6 +555,12 @@ impl FieldGroup {
     pub fn gap(mut self, gap: Pixels) -> Self {
         self.gap = gap;
         self
+    }
+}
+
+impl Styled for FieldGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -500,12 +578,14 @@ impl ParentElement for FieldGroup {
 
 impl RenderOnce for FieldGroup {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .w_full()
             .gap(self.gap)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -514,12 +594,15 @@ impl RenderOnce for FieldGroup {
 /// the fieldset's flex flow, so the measured layout is legend → description
 /// at 0px (legend variant) or 2px (label variant), then the 16px gap to
 /// everything else; `.legend(..)`/`.description(..)` reproduce that.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldSet {
     legend: Option<FieldLegend>,
     description: Option<FieldDescription>,
     gap: Pixels,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldSet {
@@ -529,6 +612,7 @@ impl FieldSet {
             description: None,
             gap: px(16.),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -548,6 +632,12 @@ impl FieldSet {
     pub fn gap(mut self, gap: Pixels) -> Self {
         self.gap = gap;
         self
+    }
+}
+
+impl Styled for FieldSet {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -580,12 +670,14 @@ impl RenderOnce for FieldSet {
                     .children(description.map(IntoElement::into_any_element)),
             ),
         };
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .gap(self.gap)
             .children(header)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -600,10 +692,13 @@ pub enum FieldLegendVariant {
 }
 
 /// font-medium, text-base or text-sm by variant — the [`FieldSet`] heading.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldLegend {
     variant: FieldLegendVariant,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldLegend {
@@ -611,12 +706,19 @@ impl FieldLegend {
         Self {
             variant: FieldLegendVariant::default(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
     pub fn variant(mut self, variant: FieldLegendVariant) -> Self {
         self.variant = variant;
         self
+    }
+}
+
+impl Styled for FieldLegend {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -639,27 +741,39 @@ impl RenderOnce for FieldLegend {
             FieldLegendVariant::Legend => (px(16.), px(24.)),
             FieldLegendVariant::Label => (px(14.), px(20.)),
         };
-        div()
+        let mut root = div()
             .text_size(size)
             .line_height(line_height)
             .font_weight(FontWeight::MEDIUM)
             .when_some(theme.heading_font(), |el, font| el.font_family(font))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 /// relative -my-2 h-5 — a rule between [`FieldGroup`] sections; children
 /// render centered over it on a background chip ("Or continue with").
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct FieldSeparator {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl FieldSeparator {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
+    }
+}
+
+impl Styled for FieldSeparator {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -678,7 +792,7 @@ impl ParentElement for FieldSeparator {
 impl RenderOnce for FieldSeparator {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
-        div()
+        let mut root = div()
             .relative()
             .h(px(20.))
             .mt(px(-8.))
@@ -707,6 +821,8 @@ impl RenderOnce for FieldSeparator {
                             .children(self.children),
                     ),
                 )
-            })
+            });
+        root.style().refine(&self.style);
+        root
     }
 }

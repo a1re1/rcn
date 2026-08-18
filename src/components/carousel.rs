@@ -3,24 +3,31 @@
 //! One visible slide with round previous/next buttons at the sides.
 //! Controlled: the caller owns the index. Swipe gestures, momentum, and
 //! multi-slide viewports are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ElementId, InteractiveElement as _, IntoElement, ParentElement, RenderOnce,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px, svg,
+    AnyElement, App, ElementId, InteractiveElement as _, IntoElement, ParentElement,
+    Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
+    div, prelude::FluentBuilder as _, px, svg,
 };
 
 use crate::theme::Theme;
 
 type IndexChangeHandler = Rc<dyn Fn(&usize, &mut Window, &mut App) + 'static>;
 
+/// One-at-a-time slide viewer with prev/next controls.
+///
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct Carousel {
     id: ElementId,
     index: usize,
     slides: Vec<AnyElement>,
     on_index_change: Option<IndexChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl Carousel {
@@ -30,6 +37,7 @@ impl Carousel {
             index: 0,
             slides: Vec::new(),
             on_index_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -50,6 +58,12 @@ impl Carousel {
 impl ParentElement for Carousel {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
         self.slides.extend(elements);
+    }
+}
+
+impl Styled for Carousel {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -94,7 +108,7 @@ impl RenderOnce for Carousel {
             .nth(index)
             .unwrap_or_else(|| div().into_any_element());
 
-        div()
+        let mut root = div()
             .id(self.id)
             .flex()
             .flex_row()
@@ -123,6 +137,8 @@ impl RenderOnce for Carousel {
                 "carousel-next",
                 theme.icons.chevron_right(),
                 (index + 1 < count).then_some(index + 1),
-            ))
+            ));
+        root.style().refine(&self.style);
+        root
     }
 }

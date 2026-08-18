@@ -4,13 +4,16 @@
 //! N-panel group with self-managed layout state, wide handle hit areas,
 //! optional grip, vertical orientation, nested groups, keyboard resize,
 //! and min/max/default/collapsible panel sizes.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use std::rc::Rc;
 
 use gpui::{
     AnyElement, App, AppContext as _, Context, DragMoveEvent, ElementId, Entity,
-    InteractiveElement as _, IntoElement, ParentElement as _, Render, RenderOnce,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px,
+    InteractiveElement as _, IntoElement, ParentElement as _, Refineable as _, Render, RenderOnce,
+    StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div,
+    prelude::FluentBuilder as _, px,
 };
 
 use crate::theme::Theme;
@@ -65,12 +68,14 @@ const KEYBOARD_STEP: f32 = 0.10;
 ///
 /// Compose with [`.panel`](Self::panel) / [`.handle`](Self::handle) in
 /// shadcn order: Panel, Handle, Panel, …
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct ResizablePanelGroup {
     id: ElementId,
     direction: ResizableDirection,
     children: Vec<ResizableChild>,
     on_layout_change: Option<LayoutChangeHandler>,
+    style: StyleRefinement,
 }
 
 impl ResizablePanelGroup {
@@ -80,6 +85,7 @@ impl ResizablePanelGroup {
             direction: ResizableDirection::default(),
             children: Vec::new(),
             on_layout_change: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -109,9 +115,16 @@ impl ResizablePanelGroup {
     }
 }
 
+impl Styled for ResizablePanelGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 // ─── ResizablePanel ─────────────────────────────────────────────────────────
 
 /// One panel inside a [`ResizablePanelGroup`].
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct ResizablePanel {
     default_size: Option<f32>,
@@ -120,6 +133,7 @@ pub struct ResizablePanel {
     collapsible: bool,
     collapsed_size: f32,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ResizablePanel {
@@ -131,6 +145,7 @@ impl ResizablePanel {
             collapsible: false,
             collapsed_size: 0.0,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -180,17 +195,28 @@ impl Default for ResizablePanel {
     }
 }
 
+impl Styled for ResizablePanel {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 // ─── ResizableHandle ────────────────────────────────────────────────────────
 
 /// Draggable separator between two panels.
+/// Sizing and shape overrides come from the caller via [`Styled`].
 #[derive(IntoElement)]
 pub struct ResizableHandle {
     with_handle: bool,
+    style: StyleRefinement,
 }
 
 impl ResizableHandle {
     pub fn new() -> Self {
-        Self { with_handle: false }
+        Self {
+            with_handle: false,
+            style: StyleRefinement::default(),
+        }
     }
 
     /// Show the centered grip pill (shadcn `withHandle`).
@@ -203,6 +229,12 @@ impl ResizableHandle {
 impl Default for ResizableHandle {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Styled for ResizableHandle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
     }
 }
 
@@ -445,6 +477,7 @@ impl RenderOnce for ResizablePanelGroup {
             } else {
                 panel_el.w_full()
             };
+            panel_el.style().refine(&panel.style);
 
             built.push(panel_el.into_any_element());
 
@@ -508,7 +541,7 @@ impl RenderOnce for ResizablePanelGroup {
                 let on_change_k = on_layout_change.clone();
                 let ring_k = ring.clone();
 
-                let separator = div()
+                let mut separator = div()
                     .id(ElementId::from((group_id.clone(), format!("sep-{index}"))))
                     .flex_shrink_0()
                     .relative()
@@ -639,6 +672,7 @@ impl RenderOnce for ResizablePanelGroup {
                     })
                     .child(hit)
                     .children(grip);
+                separator.style().refine(&handle.style);
 
                 built.push(separator.into_any_element());
             }
@@ -649,7 +683,7 @@ impl RenderOnce for ResizablePanelGroup {
         let drag_on_change = on_layout_change.clone();
         let drag_group_id = group_id.clone();
 
-        div()
+        let mut root = div()
             .id(self.id)
             .flex()
             .map(|el| {
@@ -701,7 +735,9 @@ impl RenderOnce for ResizablePanelGroup {
                     cx,
                 );
             })
-            .children(built)
+            .children(built);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -709,13 +745,17 @@ impl RenderOnce for ResizablePanelGroup {
 impl RenderOnce for ResizablePanel {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // Panels are consumed by ResizablePanelGroup; standalone render is a no-op shell.
-        div().children(self.children)
+        let mut root = div().children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
 impl RenderOnce for ResizableHandle {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div();
+        root.style().refine(&self.style);
+        root
     }
 }
 

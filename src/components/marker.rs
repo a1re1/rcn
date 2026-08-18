@@ -2,11 +2,12 @@
 //!
 //! An inline conversation marker (date dividers, event notes): muted text
 //! row with optional icon, as a plain row, a separator (rules on both
-//! sides), or a bottom-bordered heading.
+//! sides), or a bottom-bordered heading. Sizing and shape overrides come
+//! from the caller via [`Styled`].
 
 use gpui::{
-    AnyElement, App, IntoElement, ParentElement, RenderOnce, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    AnyElement, App, IntoElement, ParentElement, Refineable as _, RenderOnce, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::theme::Theme;
@@ -21,10 +22,13 @@ pub enum MarkerVariant {
     Border,
 }
 
+/// Conversation marker row. Sizing and shape overrides come from the caller
+/// via [`Styled`].
 #[derive(IntoElement)]
 pub struct Marker {
     variant: MarkerVariant,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Marker {
@@ -32,6 +36,7 @@ impl Marker {
         Self {
             variant: MarkerVariant::default(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -53,12 +58,18 @@ impl ParentElement for Marker {
     }
 }
 
+impl Styled for Marker {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Marker {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
         let rule = || div().h(px(1.)).flex_1().min_w(px(0.)).bg(theme.border);
 
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .w_full()
@@ -70,13 +81,14 @@ impl RenderOnce for Marker {
             .text_color(theme.muted_foreground)
             .when(self.variant == MarkerVariant::Border, |el| {
                 el.border_b_1().border_color(theme.border).pb(px(8.))
-            })
-            .map(|el| {
-                if self.variant == MarkerVariant::Separator {
-                    el.child(rule()).children(self.children).child(rule())
-                } else {
-                    el.children(self.children)
-                }
-            })
+            });
+        root.style().refine(&self.style);
+        root.map(|el| {
+            if self.variant == MarkerVariant::Separator {
+                el.child(rule()).children(self.children).child(rule())
+            } else {
+                el.children(self.children)
+            }
+        })
     }
 }

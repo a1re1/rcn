@@ -9,11 +9,13 @@
 //! instant `theme.muted` swap — source `[a]:hover:bg-muted` /
 //! `transition-colors duration-100` cannot animate under gpui hover
 //! styles (same TODO convention as Button).
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    ParentElement, Refineable as _, RenderOnce, StatefulInteractiveElement as _, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::components::separator::Separator;
@@ -62,6 +64,7 @@ pub struct Item {
     id: Option<ElementId>,
     on_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl Item {
@@ -73,6 +76,7 @@ impl Item {
             id: None,
             on_click: None,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -121,6 +125,12 @@ impl ParentElement for Item {
     }
 }
 
+impl Styled for Item {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for Item {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -166,16 +176,20 @@ impl RenderOnce for Item {
             let ring = motion::focus_ring(&theme);
             let ring_border = theme.ring;
             let muted = theme.muted;
-            base.id(id)
+            let mut root = base
+                .id(id)
                 .tab_index(0)
                 .cursor_pointer()
                 .focus_visible(move |s| s.border_color(ring_border).shadow(ring.clone()))
                 .hover(move |s| s.bg(muted))
                 .when_some(self.on_click, |el, on_click| el.on_click(on_click))
-                .children(self.children)
-                .into_any_element()
+                .children(self.children);
+            root.style().refine(&self.style);
+            root.into_any_element()
         } else {
-            base.children(self.children).into_any_element()
+            let mut root = base.children(self.children);
+            root.style().refine(&self.style);
+            root.into_any_element()
         }
     }
 }
@@ -209,6 +223,7 @@ pub struct ItemMedia {
     /// item has both media and a description).
     top_align: bool,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemMedia {
@@ -218,6 +233,7 @@ impl ItemMedia {
             size: ItemSize::default(),
             top_align: false,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -257,6 +273,12 @@ impl ParentElement for ItemMedia {
     }
 }
 
+impl Styled for ItemMedia {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemMedia {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
@@ -266,7 +288,7 @@ impl RenderOnce for ItemMedia {
             ItemSize::Sm => px(32.),
             ItemSize::Xs => px(24.),
         };
-        div()
+        let mut root = div()
             .flex()
             .flex_shrink_0()
             .items_center()
@@ -278,7 +300,9 @@ impl RenderOnce for ItemMedia {
                     .overflow_hidden()
                     .rounded(theme.radius_sm())
             })
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -293,6 +317,7 @@ pub struct ItemContent {
     /// sibling content column (e.g. duration) opts out of flex-1.
     flex_none: bool,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemContent {
@@ -301,6 +326,7 @@ impl ItemContent {
             size: ItemSize::default(),
             flex_none: false,
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -331,6 +357,12 @@ impl ParentElement for ItemContent {
     }
 }
 
+impl Styled for ItemContent {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemContent {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // Xs → gap-0; else gap-1 (4px). Source:
@@ -339,7 +371,7 @@ impl RenderOnce for ItemContent {
             ItemSize::Xs => px(0.),
             _ => px(4.),
         };
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .when(self.flex_none, |el| el.flex_none())
@@ -348,7 +380,9 @@ impl RenderOnce for ItemContent {
             // next flex-wrap line (CSS gets this via line-clamp overflow).
             .when(!self.flex_none, |el| el.flex_1().min_w(px(0.)))
             .gap(gap)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -356,12 +390,14 @@ impl RenderOnce for ItemContent {
 #[derive(IntoElement)]
 pub struct ItemTitle {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemTitle {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -378,10 +414,16 @@ impl ParentElement for ItemTitle {
     }
 }
 
+impl Styled for ItemTitle {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemTitle {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // Source `line-clamp-1`. Applied on the flex-row title container.
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
@@ -390,7 +432,9 @@ impl RenderOnce for ItemTitle {
             .line_height(px(19.))
             .font_weight(FontWeight::MEDIUM)
             .line_clamp(1)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -402,6 +446,7 @@ pub struct ItemDescription {
     /// `group-data-[size=xs]/item:text-xs`.
     size: ItemSize,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemDescription {
@@ -409,6 +454,7 @@ impl ItemDescription {
         Self {
             size: ItemSize::default(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -432,6 +478,12 @@ impl ParentElement for ItemDescription {
     }
 }
 
+impl Styled for ItemDescription {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemDescription {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx);
@@ -441,12 +493,14 @@ impl RenderOnce for ItemDescription {
             _ => (px(14.), px(21.)),
         };
         // Source `line-clamp-2`.
-        div()
+        let mut root = div()
             .text_size(text_size)
             .line_height(line_height)
             .text_color(theme.muted_foreground)
             .line_clamp(2)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -454,12 +508,14 @@ impl RenderOnce for ItemDescription {
 #[derive(IntoElement)]
 pub struct ItemActions {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemActions {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -476,14 +532,22 @@ impl ParentElement for ItemActions {
     }
 }
 
+impl Styled for ItemActions {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemActions {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
             .gap(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -491,12 +555,14 @@ impl RenderOnce for ItemActions {
 #[derive(IntoElement)]
 pub struct ItemHeader {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemHeader {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -513,16 +579,24 @@ impl ParentElement for ItemHeader {
     }
 }
 
+impl Styled for ItemHeader {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemHeader {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .w_full()
             .items_center()
             .justify_between()
             .gap(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -533,6 +607,7 @@ impl RenderOnce for ItemHeader {
 #[derive(IntoElement)]
 pub struct ItemFooter {
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 #[allow(dead_code)]
@@ -540,6 +615,7 @@ impl ItemFooter {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 }
@@ -556,16 +632,24 @@ impl ParentElement for ItemFooter {
     }
 }
 
+impl Styled for ItemFooter {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemFooter {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div()
+        let mut root = div()
             .flex()
             .flex_row()
             .w_full()
             .items_center()
             .justify_between()
             .gap(px(8.))
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -580,6 +664,7 @@ pub struct ItemGroup {
     /// (`gap-4` / `has-data-[size=sm]:gap-2.5` / `has-data-[size=xs]:gap-2`).
     size: ItemSize,
     children: Vec<AnyElement>,
+    style: StyleRefinement,
 }
 
 impl ItemGroup {
@@ -587,6 +672,7 @@ impl ItemGroup {
         Self {
             size: ItemSize::default(),
             children: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -612,6 +698,12 @@ impl ParentElement for ItemGroup {
     }
 }
 
+impl Styled for ItemGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemGroup {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
         // Default gap-4 (16); Sm gap-2.5 (10); Xs gap-2 (8).
@@ -620,12 +712,14 @@ impl RenderOnce for ItemGroup {
             ItemSize::Sm => px(10.),
             ItemSize::Xs => px(8.),
         };
-        div()
+        let mut root = div()
             .flex()
             .flex_col()
             .w_full()
             .gap(gap)
-            .children(self.children)
+            .children(self.children);
+        root.style().refine(&self.style);
+        root
     }
 }
 
@@ -634,12 +728,16 @@ impl RenderOnce for ItemGroup {
 /// docs examples (kept for parity).
 #[allow(dead_code)]
 #[derive(IntoElement)]
-pub struct ItemSeparator;
+pub struct ItemSeparator {
+    style: StyleRefinement,
+}
 
 #[allow(dead_code)]
 impl ItemSeparator {
     pub fn new() -> Self {
-        Self
+        Self {
+            style: StyleRefinement::default(),
+        }
     }
 }
 
@@ -649,8 +747,16 @@ impl Default for ItemSeparator {
     }
 }
 
+impl Styled for ItemSeparator {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ItemSeparator {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        div().my(px(8.)).w_full().child(Separator::new())
+        let mut root = div().my(px(8.)).w_full().child(Separator::new());
+        root.style().refine(&self.style);
+        root
     }
 }

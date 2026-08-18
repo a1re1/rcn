@@ -204,6 +204,26 @@ pub static AVATAR_API: &[ApiEntry] = &[
         doc: "Image source. Embedded asset paths (e.g. `images/avatar.png`) work; remote URLs would need an http client, which gpui's plain Application does not have.",
     },
     ApiEntry {
+        type_name: "Avatar",
+        signature: "pub fn badge(mut self, badge: AvatarBadge) -> Self",
+        doc: "Attach an [`AvatarBadge`] (shadcn renders it as a child of `<Avatar>`; the builder API hangs it off the root).",
+    },
+    ApiEntry {
+        type_name: "AvatarBadge",
+        signature: "pub fn new() -> Self",
+        doc: "",
+    },
+    ApiEntry {
+        type_name: "AvatarBadge",
+        signature: "pub fn color(mut self, color: Hsla) -> Self",
+        doc: "Override the default `theme.primary` fill (e.g. docs green status).",
+    },
+    ApiEntry {
+        type_name: "AvatarBadge",
+        signature: "pub fn icon(mut self, path: impl Into<SharedString>) -> Self",
+        doc: "Convenience for an icon child (rendered at 8px when the parent avatar is Default/Lg; hidden for Sm). Use [`ParentElement::child`] for arbitrary content.",
+    },
+    ApiEntry {
         type_name: "AvatarGroup",
         signature: "pub fn new() -> Self",
         doc: "",
@@ -215,7 +235,7 @@ pub static AVATAR_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "AvatarGroupCount",
-        signature: "pub fn new(count: usize) -> Self",
+        signature: "pub fn new() -> Self",
         doc: "",
     },
     ApiEntry {
@@ -223,9 +243,14 @@ pub static AVATAR_API: &[ApiEntry] = &[
         signature: "pub fn size(mut self, size: AvatarSize) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "AvatarGroupCount",
+        signature: "pub fn child(mut self, child: impl IntoElement) -> Self",
+        doc: "",
+    },
 ];
 
-pub static AVATAR_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .items_center()\n    .gap(px(24.))\n    .child(Avatar::new(\"CN\").size(self.avatar_size))\n    .child(\n        AvatarGroup::new()\n            .size(self.avatar_size)\n            .child(Avatar::new(\"CN\").size(self.avatar_size))\n            .child(Avatar::new(\"ER\").size(self.avatar_size))\n            .child(Avatar::new(\"LR\").size(self.avatar_size))\n            .child(AvatarGroupCount::new(3).size(self.avatar_size)),\n    )\n    ";
+pub static AVATAR_USAGE: &str = "let theme = Theme::of(cx).clone();\nlet size = self.avatar_size;\nlet green = if theme.dark {\n    rgb(0x166534).into()\n} else {\n    rgb(0x16a34a).into()\n};\ndiv()\n    .flex()\n    .flex_row()\n    .flex_wrap()\n    .items_center()\n    .gap(px(48.))\n    .child(\n        Avatar::new(\"CN\")\n            .size(size)\n            .image(crate::assets::IMAGE_AVATAR_SHADCN)\n            .grayscale(true),\n    )\n    .child(\n        Avatar::new(\"ER\")\n            .size(size)\n            .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)\n            .badge(AvatarBadge::new().color(green)),\n    )\n    .child(\n        AvatarGroup::new()\n            .size(size)\n            .child(\n                Avatar::new(\"CN\")\n                    .size(size)\n                    .image(crate::assets::IMAGE_AVATAR_SHADCN)\n                    .grayscale(true),\n            )\n            .child(\n                Avatar::new(\"LR\")\n                    .size(size)\n                    .image(crate::assets::IMAGE_AVATAR_MAXLEITER)\n                    .grayscale(true),\n            )\n            .child(\n                Avatar::new(\"ER\")\n                    .size(size)\n                    .image(crate::assets::IMAGE_AVATAR_EVILRABBIT)\n                    .grayscale(true),\n            )\n            .child(AvatarGroupCount::new().size(size).child(\"+3\")),\n    )\n    ";
 
 pub static BADGE_API: &[ApiEntry] = &[
     ApiEntry {
@@ -310,7 +335,7 @@ pub static BREADCRUMB_API: &[ApiEntry] = &[
     },
 ];
 
-pub static BREADCRUMB_USAGE: &str = "Breadcrumb::new().child(\n    BreadcrumbList::new()\n        .child(\n            BreadcrumbItem::new().child(\n                BreadcrumbLink::new(\"bc-home\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.story = Story::Tokens;\n                        cx.notify();\n                    }))\n                    .child(\"Home\"),\n            ),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))\n        .child(BreadcrumbSeparator::new())\n        .child(\n            BreadcrumbItem::new()\n                .child(BreadcrumbLink::new(\"bc-components\").child(\"Components\")),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbPage::new().child(\"Breadcrumb\"))),\n)\n    ";
+pub static BREADCRUMB_USAGE: &str = "Breadcrumb::new().child(\n    BreadcrumbList::new()\n        .child(\n            BreadcrumbItem::new().child(\n                BreadcrumbLink::new(\"bc-home\")\n                    .on_click(cx.listener(|this, _, _, cx| {\n                        this.story = Story::Tokens;\n                        this.apply_tokens(cx);\n                        cx.notify();\n                    }))\n                    .child(\"Home\"),\n            ),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbEllipsis::new()))\n        .child(BreadcrumbSeparator::new())\n        .child(\n            BreadcrumbItem::new()\n                .child(BreadcrumbLink::new(\"bc-components\").child(\"Components\")),\n        )\n        .child(BreadcrumbSeparator::new())\n        .child(BreadcrumbItem::new().child(BreadcrumbPage::new().child(\"Breadcrumb\"))),\n)\n    ";
 
 pub static BUBBLE_API: &[ApiEntry] = &[
     ApiEntry {
@@ -325,8 +350,28 @@ pub static BUBBLE_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Bubble",
+        signature: "pub fn align(mut self, align: BubbleAlign) -> Self",
+        doc: "Horizontal alignment within a column flex parent (`data-align`). Start → `self-start`, End → `self-end` (content-hugging + side).",
+    },
+    ApiEntry {
+        type_name: "Bubble",
+        signature: "pub fn id(mut self, id: impl Into<ElementId>) -> Self",
+        doc: "Element id for interactive content (shadcn `render={<button/>}`). Required with [`Bubble::on_click`] so the pill is focusable.",
+    },
+    ApiEntry {
+        type_name: "Bubble",
+        signature: "pub fn on_click( mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Click handler for interactive content. With [`Bubble::id`], the content pill becomes a real control: tab-focus, focus-visible ring, cursor, and per-variant hover (instant — see module docs).",
+    },
+    ApiEntry {
+        type_name: "Bubble",
         signature: "pub fn content(mut self, content: impl IntoElement) -> Self",
         doc: "The bubble body text/content (`BubbleContent`).",
+    },
+    ApiEntry {
+        type_name: "BubbleGroup",
+        signature: "pub fn new() -> Self",
+        doc: "",
     },
     ApiEntry {
         type_name: "BubbleReactions",
@@ -343,9 +388,14 @@ pub static BUBBLE_API: &[ApiEntry] = &[
         signature: "pub fn align(mut self, align: BubbleAlign) -> Self",
         doc: "",
     },
+    ApiEntry {
+        type_name: "BubbleReactions",
+        signature: "pub fn buttons(mut self) -> Self",
+        doc: "Zero the pill padding — equivalent of shadcn `has-[button]:p-0`. Use when children are Buttons (e.g. action chips inside reactions).",
+    },
 ];
 
-pub static BUBBLE_USAGE: &str = "div().w(px(384.)).child(\n    MessageGroup::new()\n        .child(\n            Message::new().child(\n                MessageContent::new().child(\n                    Bubble::new()\n                        .variant(self.bubble_variant)\n                        .content(\"This bubble follows the variant control.\")\n                        .child(\n                            BubbleReactions::new()\n                                .side(BubbleSide::Bottom)\n                                .align(BubbleAlign::End)\n                                .child(\"\\u{2764}\\u{fe0f} 2\"),\n                        ),\n                ),\n            ),\n        )\n        .child(\n            Message::new().align(MessageAlign::End).child(\n                MessageContent::new().align(MessageAlign::End).child(\n                    Bubble::new()\n                        .variant(BubbleVariant::Default)\n                        .content(\"And this one is the sender side.\")\n                        .child(\n                            BubbleReactions::new()\n                                .side(BubbleSide::Top)\n                                .align(BubbleAlign::Start)\n                                .child(\"\\u{1f44d}\"),\n                        ),\n                ),\n            ),\n        ),\n)\n    ";
+pub static BUBBLE_USAGE: &str = "div()\n    .w_full()\n    .max_w(px(384.))\n    .py(px(48.))\n    .flex()\n    .flex_col()\n    .gap(px(32.))\n    .child(\n        Bubble::new()\n            .align(BubbleAlign::End)\n            .content(\"Hey there! what's up?\"),\n    )\n    .child(\n        BubbleGroup::new()\n            .child(\n                Bubble::new()\n                    .variant(BubbleVariant::Muted)\n                    .content(\"Hey! Want to see chat bubbles?\"),\n            )\n            .child(\n                Bubble::new()\n                    .variant(BubbleVariant::Muted)\n                    .content(\n                        \"I can group messages, switch sides, and keep the whole thread easy to scan.\",\n                    )\n                    .child(BubbleReactions::new().child(\"👍\")),\n            ),\n    )\n    .child(\n        Bubble::new()\n            .align(BubbleAlign::End)\n            .content(\"Sure. Hit me with your best demo.\"),\n    )\n    .child(\n        Bubble::new()\n            .variant(self.bubble_variant)\n            .content(\n                \"Yes. You are reading a demo that is demoing itself. Very meta. Very on-brand.\",\n            )\n            .child(\n                BubbleReactions::new()\n                    .child(\"👍\")\n                    .child(\"🔥\")\n                    .child(\"👀\")\n                    .child(\"+2\"),\n            ),\n    )\n    .when_some(self.bubble_toast, |el, msg| {\n        el.child(\n            ToastViewport::new().child(\n                Toast::new(\"bubble-toast\", msg).on_close(cx.listener(\n                    |this, _: &ClickEvent, _, cx| {\n                        this.bubble_toast = None;\n                        cx.notify();\n                    },\n                )),\n            ),\n        )\n    })\n    ";
 
 pub static BUTTON_API: &[ApiEntry] = &[
     ApiEntry {
@@ -377,6 +427,11 @@ pub static BUTTON_API: &[ApiEntry] = &[
         type_name: "Button",
         signature: "pub fn rounded_full(mut self) -> Self",
         doc: "`rounded-full` — pill corners (px(9999.)).",
+    },
+    ApiEntry {
+        type_name: "Button",
+        signature: "pub fn flush(mut self) -> Self",
+        doc: "Zero horizontal padding — the docs' `className=\"p-0\"` override on inline link buttons (e.g. a show-more trigger inside flowing text).",
     },
     ApiEntry {
         type_name: "Button",
@@ -631,7 +686,12 @@ pub static CHECKBOX_API: &[ApiEntry] = &[
     ApiEntry {
         type_name: "Checkbox",
         signature: "pub fn checked(mut self, checked: bool) -> Self",
-        doc: "",
+        doc: "Controlled checked override. When set, wins over keyed uncontrolled state.",
+    },
+    ApiEntry {
+        type_name: "Checkbox",
+        signature: "pub fn default_checked(mut self, default_checked: bool) -> Self",
+        doc: "Initial checked value for uncontrolled mode (Base UI `defaultChecked`).",
     },
     ApiEntry {
         type_name: "Checkbox",
@@ -640,12 +700,27 @@ pub static CHECKBOX_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "Checkbox",
-        signature: "pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self",
-        doc: "",
+        signature: "pub fn read_only(mut self, read_only: bool) -> Self",
+        doc: "Focusable with the focus ring, but activation (click/Enter/Space) is a no-op. Distinct from `disabled`, which also drops focusability and dims the control.",
+    },
+    ApiEntry {
+        type_name: "Checkbox",
+        signature: "pub fn invalid(mut self, invalid: bool) -> Self",
+        doc: "Aria-invalid styles: destructive ring always-on; destructive border unless also checked (then border/bg stay primary).",
+    },
+    ApiEntry {
+        type_name: "Checkbox",
+        signature: "pub fn indeterminate(mut self, indeterminate: bool) -> Self",
+        doc: "Base UI `indeterminate`. Renders the check indicator on unchecked chrome when set and not checked. Toggling behaves like any unchecked checkbox (next value = `!checked`). `aria-checked=\"mixed\"` has no gpui a11y-tree equivalent.",
+    },
+    ApiEntry {
+        type_name: "Checkbox",
+        signature: "pub fn on_checked_change( mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static, ) -> Self",
+        doc: "Base UI `onCheckedChange`. Receives the next checked value.",
     },
 ];
 
-pub static CHECKBOX_USAGE: &str = "div()\n    .flex()\n    .flex_col()\n    .gap(px(12.))\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(\n                Checkbox::new(\"checkbox-terms\")\n                    .checked(self.checkbox_checked)\n                    .on_change(cx.listener(|this, checked: &bool, _, cx| {\n                        this.checkbox_checked = *checked;\n                        cx.notify();\n                    })),\n            )\n            .child(Label::new().child(\"Accept terms and conditions\")),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(Checkbox::new(\"checkbox-disabled\").disabled(true))\n            .child(Label::new().disabled(true).child(\"Disabled\")),\n    )\n    .child(\n        div()\n            .flex()\n            .flex_row()\n            .items_center()\n            .gap(px(8.))\n            .child(\n                Checkbox::new(\"checkbox-disabled-checked\")\n                    .checked(true)\n                    .disabled(true),\n            )\n            .child(Label::new().disabled(true).child(\"Disabled checked\")),\n    )\n    ";
+pub static CHECKBOX_USAGE: &str = "// Port of checkbox-demo.tsx\ndiv().w(px(384.)).child(\n    FieldGroup::new()\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Checkbox::new(\"checkbox-terms\")\n                        .checked(self.checkbox_checked)\n                        .read_only(self.checkbox_read_only)\n                        .indeterminate(self.checkbox_indeterminate)\n                        .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {\n                            this.checkbox_checked = *checked;\n                            cx.notify();\n                        })),\n                )\n                .child(Label::new().child(\"Accept terms and conditions\")),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(Checkbox::new(\"checkbox-terms-2\").default_checked(true))\n                .child(\n                    FieldContent::new()\n                        .child(FieldLabel::new().child(\"Accept terms and conditions\"))\n                        .child(\n                            FieldDescription::new().child(\n                                \"By clicking this checkbox, you agree to the terms.\",\n                            ),\n                        ),\n                ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(Checkbox::new(\"checkbox-toggle\").disabled(true))\n                .child(\n                    FieldLabel::new()\n                        .disabled(true)\n                        .child(\"Enable notifications\"),\n                ),\n        )\n        .child(\n            FieldLabel::new()\n                .choice_card(self.checkbox_notifications)\n                .child(\n                    Field::new()\n                        .orientation(FieldOrientation::Horizontal)\n                        .child(\n                            Checkbox::new(\"checkbox-toggle-2\")\n                                .checked(self.checkbox_notifications)\n                                .on_checked_change(cx.listener(\n                                    |this, checked: &bool, _, cx| {\n                                        this.checkbox_notifications = *checked;\n                                        cx.notify();\n                                    },\n                                )),\n                        )\n                        .child(\n                            FieldContent::new()\n                                .child(FieldTitle::new().child(\"Enable notifications\"))\n                                .child(FieldDescription::new().child(\n                                    \"You can enable or disable notifications at any time.\",\n                                )),\n                        ),\n                ),\n        ),\n)\n    ";
 
 pub static COLLAPSIBLE_API: &[ApiEntry] = &[
     ApiEntry {
@@ -915,7 +990,7 @@ pub static DIALOG_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "DialogFooter",
-        signature: "pub fn on_close( mut self, handler: impl Fn(&mut Window, &mut App) + 'static, ) -> Self",
+        signature: "pub fn on_close(mut self, handler: impl Fn(&mut Window, &mut App) + 'static) -> Self",
         doc: "Handler invoked when the footer's Close button is clicked.",
     },
     ApiEntry {
@@ -1025,8 +1100,8 @@ pub static DROPDOWN_MENU_API: &[ApiEntry] = &[
     },
     ApiEntry {
         type_name: "DropdownMenu",
-        signature: "pub(crate) fn menu_panel( entries: Vec<DropdownMenuEntry>, on_open_change: Option<OpenChangeHandler>, cx: &App, ) -> impl IntoElement + use<>",
-        doc: "Renders the shared menu panel; also used by context-menu and menubar.",
+        signature: "pub(crate) fn menu_panel( entries: Vec<DropdownMenuEntry>, on_open_change: Option<OpenChangeHandler>, cx: &App, ) -> Div",
+        doc: "Renders the shared menu panel; also used by context-menu and menubar. Returns a [`Div`] so callers can refine the floating panel root via [`Styled`].",
     },
 ];
 
@@ -1195,7 +1270,7 @@ pub static FIELD_API: &[ApiEntry] = &[
     },
 ];
 
-pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Name on Card\"))\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Card Number\"))\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Month\"))\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\", \"06\",\n                                                        \"07\", \"08\", \"09\", \"10\", \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Year\"))\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"The billing address associated with your payment method\"),\n                )\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(Textarea::new(self.field_comments.clone()).rows(3)),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
+pub static FIELD_USAGE: &str = "// Port of field-demo.tsx — Payment Method checkout form.\ndiv().w(px(448.)).child(\n    FieldGroup::new()\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Payment Method\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"All transactions are secure and encrypted\"),\n                )\n                .child(\n                    FieldGroup::new()\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Name on Card\"))\n                                .child(self.field_name_input.clone()),\n                        )\n                        .child(\n                            Field::new()\n                                .child(FieldLabel::new().child(\"Card Number\"))\n                                .child(self.field_card_number.clone())\n                                .child(\n                                    FieldDescription::new()\n                                        .child(\"Enter your 16-digit card number\"),\n                                ),\n                        )\n                        .child(\n                            div()\n                                .flex()\n                                .flex_row()\n                                .gap(px(16.))\n                                .w_full()\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Month\"))\n                                            .child(\n                                                Select::new(\"field-month\")\n                                                    .placeholder(\"MM\")\n                                                    .options([\n                                                        \"01\", \"02\", \"03\", \"04\", \"05\", \"06\",\n                                                        \"07\", \"08\", \"09\", \"10\", \"11\", \"12\",\n                                                    ])\n                                                    .value(self.field_month)\n                                                    .open(self.field_month_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_month = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_month_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"Year\"))\n                                            .child(\n                                                Select::new(\"field-year\")\n                                                    .placeholder(\"YYYY\")\n                                                    .options([\n                                                        \"2024\", \"2025\", \"2026\", \"2027\",\n                                                        \"2028\", \"2029\",\n                                                    ])\n                                                    .value(self.field_year)\n                                                    .open(self.field_year_open)\n                                                    .on_change(cx.listener(\n                                                        |this, value: &usize, _, cx| {\n                                                            this.field_year = Some(*value);\n                                                            cx.notify();\n                                                        },\n                                                    ))\n                                                    .on_open_change(cx.listener(\n                                                        |this, open: &bool, _, cx| {\n                                                            this.field_year_open = *open;\n                                                            cx.notify();\n                                                        },\n                                                    )),\n                                            ),\n                                    ),\n                                )\n                                .child(\n                                    div().flex_1().child(\n                                        Field::new()\n                                            .child(FieldLabel::new().child(\"CVV\"))\n                                            .child(self.field_cvv.clone()),\n                                    ),\n                                ),\n                        ),\n                ),\n        )\n        .child(FieldSeparator::new())\n        .child(\n            FieldSet::new()\n                .legend(FieldLegend::new().child(\"Billing Address\"))\n                .description(\n                    FieldDescription::new()\n                        .child(\"The billing address associated with your payment method\"),\n                )\n                .child(\n                    FieldGroup::new().child(\n                        Field::new()\n                            .orientation(FieldOrientation::Horizontal)\n                            .child(\n                                Checkbox::new(\"field-same-shipping\")\n                                    .checked(self.field_same_shipping)\n                                    .on_checked_change(cx.listener(\n                                        |this, checked: &bool, _, cx| {\n                                            this.field_same_shipping = *checked;\n                                            cx.notify();\n                                        },\n                                    )),\n                            )\n                            .child(\n                                FieldLabel::new()\n                                    .font_normal()\n                                    .child(\"Same as shipping address\"),\n                            ),\n                    ),\n                ),\n        )\n        .child(\n            FieldSet::new().child(\n                FieldGroup::new().child(\n                    Field::new()\n                        .child(FieldLabel::new().child(\"Comments\"))\n                        .child(Textarea::new(self.field_comments.clone()).rows(3)),\n                ),\n            ),\n        )\n        .child(\n            Field::new()\n                .orientation(FieldOrientation::Horizontal)\n                .child(\n                    Button::new(\"field-submit\")\n                        .variant(ButtonVariant::Default)\n                        .child(\"Submit\"),\n                )\n                .child(\n                    Button::new(\"field-cancel\")\n                        .variant(ButtonVariant::Outline)\n                        .child(\"Cancel\"),\n                ),\n        ),\n)\n    ";
 
 pub static HOVER_CARD_API: &[ApiEntry] = &[
     ApiEntry {
@@ -1490,7 +1565,7 @@ pub static LABEL_API: &[ApiEntry] = &[
     },
 ];
 
-pub static LABEL_USAGE: &str = "// Port of label-demo.tsx — Checkbox + Label.\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Checkbox::new(\"label-terms\")\n            .checked(self.label_terms_checked)\n            .disabled(self.label_disabled)\n            .on_change(cx.listener(|this, checked: &bool, _, cx| {\n                this.label_terms_checked = *checked;\n                cx.notify();\n            })),\n    )\n    .child(\n        Label::new()\n            .disabled(self.label_disabled)\n            .child(\"Accept terms and conditions\"),\n    )\n    ";
+pub static LABEL_USAGE: &str = "// Port of label-demo.tsx — Checkbox + Label.\ndiv()\n    .flex()\n    .flex_row()\n    .items_center()\n    .gap(px(8.))\n    .child(\n        Checkbox::new(\"label-terms\")\n            .checked(self.label_terms_checked)\n            .disabled(self.label_disabled)\n            .on_checked_change(cx.listener(|this, checked: &bool, _, cx| {\n                this.label_terms_checked = *checked;\n                cx.notify();\n            })),\n    )\n    .child(\n        Label::new()\n            .disabled(self.label_disabled)\n            .child(\"Accept terms and conditions\"),\n    )\n    ";
 
 pub static MARKER_API: &[ApiEntry] = &[
     ApiEntry {
@@ -2646,7 +2721,7 @@ pub static TOOLTIP_API: &[ApiEntry] = &[
         doc: "Content includes a Kbd chip — drops right padding 12→6px (explicit stand-in for shadcn's `:has([data-slot=kbd])` selector).",
     },
     ApiEntry {
-        type_name: "RenderOnce",
+        type_name: "Tooltip",
         signature: "pub fn attach_tooltip<E: IntoElement>( id: impl Into<ElementId>, trigger: E, content: impl Fn(&mut Window, &mut App) -> AnyElement + 'static, ) -> impl IntoElement",
         doc: "Attach an anchored tooltip to an arbitrary styled element (used by [`crate::components::Button::tooltip_rich`]). Defaults: side Top, align Center, instant open, hoverable panel.  Returns a relative wrapper around `trigger` that owns hover/Escape state and paints the bubble — the trigger's own focus/click/hover is unchanged.",
     },

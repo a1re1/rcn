@@ -4,11 +4,13 @@
 //! borders collapsed between neighbors. Items are typed (`.item(..)`)
 //! rather than free children so the group can apply position-aware
 //! styling. Vertical orientation and the spacing>0 mode are omitted.
+//!
+//! Sizing and shape overrides come from the caller via [`Styled`].
 
 use gpui::{
     AnyElement, App, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement as _, RenderOnce, StatefulInteractiveElement as _, Styled, Window, div,
-    prelude::FluentBuilder as _, px,
+    ParentElement as _, Refineable as _, RenderOnce, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, px,
 };
 
 use crate::motion;
@@ -63,6 +65,7 @@ pub struct ToggleGroup {
     variant: ToggleVariant,
     size: ToggleSize,
     items: Vec<ToggleGroupItem>,
+    style: StyleRefinement,
 }
 
 impl ToggleGroup {
@@ -71,6 +74,7 @@ impl ToggleGroup {
             variant: ToggleVariant::default(),
             size: ToggleSize::default(),
             items: Vec::new(),
+            style: StyleRefinement::default(),
         }
     }
 
@@ -96,6 +100,12 @@ impl Default for ToggleGroup {
     }
 }
 
+impl Styled for ToggleGroup {
+    fn style(&mut self) -> &mut StyleRefinement {
+        &mut self.style
+    }
+}
+
 impl RenderOnce for ToggleGroup {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = Theme::of(cx).clone();
@@ -108,56 +118,58 @@ impl RenderOnce for ToggleGroup {
         let variant = self.variant;
         let radius = theme.radius_md();
 
-        div()
+        // Caller refinement applied last so Styled overrides win over defaults.
+        let mut root = div()
             .flex()
             .flex_row()
             .items_center()
             .rounded(radius)
-            .when(variant == ToggleVariant::Outline, |el| el.shadow_xs())
-            .children(self.items.into_iter().enumerate().map(|(index, item)| {
-                let first = index == 0;
-                let last = index + 1 == count;
-                let pressed = item.pressed;
-                let hover_bg = theme.muted;
-                div()
-                    .id(item.id)
-                    .flex()
-                    .flex_row()
-                    .flex_shrink_0()
-                    .items_center()
-                    .justify_center()
-                    .gap(px(4.))
-                    .h(px(height))
-                    .min_w(px(min_width))
-                    .px(px(8.))
-                    .text_size(px(14.))
-                    .line_height(px(20.))
-                    .font_weight(FontWeight::MEDIUM)
-                    .text_color(theme.foreground)
-                    .whitespace_nowrap()
-                    // first:rounded-l-md last:rounded-r-md, square in between
-                    .when(first, |el| el.rounded_l(radius))
-                    .when(last, |el| el.rounded_r(radius))
-                    // outline: border with collapsed left edges
-                    .when(variant == ToggleVariant::Outline, |el| {
-                        el.border_t_1()
-                            .border_b_1()
-                            .border_r_1()
-                            .when(first, |el| el.border_l_1())
-                            .border_color(theme.input)
-                    })
-                    .when(pressed, |el| el.bg(theme.muted))
-                    .when(item.disabled, |el| el.opacity(0.5))
-                    .when(!item.disabled, |el| {
-                        let ring = motion::focus_ring(&theme);
-                        el.tab_index(0)
-                            .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
-                            .hover(move |s| s.bg(hover_bg))
-                            .when_some(item.on_change, |el, on_change| {
-                                el.on_click(move |_, window, cx| on_change(&!pressed, window, cx))
-                            })
-                    })
-                    .children(item.children)
-            }))
+            .when(variant == ToggleVariant::Outline, |el| el.shadow_xs());
+        root.style().refine(&self.style);
+        root.children(self.items.into_iter().enumerate().map(|(index, item)| {
+            let first = index == 0;
+            let last = index + 1 == count;
+            let pressed = item.pressed;
+            let hover_bg = theme.muted;
+            div()
+                .id(item.id)
+                .flex()
+                .flex_row()
+                .flex_shrink_0()
+                .items_center()
+                .justify_center()
+                .gap(px(4.))
+                .h(px(height))
+                .min_w(px(min_width))
+                .px(px(8.))
+                .text_size(px(14.))
+                .line_height(px(20.))
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(theme.foreground)
+                .whitespace_nowrap()
+                // first:rounded-l-md last:rounded-r-md, square in between
+                .when(first, |el| el.rounded_l(radius))
+                .when(last, |el| el.rounded_r(radius))
+                // outline: border with collapsed left edges
+                .when(variant == ToggleVariant::Outline, |el| {
+                    el.border_t_1()
+                        .border_b_1()
+                        .border_r_1()
+                        .when(first, |el| el.border_l_1())
+                        .border_color(theme.input)
+                })
+                .when(pressed, |el| el.bg(theme.muted))
+                .when(item.disabled, |el| el.opacity(0.5))
+                .when(!item.disabled, |el| {
+                    let ring = motion::focus_ring(&theme);
+                    el.tab_index(0)
+                        .focus_visible(move |s| s.border_color(theme.ring).shadow(ring.clone()))
+                        .hover(move |s| s.bg(hover_bg))
+                        .when_some(item.on_change, |el, on_change| {
+                            el.on_click(move |_, window, cx| on_change(&!pressed, window, cx))
+                        })
+                })
+                .children(item.children)
+        }))
     }
 }
