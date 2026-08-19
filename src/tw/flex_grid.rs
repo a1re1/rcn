@@ -4,8 +4,8 @@
 //! Docs chapter: <https://tailwindcss.com/docs/flex-basis>
 
 use gpui::{
-    AlignContent, AlignItems, FlexDirection, FlexWrap, GridAutoFlow, Length, StyleRefinement,
-    Styled, relative,
+    AlignContent, AlignItems, FlexDirection, FlexWrap, GridAutoFlow, GridAutoTrackSize, Length,
+    StyleRefinement, Styled, relative,
 };
 
 use super::{Ctx, scale_len, scale_px};
@@ -167,6 +167,14 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefi
             return (grid_flow(s, GridAutoFlow::RowDense), true);
         }
         "grid-flow-col-dense" => return (grid_flow(s, GridAutoFlow::ColumnDense), true),
+        "auto-cols-auto" => return (auto_cols(s, GridAutoTrackSize::Auto), true),
+        "auto-cols-min" => return (auto_cols(s, GridAutoTrackSize::MinContent), true),
+        "auto-cols-max" => return (auto_cols(s, GridAutoTrackSize::MaxContent), true),
+        "auto-cols-fr" => return (auto_cols(s, GridAutoTrackSize::Fr), true),
+        "auto-rows-auto" => return (auto_rows(s, GridAutoTrackSize::Auto), true),
+        "auto-rows-min" => return (auto_rows(s, GridAutoTrackSize::MinContent), true),
+        "auto-rows-max" => return (auto_rows(s, GridAutoTrackSize::MaxContent), true),
+        "auto-rows-fr" => return (auto_rows(s, GridAutoTrackSize::Fr), true),
         _ => {}
     }
 
@@ -288,6 +296,16 @@ fn grid_flow(mut s: StyleRefinement, v: GridAutoFlow) -> StyleRefinement {
     s
 }
 
+fn auto_cols(mut s: StyleRefinement, v: GridAutoTrackSize) -> StyleRefinement {
+    s.grid_auto_cols = Some(v);
+    s
+}
+
+fn auto_rows(mut s: StyleRefinement, v: GridAutoTrackSize) -> StyleRefinement {
+    s.grid_auto_rows = Some(v);
+    s
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::{parse, tests::assert_style_eq};
@@ -379,6 +397,16 @@ mod tests {
         expected.justify_items = Some(AlignItems::End);
         expected.align_self = Some(AlignItems::Center);
         expected.justify_self = Some(AlignItems::Center);
+        assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn auto_track_presets() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "auto-cols-fr auto-rows-min");
+        let mut expected = StyleRefinement::default();
+        expected.grid_auto_cols = Some(gpui::GridAutoTrackSize::Fr);
+        expected.grid_auto_rows = Some(gpui::GridAutoTrackSize::MinContent);
         assert_style_eq(&styles.base, &expected);
     }
 
