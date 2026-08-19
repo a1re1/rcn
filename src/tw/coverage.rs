@@ -25,6 +25,10 @@ pub(super) enum Status {
     Todo,
     /// No gpui equivalent — the parser reports these as skipped.
     NoEquivalent(&'static str),
+    /// Parses into the element-level ext channel ([`super::TwExt`]) rather
+    /// than a `StyleRefinement`; applied by ext-aware consumers (`tw_div`,
+    /// `apply_img`).
+    Extended,
 }
 
 #[allow(dead_code)] // `sample` is read by the enforcement tests
@@ -1090,16 +1094,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "divide",
-        status: Status::NoEquivalent(
-            "child-combinator borders; use per-child borders or Separator",
-        ),
-        sample: "divide-2",
+        status: Status::Extended,
+        sample: "divide-red-500",
     },
     Entry {
         name: "divide-x",
-        status: Status::NoEquivalent(
-            "child-combinator borders; use per-child borders or Separator",
-        ),
+        status: Status::Extended,
         sample: "divide-x-2",
     },
     Entry {
@@ -1111,9 +1111,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "divide-y",
-        status: Status::NoEquivalent(
-            "child-combinator borders; use per-child borders or Separator",
-        ),
+        status: Status::Extended,
         sample: "divide-y-2",
     },
     Entry {
@@ -1375,8 +1373,8 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "grayscale",
-        status: Status::NoEquivalent("no filter pipeline in gpui"),
-        sample: "grayscale-2",
+        status: Status::Extended,
+        sample: "grayscale",
     },
     Entry {
         name: "grid",
@@ -2730,17 +2728,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "object-contain",
-        status: Status::NoEquivalent("object-fit is an img-element property in gpui, not a style"),
+        status: Status::Extended,
         sample: "object-contain",
     },
     Entry {
         name: "object-cover",
-        status: Status::NoEquivalent("object-fit is an img-element property in gpui, not a style"),
+        status: Status::Extended,
         sample: "object-cover",
     },
     Entry {
         name: "object-fill",
-        status: Status::NoEquivalent("object-fit is an img-element property in gpui, not a style"),
+        status: Status::Extended,
         sample: "object-fill",
     },
     Entry {
@@ -2750,7 +2748,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "object-none",
-        status: Status::NoEquivalent("object-fit is an img-element property in gpui, not a style"),
+        status: Status::Extended,
         sample: "object-none",
     },
     Entry {
@@ -2760,7 +2758,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "object-scale-down",
-        status: Status::NoEquivalent("object-fit is an img-element property in gpui, not a style"),
+        status: Status::Extended,
         sample: "object-scale-down",
     },
     Entry {
@@ -3975,7 +3973,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "space-x",
-        status: Status::NoEquivalent("child-combinator margins; use gap"),
+        status: Status::Extended,
         sample: "space-x-2",
     },
     Entry {
@@ -3985,7 +3983,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "space-y",
-        status: Status::NoEquivalent("child-combinator margins; use gap"),
+        status: Status::Extended,
         sample: "space-y-2",
     },
     Entry {
@@ -4693,13 +4691,33 @@ mod tests {
         }
     }
 
+    /// Every `Extended` sample must parse into the ext channel cleanly.
+    #[test]
+    fn extended_samples_parse_into_ext() {
+        let theme = Theme::light();
+        for entry in LEDGER {
+            if entry.status != Status::Extended {
+                continue;
+            }
+            let styles = parse_at(&theme, size(px(1024.), px(768.)), entry.sample);
+            assert!(
+                styles.unknown.is_empty() && styles.skipped.is_empty() && !styles.ext.is_empty(),
+                "'{}' is ledgered Extended but its sample '{}' did not land in the ext                  channel (unknown: {:?}, skipped: {:?})",
+                entry.name,
+                entry.sample,
+                styles.unknown,
+                styles.skipped,
+            );
+        }
+    }
+
     /// Coverage of the mappable set: Supported / (Supported + Todo).
     /// Ratchet the floor upward as waves land; never lower it.
     #[test]
     fn coverage_floor() {
         let supported = LEDGER
             .iter()
-            .filter(|e| e.status == Status::Supported)
+            .filter(|e| matches!(e.status, Status::Supported | Status::Extended))
             .count();
         let todo = LEDGER.iter().filter(|e| e.status == Status::Todo).count();
         let pct = supported as f32 / (supported + todo) as f32;
