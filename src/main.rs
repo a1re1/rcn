@@ -9,6 +9,8 @@ mod motion;
 mod storybook;
 mod storybook_docs;
 mod theme;
+mod tw;
+mod tw_demo;
 
 use gpui::{
     App, AppContext, Application, Bounds, Focusable as _, QuitMode, WindowBounds, WindowOptions,
@@ -33,22 +35,27 @@ fn main() {
         cx.set_global(Theme::light());
         Input::register_key_bindings(cx);
         let bounds = Bounds::centered(None, size(px(1100.0), px(720.0)), cx);
-        cx.open_window(
-            WindowOptions {
-                window_bounds: Some(WindowBounds::Windowed(bounds)),
-                titlebar: Some(gpui::TitlebarOptions {
-                    title: Some("rcn".into()),
-                    ..Default::default()
-                }),
+        let options = WindowOptions {
+            window_bounds: Some(WindowBounds::Windowed(bounds)),
+            titlebar: Some(gpui::TitlebarOptions {
+                title: Some("rcn".into()),
                 ..Default::default()
-            },
-            |window, cx| {
+            }),
+            ..Default::default()
+        };
+        // RCN_TW_DEMO=1 opens the tw-parser comparison view instead of the
+        // storybook (see `tw_demo`).
+        if std::env::var("RCN_TW_DEMO").is_ok_and(|v| v != "0") {
+            cx.open_window(options, |_, cx| cx.new(tw_demo::TwDemoView::new))
+                .expect("failed to open window");
+        } else {
+            cx.open_window(options, |window, cx| {
                 let storybook = cx.new(Storybook::new);
                 window.focus(&storybook.focus_handle(cx), cx);
                 storybook
-            },
-        )
-        .expect("failed to open window");
+            })
+            .expect("failed to open window");
+        }
         cx.activate(true);
     });
 }
