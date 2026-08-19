@@ -1,8 +1,7 @@
-//! Flexbox & Grid family: direction, wrap, grow/shrink, alignment, gap.
+//! Flexbox & Grid family: direction, wrap, grow/shrink, alignment, gap,
+//! grid templates (`grid-cols-*`) and placement (`col-span-*`, `col-start-*`,
+//! …) via gpui's `grid_cols`/`grid_rows`/`grid_location`.
 //! Docs chapter: <https://tailwindcss.com/docs/flex-basis>
-//!
-//! Grid templates and placement (`grid-cols-*`, `col-span-*`, …) are ledgered
-//! `Todo` — gpui exposes `grid_cols`/`grid_rows`/`grid_location`.
 
 use gpui::{
     AlignContent, AlignItems, FlexDirection, FlexWrap, Length, StyleRefinement, Styled, relative,
@@ -10,8 +9,17 @@ use gpui::{
 
 use super::{Ctx, scale_len, scale_px};
 
-pub(super) fn apply(mut s: StyleRefinement, t: &str, _cx: &mut Ctx) -> (StyleRefinement, bool) {
+pub(super) fn apply(mut s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefinement, bool) {
     match t {
+        // Grid placement autos. `col-auto` is CSS `grid-column: auto`.
+        "col-auto" => return (s.col_start_auto().col_end_auto(), true),
+        "row-auto" => return (s.row_start_auto().row_end_auto(), true),
+        "col-start-auto" => return (s.col_start_auto(), true),
+        "col-end-auto" => return (s.col_end_auto(), true),
+        "row-start-auto" => return (s.row_start_auto(), true),
+        "row-end-auto" => return (s.row_end_auto(), true),
+        "col-span-full" => return (s.col_span_full(), true),
+        "row-span-full" => return (s.row_span_full(), true),
         "flex-row" => return (s.flex_row(), true),
         "flex-col" => return (s.flex_col(), true),
         "flex-row-reverse" => {
@@ -152,6 +160,41 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, _cx: &mut Ctx) -> (StyleRef
         return (s, true);
     }
 
+    // Grid templates and numeric placement. Longer prefixes first so
+    // `col-` doesn't shadow `col-span-`. Negative line indices come from the
+    // token's leading `-` (`-col-start-1`), carried in `cx.sign`.
+    if let Some(v) = t.strip_prefix("grid-cols-")
+        && let Ok(n) = v.parse::<u16>()
+    {
+        return (s.grid_cols(n), true);
+    }
+    if let Some(v) = t.strip_prefix("grid-rows-")
+        && let Ok(n) = v.parse::<u16>()
+    {
+        return (s.grid_rows(n), true);
+    }
+    for (prefix, f) in [
+        (
+            "col-span-",
+            (|s: StyleRefinement, n: f32| s.col_span(n as u16))
+                as fn(StyleRefinement, f32) -> StyleRefinement,
+        ),
+        ("row-span-", |s, n| s.row_span(n as u16)),
+        ("col-start-", |s, n| s.col_start(n as i16)),
+        ("col-end-", |s, n| s.col_end(n as i16)),
+        ("row-start-", |s, n| s.row_start(n as i16)),
+        ("row-end-", |s, n| s.row_end(n as i16)),
+        // CSS `grid-column: N` = start at line N, end auto.
+        ("col-", |s, n| s.col_start(n as i16).col_end_auto()),
+        ("row-", |s, n| s.row_start(n as i16).row_end_auto()),
+    ] {
+        if let Some(v) = t.strip_prefix(prefix)
+            && let Ok(n) = v.parse::<f32>()
+        {
+            return (f(s, n * cx.sign), true);
+        }
+    }
+
     // Gap.
     if let Some(v) = t.strip_prefix("gap-x-")
         && let Some(l) = scale_px(v)
@@ -178,7 +221,9 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, _cx: &mut Ctx) -> (StyleRef
 mod tests {
     use super::super::{parse, tests::assert_style_eq};
     use crate::theme::Theme;
-    use gpui::{AlignContent, AlignItems, FlexDirection, Length, StyleRefinement, px, relative};
+    use gpui::{
+        AlignContent, AlignItems, FlexDirection, Length, StyleRefinement, Styled, px, relative,
+    };
 
     #[test]
     fn direction_wrap_and_flexibility() {
@@ -215,6 +260,42 @@ mod tests {
         let mut expected = StyleRefinement::default();
         expected.gap.width = Some(px(8.).into());
         expected.gap.height = Some(px(4.).into());
+        assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn grid_templates_and_placement() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "grid-cols-3 grid-rows-2");
+        let expected = StyleRefinement::default().grid_cols(3).grid_rows(2);
+        assert_style_eq(&styles.base, &expected);
+
+        let styles = parse(&theme, "col-span-2 row-start-1 row-end-3");
+        let expected = StyleRefinement::default()
+            .col_span(2)
+            .row_start(1)
+            .row_end(3);
+        assert_style_eq(&styles.base, &expected);
+
+        // CSS `grid-column: 3` shorthand: start at line 3, end auto.
+        let styles = parse(&theme, "col-3");
+        let expected = StyleRefinement::default().col_start(3).col_end_auto();
+        assert_style_eq(&styles.base, &expected);
+
+        // Negative line index counts from the end.
+        let styles = parse(&theme, "-col-start-1");
+        let expected = StyleRefinement::default().col_start(-1);
+        assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn grid_placement_autos_and_full() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "col-span-full row-auto");
+        let expected = StyleRefinement::default()
+            .col_span_full()
+            .row_start_auto()
+            .row_end_auto();
         assert_style_eq(&styles.base, &expected);
     }
 
