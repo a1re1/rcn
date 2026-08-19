@@ -26,16 +26,18 @@ consumed at apply time:
 - Ledger gains a `Status::Extended` state; enforcement asserts these tokens
   parse into the ext channel (not unknown/skipped).
 
-## ☐ Phase 3 — gpui fork patches (expose what taffy 0.12 already supports)
+## ◐ Phase 3 — gpui fork patches (expose what taffy 0.12 already supports)
 
-rcn pins gpui by git rev; point at a patched fork branch (upstreamable):
+gpui is now pinned to the fork branch `a1re1/zed#rcn-gpui-patches`
+(upstream rev 027cf0d + upstreamable patches):
 
-- `justify_items` / `justify_self` Style fields → `place-*`,
-  `justify-items-*`, `justify-self-*` (~38 roots). Plumbing only.
-- `grid_auto_flow` (+ auto-track presets) → `grid-flow-*`, `auto-cols/rows-*`
-  (~15 roots).
-- fit/min/max-content lengths → `w-fit`, `max-h-min`, … (~21 roots; taffy
-  `Dimension` supports these natively).
+- ☑ `justify_items` / `justify_self` Style fields → `place-*`,
+  `justify-items-*`, `justify-self-*` (+24 roots).
+- ☑ `grid_auto_flow` → `grid-flow-*` (+5 roots).
+- ☐ fit/min/max-content lengths → `w-fit`, `max-h-min`, … (~21 roots; taffy
+  `Dimension` supports these natively — a second, more invasive fork patch
+  since `Length` matches appear throughout gpui).
+- ☐ auto-track presets (`auto-cols/rows-*`) — taffy `grid_auto_columns/rows`.
 
 ## ☐ Phase 4 — transition engine
 

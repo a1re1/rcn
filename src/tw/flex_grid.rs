@@ -4,7 +4,8 @@
 //! Docs chapter: <https://tailwindcss.com/docs/flex-basis>
 
 use gpui::{
-    AlignContent, AlignItems, FlexDirection, FlexWrap, Length, StyleRefinement, Styled, relative,
+    AlignContent, AlignItems, FlexDirection, FlexWrap, GridAutoFlow, Length, StyleRefinement,
+    Styled, relative,
 };
 
 use super::{Ctx, scale_len, scale_px};
@@ -132,6 +133,43 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefi
         _ => {}
     }
 
+    // Grid-only alignment (justify-items / justify-self), the place-*
+    // shorthands (set both axes), and grid auto-flow. These Style fields come
+    // from the rcn gpui fork branch (see docs/tw-roadmap.md phase 3).
+    match t {
+        "justify-items-start" => return (justify_items(s, AlignItems::Start), true),
+        "justify-items-center" => return (justify_items(s, AlignItems::Center), true),
+        "justify-items-end" => return (justify_items(s, AlignItems::End), true),
+        "justify-items-stretch" => return (justify_items(s, AlignItems::Stretch), true),
+        "justify-self-start" => return (justify_self(s, AlignItems::Start), true),
+        "justify-self-center" => return (justify_self(s, AlignItems::Center), true),
+        "justify-self-end" => return (justify_self(s, AlignItems::End), true),
+        "justify-self-stretch" => return (justify_self(s, AlignItems::Stretch), true),
+        "place-items-start" => return (place_items(s, AlignItems::Start), true),
+        "place-items-center" => return (place_items(s, AlignItems::Center), true),
+        "place-items-end" => return (place_items(s, AlignItems::End), true),
+        "place-items-stretch" => return (place_items(s, AlignItems::Stretch), true),
+        "place-items-baseline" => return (place_items(s, AlignItems::Baseline), true),
+        "place-self-start" => return (place_self(s, AlignItems::Start), true),
+        "place-self-center" => return (place_self(s, AlignItems::Center), true),
+        "place-self-end" => return (place_self(s, AlignItems::End), true),
+        "place-self-stretch" => return (place_self(s, AlignItems::Stretch), true),
+        "place-content-start" => return (place_content(s, AlignContent::Start), true),
+        "place-content-center" => return (place_content(s, AlignContent::Center), true),
+        "place-content-end" => return (place_content(s, AlignContent::End), true),
+        "place-content-between" => return (place_content(s, AlignContent::SpaceBetween), true),
+        "place-content-around" => return (place_content(s, AlignContent::SpaceAround), true),
+        "place-content-evenly" => return (place_content(s, AlignContent::SpaceEvenly), true),
+        "place-content-stretch" => return (place_content(s, AlignContent::Stretch), true),
+        "grid-flow-row" => return (grid_flow(s, GridAutoFlow::Row), true),
+        "grid-flow-col" => return (grid_flow(s, GridAutoFlow::Column), true),
+        "grid-flow-dense" | "grid-flow-row-dense" => {
+            return (grid_flow(s, GridAutoFlow::RowDense), true);
+        }
+        "grid-flow-col-dense" => return (grid_flow(s, GridAutoFlow::ColumnDense), true),
+        _ => {}
+    }
+
     // flex-<n>: grow n, shrink 1, basis 0.
     if let Some(v) = t.strip_prefix("flex-")
         && let Ok(n) = v.parse::<f32>()
@@ -217,6 +255,39 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefi
     (s, false)
 }
 
+fn justify_items(mut s: StyleRefinement, v: AlignItems) -> StyleRefinement {
+    s.justify_items = Some(v);
+    s
+}
+
+fn justify_self(mut s: StyleRefinement, v: AlignItems) -> StyleRefinement {
+    s.justify_self = Some(v);
+    s
+}
+
+fn place_items(mut s: StyleRefinement, v: AlignItems) -> StyleRefinement {
+    s.align_items = Some(v);
+    s.justify_items = Some(v);
+    s
+}
+
+fn place_self(mut s: StyleRefinement, v: AlignItems) -> StyleRefinement {
+    s.align_self = Some(v);
+    s.justify_self = Some(v);
+    s
+}
+
+fn place_content(mut s: StyleRefinement, v: AlignContent) -> StyleRefinement {
+    s.align_content = Some(v);
+    s.justify_content = Some(v);
+    s
+}
+
+fn grid_flow(mut s: StyleRefinement, v: GridAutoFlow) -> StyleRefinement {
+    s.grid_auto_flow = Some(v);
+    s
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::{parse, tests::assert_style_eq};
@@ -285,6 +356,29 @@ mod tests {
         // Negative line index counts from the end.
         let styles = parse(&theme, "-col-start-1");
         let expected = StyleRefinement::default().col_start(-1);
+        assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn place_shorthands_justify_grid_and_flow() {
+        let theme = Theme::light();
+        let styles = parse(
+            &theme,
+            "place-items-center place-content-between grid-flow-col",
+        );
+        let mut expected = StyleRefinement::default();
+        expected.align_items = Some(AlignItems::Center);
+        expected.justify_items = Some(AlignItems::Center);
+        expected.align_content = Some(AlignContent::SpaceBetween);
+        expected.justify_content = Some(AlignContent::SpaceBetween);
+        expected.grid_auto_flow = Some(gpui::GridAutoFlow::Column);
+        assert_style_eq(&styles.base, &expected);
+
+        let styles = parse(&theme, "justify-items-end place-self-center");
+        let mut expected = StyleRefinement::default();
+        expected.justify_items = Some(AlignItems::End);
+        expected.align_self = Some(AlignItems::Center);
+        expected.justify_self = Some(AlignItems::Center);
         assert_style_eq(&styles.base, &expected);
     }
 
