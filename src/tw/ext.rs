@@ -50,6 +50,62 @@ pub(super) fn apply(s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefineme
         return (s, true);
     }
 
+    // Transitions: property mask + timing. Consumed by `tw_div` (id'd), which
+    // interpolates colors/opacity between the base and hover styles.
+    match t {
+        "transition" | "transition-all" => {
+            let tr = cx.ext.transition.get_or_insert_default();
+            tr.colors = true;
+            tr.opacity = true;
+            return (s, true);
+        }
+        "transition-colors" => {
+            cx.ext.transition.get_or_insert_default().colors = true;
+            return (s, true);
+        }
+        "transition-opacity" => {
+            cx.ext.transition.get_or_insert_default().opacity = true;
+            return (s, true);
+        }
+        "transition-none" => {
+            cx.ext.transition = Some(super::TwTransition {
+                colors: false,
+                opacity: false,
+                ..Default::default()
+            });
+            return (s, true);
+        }
+        "ease-linear" => {
+            cx.ext.transition.get_or_insert_default().easing = super::TwEasing::Linear;
+            return (s, true);
+        }
+        _ => {}
+    }
+    if let Some(v) = t.strip_prefix("duration-")
+        && let Ok(ms) = v.parse::<f32>()
+    {
+        cx.ext.transition.get_or_insert_default().duration_ms = ms;
+        return (s, true);
+    }
+    if let Some(v) = t.strip_prefix("delay-")
+        && let Ok(ms) = v.parse::<f32>()
+    {
+        cx.ext.transition.get_or_insert_default().delay_ms = ms;
+        return (s, true);
+    }
+    if let Some(v) = t.strip_prefix("ease-") {
+        let easing = match v {
+            "in" => Some(super::TwEasing::In),
+            "out" => Some(super::TwEasing::Out),
+            "in-out" => Some(super::TwEasing::InOut),
+            _ => None,
+        };
+        if let Some(easing) = easing {
+            cx.ext.transition.get_or_insert_default().easing = easing;
+            return (s, true);
+        }
+    }
+
     // Divide widths are raw px (`divide-x-2` = 2px), then the divide color.
     if let Some(v) = t.strip_prefix("divide-x-")
         && let Ok(n) = v.parse::<f32>()

@@ -1084,8 +1084,8 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "delay",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
-        sample: "delay-2",
+        status: Status::Extended,
+        sample: "delay-100",
     },
     Entry {
         name: "diagonal-fractions",
@@ -1133,8 +1133,8 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "duration",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
-        sample: "duration-2",
+        status: Status::Extended,
+        sample: "duration-300",
     },
     Entry {
         name: "duration-initial",
@@ -1143,8 +1143,8 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "ease",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
-        sample: "ease-2",
+        status: Status::Extended,
+        sample: "ease-in-out",
     },
     Entry {
         name: "ease-initial",
@@ -1153,7 +1153,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "ease-linear",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::Extended,
         sample: "ease-linear",
     },
     Entry {
@@ -4308,47 +4308,47 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "transition",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
-        sample: "transition-2",
+        status: Status::Extended,
+        sample: "transition-colors",
     },
     Entry {
         name: "transition-all",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::Extended,
         sample: "transition-all",
     },
     Entry {
         name: "transition-colors",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::Extended,
         sample: "transition-colors",
     },
     Entry {
         name: "transition-discrete",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::NoEquivalent("discrete transitions have no gpui meaning"),
         sample: "transition-discrete",
     },
     Entry {
         name: "transition-none",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::Extended,
         sample: "transition-none",
     },
     Entry {
         name: "transition-normal",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::NoEquivalent("CSS default/reset; omit the class instead"),
         sample: "transition-normal",
     },
     Entry {
         name: "transition-opacity",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::Extended,
         sample: "transition-opacity",
     },
     Entry {
         name: "transition-shadow",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::NoEquivalent("transition engine v1 interpolates colors/opacity only"),
         sample: "transition-shadow",
     },
     Entry {
         name: "transition-transform",
-        status: Status::NoEquivalent("no style transitions; motion timings live in crate::motion"),
+        status: Status::NoEquivalent("no transforms in gpui styles"),
         sample: "transition-transform",
     },
     Entry {

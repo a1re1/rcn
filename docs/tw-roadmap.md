@@ -41,12 +41,19 @@ gpui is now pinned to the fork branch `a1re1/zed#rcn-gpui-patches`
   auto/calc; content-based sizes exist only for grid tracks. Stays ledgered
   no-equivalent until taffy grows it upstream.
 
-## ☐ Phase 4 — transition engine
+## ◐ Phase 4 — transition engine
 
-Property interpolation for `transition-*` / `duration-*` / `ease-*` (~17
-roots) on top of `crate::motion`: track the previous resolved style per
-element (`window.use_keyed_state`), interpolate colors/opacity/shadow on
-state change. Start with colors + opacity (covers most shadcn usage).
+v1 landed: `transition`/`transition-all`/`transition-colors`/
+`transition-opacity`/`transition-none`, `duration-*`, `delay-*`, `ease-*`
+parse into the ext channel, and `tw_div(...).id(...)` interpolates hover
+changes to background/text/border colors and opacity over the requested
+curve (`crate::motion::cubic_bezier`, per-flip animation generations via
+`use_keyed_state`). Limits, by design: hover bucket only, colors+opacity
+only (a property on one side fades through transparent), id required.
+
+Full engine — every element, all buckets, more properties — belongs in the
+gpui fork (interpolating inside `Interactivity`'s style resolution) and is
+the next candidate patch there.
 
 ## Deliberately out of scope (renderer work, stays ledgered)
 
