@@ -18,7 +18,10 @@
 pub(super) enum Status {
     /// A handler maps this root onto gpui styles.
     Supported,
-    /// Mappable onto gpui Style, but no handler yet.
+    /// Mappable onto gpui Style, but no handler yet. (Currently empty —
+    /// kept as ledger vocabulary for utilities added by future Tailwind
+    /// version bumps.)
+    #[allow(dead_code)]
     Todo,
     /// No gpui equivalent — the parser reports these as skipped.
     NoEquivalent(&'static str),
