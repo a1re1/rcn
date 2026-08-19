@@ -1455,12 +1455,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "h-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-dvh",
     },
     Entry {
         name: "h-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-dvw",
     },
     Entry {
@@ -1480,12 +1480,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "h-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-lvh",
     },
     Entry {
         name: "h-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-lvw",
     },
     Entry {
@@ -1500,17 +1500,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "h-screen",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-screen",
     },
     Entry {
         name: "h-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-svh",
     },
     Entry {
         name: "h-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "h-svw",
     },
     Entry {
@@ -2245,12 +2245,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "max-h-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-dvh",
     },
     Entry {
         name: "max-h-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-dvw",
     },
     Entry {
@@ -2270,12 +2270,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "max-h-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-lvh",
     },
     Entry {
         name: "max-h-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-lvw",
     },
     Entry {
@@ -2295,17 +2295,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "max-h-screen",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-screen",
     },
     Entry {
         name: "max-h-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-svh",
     },
     Entry {
         name: "max-h-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-h-svw",
     },
     Entry {
@@ -2315,12 +2315,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "max-w-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-dvh",
     },
     Entry {
         name: "max-w-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-dvw",
     },
     Entry {
@@ -2335,12 +2335,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "max-w-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-lvh",
     },
     Entry {
         name: "max-w-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-lvw",
     },
     Entry {
@@ -2360,17 +2360,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "max-w-screen",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-screen",
     },
     Entry {
         name: "max-w-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-svh",
     },
     Entry {
         name: "max-w-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "max-w-svw",
     },
     Entry {
@@ -2405,12 +2405,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "min-h-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-dvh",
     },
     Entry {
         name: "min-h-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-dvw",
     },
     Entry {
@@ -2430,12 +2430,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "min-h-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-lvh",
     },
     Entry {
         name: "min-h-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-lvw",
     },
     Entry {
@@ -2450,17 +2450,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "min-h-screen",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-screen",
     },
     Entry {
         name: "min-h-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-svh",
     },
     Entry {
         name: "min-h-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-h-svw",
     },
     Entry {
@@ -2475,12 +2475,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "min-w-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-dvh",
     },
     Entry {
         name: "min-w-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-dvw",
     },
     Entry {
@@ -2495,12 +2495,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "min-w-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-lvh",
     },
     Entry {
         name: "min-w-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-lvw",
     },
     Entry {
@@ -2515,17 +2515,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "min-w-screen",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-screen",
     },
     Entry {
         name: "min-w-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-svh",
     },
     Entry {
         name: "min-w-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "min-w-svw",
     },
     Entry {
@@ -3845,12 +3845,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "size-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "size-dvh",
     },
     Entry {
         name: "size-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "size-dvw",
     },
     Entry {
@@ -3865,12 +3865,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "size-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "size-lvh",
     },
     Entry {
         name: "size-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "size-lvw",
     },
     Entry {
@@ -3885,12 +3885,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "size-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "size-svh",
     },
     Entry {
         name: "size-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "size-svw",
     },
     Entry {
@@ -4442,12 +4442,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "w-dvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-dvh",
     },
     Entry {
         name: "w-dvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-dvw",
     },
     Entry {
@@ -4462,12 +4462,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "w-lvh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-lvh",
     },
     Entry {
         name: "w-lvw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-lvw",
     },
     Entry {
@@ -4482,17 +4482,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "w-screen",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-screen",
     },
     Entry {
         name: "w-svh",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-svh",
     },
     Entry {
         name: "w-svw",
-        status: Status::NoEquivalent("viewport units are not in gpui styles"),
+        status: Status::Supported,
         sample: "w-svw",
     },
     Entry {
@@ -4597,7 +4597,8 @@ pub(super) fn lookup(token: &str) -> Option<Status> {
 mod tests {
     use super::*;
     use crate::theme::Theme;
-    use crate::tw::parse;
+    use crate::tw::parse_at;
+    use gpui::{px, size};
     use std::collections::BTreeSet;
 
     #[derive(serde::Deserialize)]
@@ -4637,7 +4638,7 @@ mod tests {
             if entry.status != Status::Supported {
                 continue;
             }
-            let styles = parse(&theme, entry.sample);
+            let styles = parse_at(&theme, size(px(1024.), px(768.)), entry.sample);
             assert!(
                 styles.unknown.is_empty() && styles.skipped.is_empty(),
                 "'{}' is ledgered Supported but its sample '{}' did not apply \
@@ -4659,7 +4660,7 @@ mod tests {
             if entry.status != Status::Todo {
                 continue;
             }
-            let styles = parse(&theme, entry.sample);
+            let styles = parse_at(&theme, size(px(1024.), px(768.)), entry.sample);
             assert_eq!(
                 styles.unknown,
                 vec![entry.sample.to_string()],
@@ -4679,7 +4680,7 @@ mod tests {
             let Status::NoEquivalent(_) = entry.status else {
                 continue;
             };
-            let styles = parse(&theme, entry.sample);
+            let styles = parse_at(&theme, size(px(1024.), px(768.)), entry.sample);
             assert_eq!(
                 styles.skipped,
                 vec![entry.sample.to_string()],

@@ -122,6 +122,9 @@ pub(super) struct Ctx<'a> {
     pub gradient: &'a mut GradientState,
     /// -1.0 when the token had a leading `-` (negative margins/insets).
     pub sign: f32,
+    /// Window size for viewport units (`w-screen`, `h-dvh`) — `None` under
+    /// [`parse`], `Some` under [`parse_at`].
+    pub viewport: Option<gpui::Size<Pixels>>,
 }
 
 /// A family handler: apply `t` (variant prefixes and leading `-` stripped) to
@@ -145,8 +148,30 @@ const HANDLERS: &[Handler] = &[
     interactivity::apply,
 ];
 
-/// Parse a Tailwind class string into per-state style refinements.
+/// Tailwind's default min-width breakpoints.
+const BREAKPOINTS: &[(&str, f32)] = &[
+    ("sm", 640.),
+    ("md", 768.),
+    ("lg", 1024.),
+    ("xl", 1280.),
+    ("2xl", 1536.),
+];
+
+/// Parse a Tailwind class string into per-state style refinements, without a
+/// viewport: responsive `sm:`/`md:`/… variants and viewport units are
+/// reported in [`TwStyles::skipped`].
 pub fn parse(theme: &Theme, classes: &str) -> TwStyles {
+    parse_impl(theme, None, classes)
+}
+
+/// Viewport-aware parse: responsive variants gate on the window width
+/// (min-width semantics, resolved now — gpui re-renders on resize), and
+/// viewport units (`w-screen`, `h-dvh`, …) resolve to pixels.
+pub fn parse_at(theme: &Theme, viewport: gpui::Size<Pixels>, classes: &str) -> TwStyles {
+    parse_impl(theme, Some(viewport), classes)
+}
+
+fn parse_impl(theme: &Theme, viewport: Option<gpui::Size<Pixels>>, classes: &str) -> TwStyles {
     let mut out = TwStyles::default();
     let mut rings = [RingState::default(); 6];
     let mut inset_rings = [RingState::default(); 6];
@@ -156,23 +181,40 @@ pub fn parse(theme: &Theme, classes: &str) -> TwStyles {
     for token in classes.split_whitespace() {
         let mut bucket = Bucket::Base;
         let mut dark_only = false;
+        let mut min_width: Option<f32> = None;
         let mut known_prefixes = true;
+        let mut needs_viewport = false;
         let mut rest = token;
         while let Some((prefix, tail)) = rest.split_once(':') {
-            match prefix {
-                "dark" => dark_only = true,
-                "hover" => bucket = Bucket::Hover,
-                "focus" => bucket = Bucket::Focus,
-                "focus-visible" => bucket = Bucket::FocusVisible,
-                "active" => bucket = Bucket::Active,
-                "disabled" => bucket = Bucket::Disabled,
-                // `[a]:`, `group-hover:`, `aria-invalid:`, `sm:`, …
-                _ => known_prefixes = false,
+            if let Some((_, bp)) = BREAKPOINTS.iter().find(|(name, _)| *name == prefix) {
+                min_width = Some(min_width.unwrap_or(0.).max(*bp));
+                needs_viewport = true;
+            } else {
+                match prefix {
+                    "dark" => dark_only = true,
+                    "hover" => bucket = Bucket::Hover,
+                    "focus" => bucket = Bucket::Focus,
+                    "focus-visible" => bucket = Bucket::FocusVisible,
+                    "active" => bucket = Bucket::Active,
+                    "disabled" => bucket = Bucket::Disabled,
+                    // `[a]:`, `group-hover:`, `aria-invalid:`, `max-sm:`, …
+                    _ => known_prefixes = false,
+                }
             }
             rest = tail;
         }
         if !known_prefixes {
             out.skipped.push(token.to_string());
+            continue;
+        }
+        if needs_viewport && viewport.is_none() {
+            // Responsive variant without a viewport: use `parse_at`.
+            out.skipped.push(token.to_string());
+            continue;
+        }
+        if let (Some(bp), Some(vp)) = (min_width, viewport)
+            && f32::from(vp.width) < bp
+        {
             continue;
         }
         if dark_only && !theme.dark {
@@ -190,6 +232,7 @@ pub fn parse(theme: &Theme, classes: &str) -> TwStyles {
             ring_inset: &mut ring_insets[bucket as usize],
             gradient: &mut gradients[bucket as usize],
             sign: if neg { -1. } else { 1. },
+            viewport,
         };
 
         let slot = bucket_mut(&mut out, bucket);
@@ -437,6 +480,14 @@ pub trait TwStyledExt: Styled + Sized {
         self.style().refine(&styles.base);
         self
     }
+
+    /// Viewport-aware variant: responsive `sm:`/… classes and viewport units
+    /// resolve against the window.
+    fn tw_base_at(mut self, theme: &Theme, window: &gpui::Window, classes: &str) -> Self {
+        let styles = parse_at(theme, window.viewport_size(), classes);
+        self.style().refine(&styles.base);
+        self
+    }
 }
 
 impl<T: Styled> TwStyledExt for T {}
@@ -476,6 +527,17 @@ pub trait TwInteractiveExt: InteractiveElement + Styled + Sized {
         );
         apply_interactive(self, styles)
     }
+
+    /// Viewport-aware variant of [`TwInteractiveExt::tw`].
+    #[allow(dead_code)] // public parser surface; components adopt incrementally
+    fn tw_at(self, theme: &Theme, window: &gpui::Window, classes: &str) -> Self {
+        let styles = parse_at(theme, window.viewport_size(), classes);
+        debug_assert!(
+            styles.active.is_none() && styles.disabled.is_none(),
+            "active:/disabled: classes need tw_stateful / component state"
+        );
+        apply_interactive(self, styles)
+    }
 }
 
 impl<T: InteractiveElement + Styled> TwInteractiveExt for T {}
@@ -484,17 +546,27 @@ impl<T: InteractiveElement + Styled> TwInteractiveExt for T {}
 /// with `.when(disabled, …)` and the [`TwStyles::disabled`] refinement).
 pub trait TwStatefulExt: StatefulInteractiveElement + Styled + Sized {
     fn tw_stateful(self, theme: &Theme, classes: &str) -> Self {
-        let mut styles = parse(theme, classes);
-        let active = styles.active.take();
-        let mut el = apply_interactive(self, styles);
-        if let Some(active) = active {
-            el = el.active(move |mut r| {
-                r.refine(&active);
-                r
-            });
-        }
-        el
+        let styles = parse(theme, classes);
+        apply_stateful(self, styles)
     }
+
+    /// Viewport-aware variant of [`TwStatefulExt::tw_stateful`].
+    fn tw_stateful_at(self, theme: &Theme, window: &gpui::Window, classes: &str) -> Self {
+        let styles = parse_at(theme, window.viewport_size(), classes);
+        apply_stateful(self, styles)
+    }
+}
+
+fn apply_stateful<T: StatefulInteractiveElement + Styled>(el: T, mut styles: TwStyles) -> T {
+    let active = styles.active.take();
+    let mut el = apply_interactive(el, styles);
+    if let Some(active) = active {
+        el = el.active(move |mut r| {
+            r.refine(&active);
+            r
+        });
+    }
+    el
 }
 
 impl<T: StatefulInteractiveElement + Styled> TwStatefulExt for T {}
@@ -629,6 +701,45 @@ mod tests {
         let styles = parse(&theme, "-ml-px -translate-y-0.5");
         let expected = StyleRefinement::default().ml(px(-1.)).top(px(-2.));
         assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn breakpoints_gate_on_viewport_width() {
+        let theme = Theme::light();
+        let vp = gpui::size(px(800.), px(600.));
+        // md (768) applies at 800; lg (1024) does not.
+        let styles = parse_at(&theme, vp, "p-2 md:p-4 lg:p-8");
+        let expected = StyleRefinement::default().p(px(8.)).p(px(16.));
+        tests::assert_style_eq(&styles.base, &expected);
+
+        // Without a viewport, responsive tokens are surfaced as skipped.
+        let styles = parse(&theme, "md:p-4");
+        assert_eq!(styles.skipped, vec!["md:p-4"]);
+
+        // Breakpoints stack with state variants.
+        let styles = parse_at(&theme, vp, "md:hover:bg-primary");
+        assert!(styles.hover.is_some());
+    }
+
+    #[test]
+    fn viewport_units_resolve_against_window() {
+        let theme = Theme::light();
+        let vp = gpui::size(px(1200.), px(700.));
+        let styles = parse_at(&theme, vp, "w-screen h-dvh max-w-svw min-h-screen");
+        let expected = StyleRefinement::default()
+            .w(px(1200.))
+            .h(px(700.))
+            .max_w(px(1200.))
+            .min_h(px(700.));
+        tests::assert_style_eq(&styles.base, &expected);
+
+        // `h-svw` is 100svw — the *width* axis on a height root.
+        let styles = parse_at(&theme, vp, "h-svw");
+        tests::assert_style_eq(&styles.base, &StyleRefinement::default().h(px(1200.)));
+
+        // Without a viewport they fall back to skipped-with-diagnostic.
+        let styles = parse(&theme, "w-screen");
+        assert!(styles.base.size.width.is_none());
     }
 
     #[test]

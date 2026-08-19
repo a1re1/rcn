@@ -446,10 +446,16 @@ impl TwDemoView {
     }
 
     /// Editor + diagnostics + live preview for one playground entry.
-    fn playground_row(&self, idx: usize, theme: &Theme, cx: &gpui::Context<Self>) -> AnyElement {
+    fn playground_row(
+        &self,
+        idx: usize,
+        theme: &Theme,
+        window: &Window,
+        cx: &gpui::Context<Self>,
+    ) -> AnyElement {
         let pg = &self.playgrounds[idx];
         let classes = pg.input.read(cx).text().to_string();
-        let parsed = crate::tw::parse(theme, &classes);
+        let parsed = crate::tw::parse_at(theme, window.viewport_size(), &classes);
 
         let mut diagnostics: Vec<AnyElement> = Vec::new();
         if !parsed.unknown.is_empty() {
@@ -500,7 +506,7 @@ impl TwDemoView {
                     .child(
                         div()
                             .id(SharedString::from(format!("tw-playground-{idx}")))
-                            .tw_stateful(theme, &classes)
+                            .tw_stateful_at(theme, window, &classes)
                             .tab_index(0)
                             .children(pg.children_text.iter().copied()),
                     ),
@@ -542,7 +548,7 @@ impl TwDemoView {
 }
 
 impl gpui::Render for TwDemoView {
-    fn render(&mut self, _window: &mut Window, cx: &mut gpui::Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut gpui::Context<Self>) -> impl IntoElement {
         use crate::components::badge::Badge;
         use crate::components::button::Button;
 
@@ -663,7 +669,7 @@ impl gpui::Render for TwDemoView {
         ];
 
         let playground_rows = (0..self.playgrounds.len())
-            .map(|idx| self.playground_row(idx, &theme, cx))
+            .map(|idx| self.playground_row(idx, &theme, window, cx))
             .collect::<Vec<_>>();
 
         div()
