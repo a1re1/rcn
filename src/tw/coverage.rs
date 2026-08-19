@@ -852,42 +852,42 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "col",
-        status: Status::Todo,
-        sample: "col-2",
+        status: Status::Supported,
+        sample: "col-3",
     },
     Entry {
         name: "col-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "col-auto",
     },
     Entry {
         name: "col-end",
-        status: Status::Todo,
-        sample: "col-end-1",
+        status: Status::Supported,
+        sample: "col-end-3",
     },
     Entry {
         name: "col-end-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "col-end-auto",
     },
     Entry {
         name: "col-span",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "col-span-2",
     },
     Entry {
         name: "col-span-full",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "col-span-full",
     },
     Entry {
         name: "col-start",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "col-start-1",
     },
     Entry {
         name: "col-start-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "col-start-auto",
     },
     Entry {
@@ -1382,7 +1382,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "grid-cols",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "grid-cols-3",
     },
     Entry {
@@ -1422,8 +1422,8 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "grid-rows",
-        status: Status::Todo,
-        sample: "grid-rows-3",
+        status: Status::Supported,
+        sample: "grid-rows-2",
     },
     Entry {
         name: "grid-rows-none",
@@ -3557,42 +3557,42 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "row",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-2",
     },
     Entry {
         name: "row-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-auto",
     },
     Entry {
         name: "row-end",
-        status: Status::Todo,
-        sample: "row-end-1",
+        status: Status::Supported,
+        sample: "row-end-3",
     },
     Entry {
         name: "row-end-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-end-auto",
     },
     Entry {
         name: "row-span",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-span-2",
     },
     Entry {
         name: "row-span-full",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-span-full",
     },
     Entry {
         name: "row-start",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-start-1",
     },
     Entry {
         name: "row-start-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "row-start-auto",
     },
     Entry {
@@ -4705,8 +4705,8 @@ mod tests {
             pct * 100.
         );
         assert!(
-            pct >= 0.90,
-            "tw coverage regressed below the 80% floor: {:.1}%",
+            pct >= 0.99,
+            "tw coverage regressed below the 99% floor: {:.1}%",
             pct * 100.
         );
     }
