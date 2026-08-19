@@ -8,7 +8,7 @@ use gpui::{
     AlignContent, AlignItems, FlexDirection, FlexWrap, Length, StyleRefinement, Styled, relative,
 };
 
-use super::{Ctx, scale_px};
+use super::{Ctx, scale_len, scale_px};
 
 pub(super) fn apply(mut s: StyleRefinement, t: &str, _cx: &mut Ctx) -> (StyleRefinement, bool) {
     match t {
@@ -144,6 +144,14 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, _cx: &mut Ctx) -> (StyleRef
         return (s.flex_shrink(n), true);
     }
 
+    // basis-<n> / basis-1/2 / basis-auto / basis-full
+    if let Some(v) = t.strip_prefix("basis-")
+        && let Some(l) = scale_len(v)
+    {
+        s.flex_basis = Some(l);
+        return (s, true);
+    }
+
     // Gap.
     if let Some(v) = t.strip_prefix("gap-x-")
         && let Some(l) = scale_px(v)
@@ -170,7 +178,7 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, _cx: &mut Ctx) -> (StyleRef
 mod tests {
     use super::super::{parse, tests::assert_style_eq};
     use crate::theme::Theme;
-    use gpui::{AlignContent, AlignItems, FlexDirection, StyleRefinement, Styled, px};
+    use gpui::{AlignContent, AlignItems, FlexDirection, Length, StyleRefinement, px, relative};
 
     #[test]
     fn direction_wrap_and_flexibility() {
@@ -217,7 +225,32 @@ mod tests {
         let mut expected = StyleRefinement::default();
         expected.flex_grow = Some(2.);
         expected.flex_shrink = Some(1.);
-        expected.flex_basis = Some(gpui::relative(0.).into());
+        expected.flex_basis = Some(relative(0.).into());
+        assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn basis_scale_fraction_auto_full() {
+        let theme = Theme::light();
+
+        let styles = parse(&theme, "basis-4");
+        let mut expected = StyleRefinement::default();
+        expected.flex_basis = Some(px(16.).into());
+        assert_style_eq(&styles.base, &expected);
+
+        let styles = parse(&theme, "basis-1/2");
+        let mut expected = StyleRefinement::default();
+        expected.flex_basis = Some(relative(0.5).into());
+        assert_style_eq(&styles.base, &expected);
+
+        let styles = parse(&theme, "basis-auto");
+        let mut expected = StyleRefinement::default();
+        expected.flex_basis = Some(Length::Auto);
+        assert_style_eq(&styles.base, &expected);
+
+        let styles = parse(&theme, "basis-full");
+        let mut expected = StyleRefinement::default();
+        expected.flex_basis = Some(relative(1.).into());
         assert_style_eq(&styles.base, &expected);
     }
 }

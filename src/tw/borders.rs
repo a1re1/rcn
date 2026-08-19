@@ -77,6 +77,35 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefi
         _ => {}
     }
 
+    // `ring-inset` marks the regular ring shadow as inset.
+    if t == "ring-inset" {
+        *cx.ring_inset = true;
+        return (s, true);
+    }
+
+    // Inset ring: separate channel synthesized with `inset: true`.
+    if t == "inset-ring" {
+        cx.inset_ring.width = Some(px(1.));
+        return (s, true);
+    }
+    if let Some(v) = t.strip_prefix("inset-ring-") {
+        if let Ok(n) = v.parse::<f32>() {
+            cx.inset_ring.width = Some(px(n));
+            return (s, true);
+        }
+        if let Some(inner) = v.strip_prefix('[').and_then(|x| x.strip_suffix("px]"))
+            && let Ok(n) = inner.parse::<f32>()
+        {
+            cx.inset_ring.width = Some(px(n));
+            return (s, true);
+        }
+        if let Some(c) = color(cx.theme, v) {
+            cx.inset_ring.color = Some(c);
+            return (s, true);
+        }
+        return (s, false);
+    }
+
     // Ring: width and color accumulate; the core synthesizes the shadow.
     if t == "ring" {
         cx.ring.width = Some(px(1.));
@@ -228,5 +257,26 @@ mod tests {
         let shadows = styles.base.box_shadow.as_ref().unwrap();
         assert_eq!(shadows.len(), 1);
         assert_eq!(shadows[0].spread_radius, px(1.));
+        assert!(!shadows[0].inset);
+    }
+
+    #[test]
+    fn inset_ring_synthesizes_inset_shadow() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "inset-ring-2");
+        let shadows = styles.base.box_shadow.as_ref().unwrap();
+        assert_eq!(shadows.len(), 1);
+        assert_eq!(shadows[0].spread_radius, px(2.));
+        assert!(shadows[0].inset);
+    }
+
+    #[test]
+    fn ring_inset_marks_regular_ring_inset() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "ring-2 ring-inset");
+        let shadows = styles.base.box_shadow.as_ref().unwrap();
+        assert_eq!(shadows.len(), 1);
+        assert_eq!(shadows[0].spread_radius, px(2.));
+        assert!(shadows[0].inset);
     }
 }

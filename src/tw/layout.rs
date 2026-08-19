@@ -55,6 +55,20 @@ pub(super) fn apply(mut s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefi
         return (s, true);
     }
 
+    // Aspect ratio: square / video / arbitrary `[W/H]`.
+    match t {
+        "aspect-square" => return (s.aspect_ratio(1.0), true),
+        "aspect-video" => return (s.aspect_ratio(16. / 9.), true),
+        _ => {}
+    }
+    if let Some(inner) = t.strip_prefix("aspect-[").and_then(|x| x.strip_suffix(']'))
+        && let Some((w, h)) = inner.split_once('/')
+        && let (Ok(w), Ok(h)) = (w.parse::<f32>(), h.parse::<f32>())
+        && h != 0.
+    {
+        return (s.aspect_ratio(w / h), true);
+    }
+
     // Insets. Logical start/end map to left/right (rcn is LTR-only).
     for (prefix, apply) in [
         (
@@ -163,5 +177,24 @@ mod tests {
         expected.inset.top = Some(gpui::Length::Auto);
         expected.inset.bottom = Some(relative(1.).into());
         assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn aspect_square_video_and_arbitrary() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "aspect-square");
+        assert_style_eq(&styles.base, &StyleRefinement::default().aspect_ratio(1.0));
+
+        let styles = parse(&theme, "aspect-video");
+        assert_style_eq(
+            &styles.base,
+            &StyleRefinement::default().aspect_ratio(16. / 9.),
+        );
+
+        let styles = parse(&theme, "aspect-[4/3]");
+        assert_style_eq(
+            &styles.base,
+            &StyleRefinement::default().aspect_ratio(4. / 3.),
+        );
     }
 }
