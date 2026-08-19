@@ -44,6 +44,8 @@ mod backgrounds;
 mod borders;
 mod coverage;
 mod effects;
+pub mod element;
+mod ext;
 mod flex_grid;
 mod interactivity;
 mod layout;
@@ -64,6 +66,65 @@ use gpui::{
 
 use crate::theme::{Theme, alpha};
 
+/// Element-level utilities that are not gpui styles: child-combinator
+/// spacing/dividers (consumed by [`element::TwDiv`] / `tw_div`) and image
+/// properties (applied to a gpui `Img` via [`apply_img`]). Bucket-less —
+/// state-variant prefixes on these tokens are ignored.
+#[derive(Default, Debug, PartialEq)]
+pub struct TwExt {
+    pub space_x: Option<Pixels>,
+    pub space_y: Option<Pixels>,
+    pub divide_x: Option<Pixels>,
+    pub divide_y: Option<Pixels>,
+    pub divide_color: Option<Hsla>,
+    pub object_fit: Option<TwObjectFit>,
+    pub grayscale: bool,
+}
+
+impl TwExt {
+    #[allow(dead_code)] // read by enforcement tests + consumers
+    pub fn is_empty(&self) -> bool {
+        *self == TwExt::default()
+    }
+}
+
+/// Derivable mirror of `gpui::ObjectFit` (which derives nothing).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TwObjectFit {
+    Fill,
+    Contain,
+    Cover,
+    ScaleDown,
+    None,
+}
+
+impl From<TwObjectFit> for gpui::ObjectFit {
+    fn from(fit: TwObjectFit) -> Self {
+        match fit {
+            TwObjectFit::Fill => gpui::ObjectFit::Fill,
+            TwObjectFit::Contain => gpui::ObjectFit::Contain,
+            TwObjectFit::Cover => gpui::ObjectFit::Cover,
+            TwObjectFit::ScaleDown => gpui::ObjectFit::ScaleDown,
+            TwObjectFit::None => gpui::ObjectFit::None,
+        }
+    }
+}
+
+/// Apply the ext channel's image properties to a gpui `Img`.
+#[allow(dead_code)] // public parser surface; image components adopt incrementally
+pub fn apply_img(img: gpui::Img, ext: &TwExt) -> gpui::Img {
+    use gpui::StyledImage as _;
+    let img = match ext.object_fit {
+        Some(fit) => img.object_fit(fit.into()),
+        None => img,
+    };
+    if ext.grayscale {
+        img.grayscale(true)
+    } else {
+        img
+    }
+}
+
 /// Parsed class string: one refinement per interaction state.
 #[derive(Default, Debug)]
 pub struct TwStyles {
@@ -79,6 +140,8 @@ pub struct TwStyles {
     /// Tokens the parser does not handle: typos, or `Todo` utilities the
     /// registry has not implemented yet.
     pub unknown: Vec<String>,
+    /// Element-level utilities (see [`TwExt`]).
+    pub ext: TwExt,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -125,6 +188,8 @@ pub(super) struct Ctx<'a> {
     /// Window size for viewport units (`w-screen`, `h-dvh`) — `None` under
     /// [`parse`], `Some` under [`parse_at`].
     pub viewport: Option<gpui::Size<Pixels>>,
+    /// Element-level utility accumulator (bucket-less).
+    pub ext: &'a mut TwExt,
 }
 
 /// A family handler: apply `t` (variant prefixes and leading `-` stripped) to
@@ -146,6 +211,7 @@ const HANDLERS: &[Handler] = &[
     effects::apply,
     transforms::apply,
     interactivity::apply,
+    ext::apply,
 ];
 
 /// Tailwind's default min-width breakpoints.
@@ -177,6 +243,7 @@ fn parse_impl(theme: &Theme, viewport: Option<gpui::Size<Pixels>>, classes: &str
     let mut inset_rings = [RingState::default(); 6];
     let mut ring_insets = [false; 6];
     let mut gradients = [GradientState::default(); 6];
+    let mut ext = TwExt::default();
 
     for token in classes.split_whitespace() {
         let mut bucket = Bucket::Base;
@@ -233,6 +300,7 @@ fn parse_impl(theme: &Theme, viewport: Option<gpui::Size<Pixels>>, classes: &str
             gradient: &mut gradients[bucket as usize],
             sign: if neg { -1. } else { 1. },
             viewport,
+            ext: &mut ext,
         };
 
         let slot = bucket_mut(&mut out, bucket);
@@ -313,6 +381,7 @@ fn parse_impl(theme: &Theme, viewport: Option<gpui::Size<Pixels>>, classes: &str
         }
     }
 
+    out.ext = ext;
     out
 }
 

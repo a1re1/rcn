@@ -661,6 +661,13 @@ impl gpui::Render for TwDemoView {
                 .class("bg-[#eff6ff] text-[#1d4ed8]")
                 .child("class override")
                 .into_any_element(),
+            crate::tw::element::tw_div(
+                "flex flex-row items-center divide-x divide-border rounded-md border border-border",
+            )
+            .child(div().p(px(8.)).child("divide"))
+            .child(div().p(px(8.)).child("between"))
+            .child(div().p(px(8.)).child("children"))
+            .into_any_element(),
             TwButton::new("tw-arbitrary")
                 .class("h-[52px] px-[26px] rounded-[26px] bg-[#7c3aed] text-[#ffffff]")
                 .on_click(|_, _, _| {})

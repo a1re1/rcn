@@ -5,7 +5,7 @@ mapping registry in `src/tw/`. Each phase lands as its own PR with ledger
 flips and enforcement-tested coverage. Status legend: ☐ planned, ◐ partial,
 ☑ landed.
 
-## ☑ Phase 1 — viewport context (this PR)
+## ☑ Phase 1 — viewport context
 
 `parse_at(theme, viewport, classes)` + `tw_*_at(theme, window, classes)`:
 
@@ -14,7 +14,7 @@ flips and enforcement-tested coverage. Status legend: ☐ planned, ◐ partial,
 - Viewport units `w-screen`, `h-dvh`, `size-svw`, … resolve to pixels
   (+48 roots supported).
 
-## ☐ Phase 2 — TwExt channel (element-level utilities)
+## ☑ Phase 2 — TwExt channel (element-level utilities)
 
 Widen the parser output beyond `StyleRefinement` with an extension channel
 consumed at apply time:
