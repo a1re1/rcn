@@ -34,10 +34,12 @@ gpui is now pinned to the fork branch `a1re1/zed#rcn-gpui-patches`
 - ☑ `justify_items` / `justify_self` Style fields → `place-*`,
   `justify-items-*`, `justify-self-*` (+24 roots).
 - ☑ `grid_auto_flow` → `grid-flow-*` (+5 roots).
-- ☐ fit/min/max-content lengths → `w-fit`, `max-h-min`, … (~21 roots; taffy
-  `Dimension` supports these natively — a second, more invasive fork patch
-  since `Length` matches appear throughout gpui).
-- ☐ auto-track presets (`auto-cols/rows-*`) — taffy `grid_auto_columns/rows`.
+- ☑ auto-track presets (`auto-cols/rows-*`) via `GridAutoTrackSize`
+  (+10 roots).
+- ✗ fit/min/max-content sizing (`w-fit`, `max-h-min`, …): **not portable** —
+  investigated and taffy 0.12's `Dimension` only supports length/percent/
+  auto/calc; content-based sizes exist only for grid tracks. Stays ledgered
+  no-equivalent until taffy grows it upstream.
 
 ## ☐ Phase 4 — transition engine
 

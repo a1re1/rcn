@@ -12,12 +12,12 @@ edition = "2024"
 # is upstream rev 027cf0d plus small upstreamable patches exposing taffy
 # features (justify_items / justify_self / grid_auto_flow) for the tw mapping
 # layer (see docs/tw-roadmap.md phase 3).
-gpui = { git = "https://github.com/a1re1/zed", rev = "710847cbf965a04fc541dea9b9dd501de5ee3e9a", package = "gpui" }
+gpui = { git = "https://github.com/a1re1/zed", rev = "8ab2b7d11e60129864780c84f229ee7f5fe52b5f", package = "gpui" }
 # The platform layer was split into gpui_platform; current_platform() builds the
 # real macOS platform to hand to Application::with_platform (as in zed's own main).
 # `font-kit` is REQUIRED: without it gpui_macos installs gpui::NoopTextSystem and
 # NO glyphs render (quads still do). With it we get the real CoreText MacTextSystem.
-gpui_platform = { git = "https://github.com/a1re1/zed", rev = "710847cbf965a04fc541dea9b9dd501de5ee3e9a", package = "gpui_platform", features = ["font-kit"] }
+gpui_platform = { git = "https://github.com/a1re1/zed", rev = "8ab2b7d11e60129864780c84f229ee7f5fe52b5f", package = "gpui_platform", features = ["font-kit"] }
 # Grapheme-boundary navigation for the Input component (already in gpui's tree).
 unicode-segmentation = "1"
 serde = { version = "1", features = ["derive"] }
