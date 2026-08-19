@@ -19,6 +19,13 @@ pub(super) fn apply(s: StyleRefinement, t: &str, cx: &mut Ctx) -> (StyleRefineme
     {
         return (s.top(l * cx.sign), true);
     }
+    // Bare `translate-N` / `-translate-N` shifts both axes equally.
+    if let Some(v) = t.strip_prefix("translate-")
+        && let Some(l) = scale_px(v)
+    {
+        let d = l * cx.sign;
+        return (s.left(d).top(d), true);
+    }
     (s, false)
 }
 
@@ -33,6 +40,18 @@ mod tests {
         let theme = Theme::light();
         let styles = parse(&theme, "translate-y-px -translate-x-2");
         let expected = StyleRefinement::default().top(px(1.)).left(px(-8.));
+        assert_style_eq(&styles.base, &expected);
+    }
+
+    #[test]
+    fn bare_translate_sets_both_axes() {
+        let theme = Theme::light();
+        let styles = parse(&theme, "translate-1");
+        let expected = StyleRefinement::default().left(px(4.)).top(px(4.));
+        assert_style_eq(&styles.base, &expected);
+
+        let styles = parse(&theme, "-translate-2");
+        let expected = StyleRefinement::default().left(px(-8.)).top(px(-8.));
         assert_style_eq(&styles.base, &expected);
     }
 }

@@ -58,7 +58,8 @@ use std::sync::OnceLock;
 
 use gpui::{
     BoxShadow, Hsla, InteractiveElement, Length, Pixels, Refineable as _,
-    StatefulInteractiveElement, StyleRefinement, Styled, point, px, relative,
+    StatefulInteractiveElement, StyleRefinement, Styled, linear_color_stop, linear_gradient, point,
+    px, relative,
 };
 
 use crate::theme::{Theme, alpha};
@@ -98,10 +99,27 @@ pub(super) struct RingState {
     pub color: Option<Hsla>,
 }
 
+/// `bg-linear-to-*` / `from-*` / `to-*` accumulate a two-stop linear gradient
+/// per bucket; [`parse`] synthesizes `background` from it.
+#[derive(Default, Clone, Copy)]
+pub(super) struct GradientState {
+    /// CSS gradient angle in degrees (`to right` = 90). `None` defaults to 180
+    /// (to-bottom) when stops are present.
+    pub angle: Option<f32>,
+    pub from: Option<Hsla>,
+    pub to: Option<Hsla>,
+}
+
 /// Per-token context handed to family handlers.
 pub(super) struct Ctx<'a> {
     pub theme: &'a Theme,
     pub ring: &'a mut RingState,
+    /// Second ring channel synthesized with `inset: true` (`inset-ring-*`).
+    pub inset_ring: &'a mut RingState,
+    /// When true, the regular `ring-*` shadow is drawn inset (`ring-inset`).
+    pub ring_inset: &'a mut bool,
+    /// Two-stop linear gradient (`bg-linear-to-*` / `from-*` / `to-*`).
+    pub gradient: &'a mut GradientState,
     /// -1.0 when the token had a leading `-` (negative margins/insets).
     pub sign: f32,
 }
@@ -131,6 +149,9 @@ const HANDLERS: &[Handler] = &[
 pub fn parse(theme: &Theme, classes: &str) -> TwStyles {
     let mut out = TwStyles::default();
     let mut rings = [RingState::default(); 6];
+    let mut inset_rings = [RingState::default(); 6];
+    let mut ring_insets = [false; 6];
+    let mut gradients = [GradientState::default(); 6];
 
     for token in classes.split_whitespace() {
         let mut bucket = Bucket::Base;
@@ -165,6 +186,9 @@ pub fn parse(theme: &Theme, classes: &str) -> TwStyles {
         let mut ctx = Ctx {
             theme,
             ring: &mut rings[bucket as usize],
+            inset_ring: &mut inset_rings[bucket as usize],
+            ring_inset: &mut ring_insets[bucket as usize],
+            gradient: &mut gradients[bucket as usize],
             sign: if neg { -1. } else { 1. },
         };
 
@@ -197,22 +221,52 @@ pub fn parse(theme: &Theme, classes: &str) -> TwStyles {
         Bucket::Disabled,
     ] {
         let ring = rings[bucket as usize];
-        if ring.width.is_none() && ring.color.is_none() {
-            continue;
+        if ring.width.is_some() || ring.color.is_some() {
+            let shadow = BoxShadow {
+                // Tailwind's default ring is currentColor; shadcn always names a
+                // color, so default to the theme ring at 50% like `ring-ring/50`.
+                color: ring.color.unwrap_or(alpha(theme.ring, 0.5)),
+                offset: point(px(0.), px(0.)),
+                blur_radius: px(0.),
+                spread_radius: ring.width.unwrap_or(px(1.)),
+                inset: ring_insets[bucket as usize],
+            };
+            let slot = bucket_mut(&mut out, bucket);
+            match &mut slot.box_shadow {
+                Some(shadows) => shadows.push(shadow),
+                None => slot.box_shadow = Some(vec![shadow]),
+            }
         }
-        let shadow = BoxShadow {
-            // Tailwind's default ring is currentColor; shadcn always names a
-            // color, so default to the theme ring at 50% like `ring-ring/50`.
-            color: ring.color.unwrap_or(alpha(theme.ring, 0.5)),
-            offset: point(px(0.), px(0.)),
-            blur_radius: px(0.),
-            spread_radius: ring.width.unwrap_or(px(1.)),
-            inset: false,
-        };
-        let slot = bucket_mut(&mut out, bucket);
-        match &mut slot.box_shadow {
-            Some(shadows) => shadows.push(shadow),
-            None => slot.box_shadow = Some(vec![shadow]),
+
+        let inset_ring = inset_rings[bucket as usize];
+        if inset_ring.width.is_some() || inset_ring.color.is_some() {
+            let shadow = BoxShadow {
+                color: inset_ring.color.unwrap_or(alpha(theme.ring, 0.5)),
+                offset: point(px(0.), px(0.)),
+                blur_radius: px(0.),
+                spread_radius: inset_ring.width.unwrap_or(px(1.)),
+                inset: true,
+            };
+            let slot = bucket_mut(&mut out, bucket);
+            match &mut slot.box_shadow {
+                Some(shadows) => shadows.push(shadow),
+                None => slot.box_shadow = Some(vec![shadow]),
+            }
+        }
+
+        let grad = gradients[bucket as usize];
+        if grad.from.is_some() || grad.to.is_some() {
+            // CSS angles: to-top=0, to-right=90, to-bottom=180 (default), to-left=270.
+            let angle = grad.angle.unwrap_or(180.);
+            let from = grad.from.unwrap_or_else(gpui::transparent_black);
+            let to = grad.to.unwrap_or_else(gpui::transparent_black);
+            let fill = linear_gradient(
+                angle,
+                linear_color_stop(from, 0.),
+                linear_color_stop(to, 1.),
+            );
+            let slot = bucket_mut(&mut out, bucket);
+            slot.background = Some(fill.into());
         }
     }
 

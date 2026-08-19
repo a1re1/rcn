@@ -127,7 +127,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "aspect",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "aspect-video",
     },
     Entry {
@@ -137,7 +137,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "aspect-square",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "aspect-square",
     },
     Entry {
@@ -257,17 +257,17 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "basis",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "basis-4",
     },
     Entry {
         name: "basis-auto",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "basis-auto",
     },
     Entry {
         name: "basis-full",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "basis-full",
     },
     Entry {
@@ -427,7 +427,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "bg-linear",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "bg-linear-to-r",
     },
     Entry {
@@ -1037,7 +1037,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "decoration",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "decoration-red-500",
     },
     Entry {
@@ -1072,7 +1072,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "decoration-wavy",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "decoration-wavy",
     },
     Entry {
@@ -1082,7 +1082,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "diagonal-fractions",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "diagonal-fractions",
     },
     Entry {
@@ -1182,7 +1182,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "fill",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "fill-red-500",
     },
     Entry {
@@ -1352,7 +1352,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "from",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "from-red-500",
     },
     Entry {
@@ -1582,12 +1582,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "inset-ring",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "inset-ring-2",
     },
     Entry {
         name: "inset-shadow",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "inset-shadow-sm",
     },
     Entry {
@@ -1817,12 +1817,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "leading",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "leading-6",
     },
     Entry {
         name: "leading-none",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "leading-none",
     },
     Entry {
@@ -1842,12 +1842,12 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "line-clamp",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "line-clamp-2",
     },
     Entry {
         name: "line-clamp-none",
-        status: Status::Todo,
+        status: Status::NoEquivalent("CSS default/reset; omit the class instead"),
         sample: "line-clamp-none",
     },
     Entry {
@@ -1857,7 +1857,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "lining-nums",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "lining-nums",
     },
     Entry {
@@ -2687,7 +2687,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "normal-nums",
-        status: Status::Todo,
+        status: Status::NoEquivalent("CSS default/reset; omit the class instead"),
         sample: "normal-nums",
     },
     Entry {
@@ -2777,7 +2777,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "oldstyle-nums",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "oldstyle-nums",
     },
     Entry {
@@ -2802,7 +2802,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "ordinal",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "ordinal",
     },
     Entry {
@@ -3242,7 +3242,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "proportional-nums",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "proportional-nums",
     },
     Entry {
@@ -3312,7 +3312,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "ring-inset",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "ring-inset",
     },
     Entry {
@@ -3907,7 +3907,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "slashed-zero",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "slashed-zero",
     },
     Entry {
@@ -3997,7 +3997,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "stacked-fractions",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "stacked-fractions",
     },
     Entry {
@@ -4097,7 +4097,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "tabular-nums",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "tabular-nums",
     },
     Entry {
@@ -4177,7 +4177,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "to",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "to-red-500",
     },
     Entry {
@@ -4352,7 +4352,7 @@ pub(super) const LEDGER: &[Entry] = &[
     },
     Entry {
         name: "translate",
-        status: Status::Todo,
+        status: Status::Supported,
         sample: "translate-1",
     },
     Entry {
@@ -4705,7 +4705,7 @@ mod tests {
             pct * 100.
         );
         assert!(
-            pct >= 0.80,
+            pct >= 0.90,
             "tw coverage regressed below the 80% floor: {:.1}%",
             pct * 100.
         );
