@@ -662,6 +662,14 @@ impl gpui::Render for TwDemoView {
                 .child("class override")
                 .into_any_element(),
             crate::tw::element::tw_div(
+                "flex items-center rounded-md border border-border px-3 py-2 bg-background \
+                 transition-colors duration-300 hover:bg-primary hover:text-primary-foreground \
+                 hover:border-primary",
+            )
+            .id("tw-transition-demo")
+            .child("hover me — colors fade over 300ms")
+            .into_any_element(),
+            crate::tw::element::tw_div(
                 "flex flex-row items-center divide-x divide-border rounded-md border border-border",
             )
             .child(div().p(px(8.)).child("divide"))

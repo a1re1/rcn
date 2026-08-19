@@ -79,6 +79,43 @@ pub struct TwExt {
     pub divide_color: Option<Hsla>,
     pub object_fit: Option<TwObjectFit>,
     pub grayscale: bool,
+    pub transition: Option<TwTransition>,
+}
+
+/// `transition-*` spec: which properties interpolate and the timing curve.
+/// v1 engine (see `element::TwDiv`) animates colors and opacity between the
+/// base and hover styles; other properties change instantly.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TwTransition {
+    pub colors: bool,
+    pub opacity: bool,
+    pub duration_ms: f32,
+    pub delay_ms: f32,
+    pub easing: TwEasing,
+}
+
+impl Default for TwTransition {
+    fn default() -> Self {
+        Self {
+            colors: false,
+            opacity: false,
+            // Tailwind's default transition timing.
+            duration_ms: 150.,
+            delay_ms: 0.,
+            easing: TwEasing::Default,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum TwEasing {
+    /// Tailwind's default `cubic-bezier(0.4, 0, 0.2, 1)` (crate::motion).
+    #[default]
+    Default,
+    Linear,
+    In,
+    Out,
+    InOut,
 }
 
 impl TwExt {
@@ -750,14 +787,14 @@ mod tests {
         let theme = Theme::light();
         let styles = parse(
             &theme,
-            "select-none underline-offset-4 transition-all [a]:hover:bg-muted totally-fake",
+            "select-none underline-offset-4 transition-transform [a]:hover:bg-muted totally-fake",
         );
         assert_eq!(
             styles.skipped,
             vec![
                 "select-none",
                 "underline-offset-4",
-                "transition-all",
+                "transition-transform",
                 "[a]:hover:bg-muted"
             ]
         );
