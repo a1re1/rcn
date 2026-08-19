@@ -409,7 +409,7 @@ pub struct TwDemoView {
 
 impl TwDemoView {
     pub fn new(cx: &mut gpui::Context<Self>) -> Self {
-        let mut editor = |cx: &mut gpui::Context<Self>, seed: &str| {
+        let editor = |cx: &mut gpui::Context<Self>, seed: &str| {
             let input = cx.new(|cx| {
                 let mut input = Input::new(cx);
                 // Bare: the Textarea shell provides the chrome, and bare
