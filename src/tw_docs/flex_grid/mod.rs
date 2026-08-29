@@ -1,5 +1,8 @@
 //! Tailwind docs · Flexbox & Grid — one module per docs page.
 
+pub mod align_content;
+pub mod align_items;
+pub mod align_self;
 pub mod flex;
 pub mod flex_basis;
 pub mod flex_direction;
@@ -14,7 +17,16 @@ pub mod grid_column;
 pub mod grid_row;
 pub mod grid_template_columns;
 pub mod grid_template_rows;
+pub mod justify_content;
+pub mod justify_items;
+pub mod justify_self;
+pub mod place_content;
+pub mod place_items;
+pub mod place_self;
 
+pub use align_content::ALIGN_CONTENT;
+pub use align_items::ALIGN_ITEMS;
+pub use align_self::ALIGN_SELF;
 pub use flex::FLEX;
 pub use flex_basis::FLEX_BASIS;
 pub use flex_direction::FLEX_DIRECTION;
@@ -29,3 +41,9 @@ pub use grid_column::GRID_COLUMN;
 pub use grid_row::GRID_ROW;
 pub use grid_template_columns::GRID_TEMPLATE_COLUMNS;
 pub use grid_template_rows::GRID_TEMPLATE_ROWS;
+pub use justify_content::JUSTIFY_CONTENT;
+pub use justify_items::JUSTIFY_ITEMS;
+pub use justify_self::JUSTIFY_SELF;
+pub use place_content::PLACE_CONTENT;
+pub use place_items::PLACE_ITEMS;
+pub use place_self::PLACE_SELF;

@@ -4,7 +4,7 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 22 / 69 pages ported.**
+**Progress: 31 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
@@ -50,15 +50,15 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 | ☑ | [grid-auto-columns](https://tailwindcss.com/docs/grid-auto-columns) | 4 / 7 |  |
 | ☑ | [grid-auto-rows](https://tailwindcss.com/docs/grid-auto-rows) | 4 / 7 |  |
 | ☑ | [gap](https://tailwindcss.com/docs/gap) | 9 / 12 |  |
-| ☐ | [justify-content](https://tailwindcss.com/docs/justify-content) | 7 / 11 |  |
-| ☐ | [justify-items](https://tailwindcss.com/docs/justify-items) | 4 / 7 |  |
-| ☐ | [justify-self](https://tailwindcss.com/docs/justify-self) | 4 / 7 |  |
-| ☐ | [align-content](https://tailwindcss.com/docs/align-content) | 7 / 9 |  |
-| ☐ | [align-items](https://tailwindcss.com/docs/align-items) | 5 / 8 |  |
-| ☐ | [align-self](https://tailwindcss.com/docs/align-self) | 5 / 9 |  |
-| ☐ | [place-content](https://tailwindcss.com/docs/place-content) | 7 / 10 |  |
-| ☐ | [place-items](https://tailwindcss.com/docs/place-items) | 5 / 7 |  |
-| ☐ | [place-self](https://tailwindcss.com/docs/place-self) | 4 / 7 |  |
+| ☑ | [justify-content](https://tailwindcss.com/docs/justify-content) | 7 / 11 |  |
+| ☑ | [justify-items](https://tailwindcss.com/docs/justify-items) | 4 / 7 |  |
+| ☑ | [justify-self](https://tailwindcss.com/docs/justify-self) | 4 / 7 |  |
+| ☑ | [align-content](https://tailwindcss.com/docs/align-content) | 7 / 9 |  |
+| ☑ | [align-items](https://tailwindcss.com/docs/align-items) | 5 / 8 |  |
+| ☑ | [align-self](https://tailwindcss.com/docs/align-self) | 5 / 9 |  |
+| ☑ | [place-content](https://tailwindcss.com/docs/place-content) | 7 / 10 |  |
+| ☑ | [place-items](https://tailwindcss.com/docs/place-items) | 5 / 7 |  |
+| ☑ | [place-self](https://tailwindcss.com/docs/place-self) | 4 / 7 |  |
 
 ## Spacing (2 in scope of 2)
 
