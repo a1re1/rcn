@@ -1,6 +1,6 @@
 //! <https://tailwindcss.com/docs/visibility>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, labeled};
 
 use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
 
@@ -36,7 +36,23 @@ pub static VISIBILITY: TwPage = TwPage {
 <div class="invisible ...">02</div>
 <div>03</div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "grid grid-cols-3 gap-4",
+                &[
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "01",
+                    ),
+                    labeled(
+                        "invisible size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "02",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "03",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Collapsing elements",
@@ -70,7 +86,32 @@ pub static VISIBILITY: TwPage = TwPage {
 </tr>
 </tbody>
 </table>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "grid w-96 grid-cols-3 gap-2",
+                        &[
+                            el("font-semibold", &[Node::Prose("Invoice #")]),
+                            el("font-semibold", &[Node::Prose("Client")]),
+                            el("font-semibold", &[Node::Prose("Amount")]),
+                            Node::Prose("#100"),
+                            Node::Prose("Pendant Publishing"),
+                            Node::Prose("$2,000.00"),
+                            el("hidden", &[Node::Prose("#101")]),
+                            el("hidden", &[Node::Prose("Kruger Industrial Smoothing")]),
+                            el("hidden", &[Node::Prose("$545.00")]),
+                            Node::Prose("#102"),
+                            Node::Prose("Petrossian"),
+                            Node::Prose("$1,200.00"),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "collapse has no equivalent — the #101 row is hidden",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Making elements visible",
@@ -83,7 +124,23 @@ pub static VISIBILITY: TwPage = TwPage {
 <div class="visible ...">02</div>
 <div>03</div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "grid grid-cols-3 gap-4",
+                &[
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "01",
+                    ),
+                    labeled(
+                        "visible size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "02",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "03",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -94,7 +151,23 @@ pub static VISIBILITY: TwPage = TwPage {
             snippet: r#"<div class="visible md:invisible ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "grid grid-cols-3 gap-4",
+                &[
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "01",
+                    ),
+                    labeled(
+                        "visible md:invisible size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "02",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "03",
+                    ),
+                ],
+            ),
         },
     ],
 };

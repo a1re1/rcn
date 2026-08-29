@@ -1,8 +1,8 @@
 //! <https://tailwindcss.com/docs/aspect-ratio>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, image, labeled};
 
-use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
+use crate::tw_docs::{TwExample, TwPage, TwSection};
 
 /// <https://tailwindcss.com/docs/aspect-ratio>
 pub static ASPECT_RATIO: TwPage = TwPage {
@@ -32,7 +32,19 @@ pub static ASPECT_RATIO: TwPage = TwPage {
                 "Resize the example to see the expected behavior",
             ],
             snippet: r#"<img class="aspect-3/2 object-cover ..." src="/img/villas.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    image(
+                        "aspect-video w-96 rounded-lg object-cover",
+                        "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "aspect-3/2 ≈ aspect-video (custom ratios have no equivalent)",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Using a video aspect ratio",
@@ -42,7 +54,13 @@ pub static ASPECT_RATIO: TwPage = TwPage {
             ],
             snippet: r#"<iframe class="aspect-video ..." src="https://www.youtube.com/embed/dQw4w9WgXcQ">
 </iframe>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[image(
+                    "aspect-video w-96 rounded-lg object-cover",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
         TwExample {
             title: "Using a custom value",
@@ -53,7 +71,19 @@ pub static ASPECT_RATIO: TwPage = TwPage {
             ],
             snippet: r#"<img class="aspect-[calc(4*3+1)/3] ..." src="/img/villas.jpg" />
 <img class="aspect-(--my-aspect-ratio) ..." src="/img/villas.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    labeled(
+                        "aspect-square w-32 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "aspect-square",
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "aspect-[calc(4*3+1)/3] has no equivalent — aspect-square shown",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -63,7 +93,13 @@ pub static ASPECT_RATIO: TwPage = TwPage {
             ],
             snippet: r#"<iframe class="aspect-video md:aspect-square ..." src="https://www.youtube.com/embed/dQw4w9WgXcQ">
 </iframe>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[image(
+                    "aspect-video md:aspect-square w-64 rounded-lg object-cover",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
     ],
 };

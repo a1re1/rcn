@@ -1,6 +1,6 @@
 //! <https://tailwindcss.com/docs/position>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, labeled};
 
 use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
 
@@ -32,7 +32,16 @@ pub static POSITION: TwPage = TwPage {
 <p>Absolute child</p>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-72 rounded-lg bg-sky-300 p-4",
+                &[
+                    Node::Prose("Static parent"),
+                    labeled(
+                        "absolute bottom-0 left-0 rounded-md bg-sky-500 px-3 py-1 text-white",
+                        "Absolute child",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Relatively positioning elements",
@@ -48,7 +57,16 @@ pub static POSITION: TwPage = TwPage {
 <p>Absolute child</p>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "relative h-32 w-72 rounded-lg bg-sky-300 p-4",
+                &[
+                    Node::Prose("Relative parent"),
+                    labeled(
+                        "absolute bottom-0 left-0 rounded-md bg-sky-500 px-3 py-1 text-white",
+                        "Absolute child",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Absolutely positioning elements",
@@ -82,7 +100,28 @@ pub static POSITION: TwPage = TwPage {
 <p>Static sibling</p>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "relative h-40 w-80 rounded-lg bg-indigo-300 p-4",
+                &[
+                    el(
+                        "flex gap-2",
+                        &[
+                            labeled(
+                                "rounded-md bg-indigo-500 px-3 py-1 text-white",
+                                "Static child",
+                            ),
+                            labeled(
+                                "rounded-md bg-indigo-400 px-3 py-1 text-white",
+                                "Static sibling",
+                            ),
+                        ],
+                    ),
+                    labeled(
+                        "absolute top-0 right-0 rounded-md bg-indigo-600 px-3 py-1 text-white",
+                        "Absolute child",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Fixed positioning elements",
@@ -105,7 +144,31 @@ pub static POSITION: TwPage = TwPage {
 <!-- ... -->
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "relative h-48 w-72 overflow-y-auto rounded-lg bg-slate-100",
+                        &[
+                            labeled("rounded-t-lg bg-slate-300 px-3 py-2", "Contacts"),
+                            el(
+                                "flex flex-col gap-2 p-3",
+                                &[
+                                    Node::Prose("Andrew Alfred"),
+                                    Node::Prose("Debra Houston"),
+                                    Node::Prose("Jane Cooper"),
+                                    Node::Prose("Guy Hawkins"),
+                                    Node::Prose("Brooklyn Simmons"),
+                                ],
+                            ),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "fixed has no equivalent — the header is shown as a static row",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Sticky positioning elements",
@@ -141,7 +204,34 @@ pub static POSITION: TwPage = TwPage {
 </div>
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "relative h-48 w-72 overflow-y-auto rounded-lg bg-slate-100",
+                        &[
+                            labeled("bg-slate-300 px-3 py-1", "A"),
+                            el(
+                                "flex flex-col gap-2 p-3",
+                                &[
+                                    Node::Prose("Andrew Alfred"),
+                                    Node::Prose("Aisha Houston"),
+                                    Node::Prose("Anna Roberts"),
+                                ],
+                            ),
+                            labeled("bg-slate-300 px-3 py-1", "B"),
+                            el(
+                                "flex flex-col gap-2 p-3",
+                                &[Node::Prose("Bob Alfred"), Node::Prose("Bianca Houston")],
+                            ),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "sticky has no equivalent — section headers scroll with the list",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -152,7 +242,16 @@ pub static POSITION: TwPage = TwPage {
             snippet: r#"<div class="relative md:absolute ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "relative h-32 w-72 rounded-lg bg-sky-300 p-4",
+                &[
+                    Node::Prose("Parent"),
+                    labeled(
+                        "relative md:absolute bottom-0 left-0 rounded-md bg-sky-500 px-3 py-1 text-white",
+                        "relative md:absolute",
+                    ),
+                ],
+            ),
         },
     ],
 };

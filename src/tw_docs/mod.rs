@@ -12,11 +12,20 @@
 //! Pages live in one module per Tailwind docs section (`spacing`, `sizing`,
 //! …) and are registered in [`PAGES`] in the docs' own order.
 
+pub mod backgrounds;
+pub mod borders;
 pub mod demo;
+pub mod effects;
+pub mod filters;
 pub mod flex_grid;
+pub mod interactivity;
 pub mod layout;
 pub mod sizing;
 pub mod spacing;
+pub mod svg;
+pub mod transforms;
+pub mod transitions;
+pub mod typography;
 
 pub use demo::Node;
 
@@ -112,6 +121,13 @@ impl TwPage {
 
 /// Every ported page, in docs order. Indexed by `Story::Tailwind(usize)`.
 pub static PAGES: &[&TwPage] = &[
+    &layout::ASPECT_RATIO,
+    &layout::DISPLAY,
+    &layout::OBJECT_FIT,
+    &layout::OVERFLOW,
+    &layout::POSITION,
+    &layout::TOP_RIGHT_BOTTOM_LEFT,
+    &layout::VISIBILITY,
     &flex_grid::FLEX_BASIS,
     &flex_grid::FLEX_DIRECTION,
     &flex_grid::FLEX_WRAP,
@@ -143,6 +159,37 @@ pub static PAGES: &[&TwPage] = &[
     &sizing::HEIGHT,
     &sizing::MIN_HEIGHT,
     &sizing::MAX_HEIGHT,
+    &typography::FONT_SIZE,
+    &typography::FONT_STYLE,
+    &typography::FONT_WEIGHT,
+    &typography::FONT_VARIANT_NUMERIC,
+    &typography::LINE_CLAMP,
+    &typography::LINE_HEIGHT,
+    &typography::TEXT_ALIGN,
+    &typography::COLOR,
+    &typography::TEXT_DECORATION_LINE,
+    &typography::TEXT_DECORATION_COLOR,
+    &typography::TEXT_DECORATION_STYLE,
+    &typography::TEXT_DECORATION_THICKNESS,
+    &typography::TEXT_OVERFLOW,
+    &typography::TEXT_WRAP,
+    &typography::WHITE_SPACE,
+    &backgrounds::BACKGROUND_COLOR,
+    &backgrounds::BACKGROUND_IMAGE,
+    &borders::BORDER_RADIUS,
+    &borders::BORDER_WIDTH,
+    &borders::BORDER_COLOR,
+    &borders::BORDER_STYLE,
+    &effects::BOX_SHADOW,
+    &effects::OPACITY,
+    &filters::FILTER_GRAYSCALE,
+    &transitions::TRANSITION_PROPERTY,
+    &transitions::TRANSITION_DURATION,
+    &transitions::TRANSITION_TIMING_FUNCTION,
+    &transitions::TRANSITION_DELAY,
+    &transforms::TRANSLATE,
+    &interactivity::CURSOR,
+    &svg::FILL,
 ];
 
 /// Pages of one section, with their indices into [`PAGES`].

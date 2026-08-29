@@ -1,6 +1,6 @@
 //! <https://tailwindcss.com/docs/display>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, image, labeled};
 
 use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
 
@@ -65,7 +65,25 @@ white-space: normal;",
             snippet: r#"<p>  When controlling the flow of text, using the CSS property <span class="inline">display: inline</span> will cause the  text inside the element to wrap normally.</p>
 <p>  While using the property <span class="inline-block">display: inline-block</span> will wrap the element to prevent the  text inside from extending beyond its parent.</p>
 <p>  Lastly, using the property <span class="block">display: block</span> will put the element on its own line and fill its  parent.</p>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "flex w-96 flex-wrap items-center gap-1",
+                        &[
+                            Node::Prose(
+                                "When controlling the flow of text, using the CSS property",
+                            ),
+                            labeled("rounded bg-sky-200 px-1", "display: inline"),
+                            Node::Prose("will cause the text inside the element to wrap normally."),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "inline / inline-block have no equivalent — shown as a wrapping flex run",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Flow Root",
@@ -80,7 +98,32 @@ white-space: normal;",
 <div class="my-4 ...">Sure, go ahead, laugh if you want...</div>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "flex flex-col gap-4 rounded-lg bg-slate-200 p-4",
+                        &[
+                            el(
+                                "rounded-lg bg-slate-50 p-4",
+                                &[Node::Prose(
+                                    "Well, let me tell you something, funny boy. You know that little stamp, the one that says New York Public Library?",
+                                )],
+                            ),
+                            el(
+                                "rounded-lg bg-slate-50 p-4",
+                                &[Node::Prose(
+                                    "Sure, go ahead, laugh if you want to. I have seen your type before: flashy, making the scene.",
+                                )],
+                            ),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "flow-root has no equivalent — gpui margins never collapse, so plain blocks behave the same",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Flex",
@@ -92,7 +135,25 @@ white-space: normal;",
 <span>Technical advisor</span>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex items-center gap-3",
+                &[
+                    image(
+                        "size-12 rounded-full object-cover",
+                        "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                    ),
+                    el(
+                        "flex flex-col",
+                        &[
+                            el("font-semibold", &[Node::Prose("Andrew Alfred")]),
+                            el(
+                                "text-sm text-slate-500",
+                                &[Node::Prose("Technical advisor")],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Inline Flex",
@@ -104,7 +165,25 @@ white-space: normal;",
 <img src="/img/kramer.jpg" class="mx-1 size-5 self-center rounded-full" />
 <span>Kramer</span>
 </span>  keeps telling me there is no way to make it work, that ...</p>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex w-96 flex-wrap items-center gap-1",
+                &[
+                    Node::Prose(
+                        "Today I spent most of the day researching ways to make this work, but",
+                    ),
+                    el(
+                        "inline-flex items-baseline",
+                        &[
+                            image(
+                                "mx-1 size-5 self-center rounded-full object-cover",
+                                "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                            ),
+                            Node::Prose("Kramer"),
+                        ],
+                    ),
+                    Node::Prose("keeps telling me there is no way to make it work."),
+                ],
+            ),
         },
         TwExample {
             title: "Grid",
@@ -112,7 +191,47 @@ white-space: normal;",
             snippet: r#"<div class="grid grid-cols-3 grid-rows-3 gap-4">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "grid grid-cols-3 grid-rows-3 gap-4",
+                &[
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "01",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "02",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "03",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "04",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "05",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "06",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "07",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "08",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                        "09",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Inline Grid",
@@ -133,7 +252,69 @@ white-space: normal;",
 <span>05</span>
 <span>06</span>
 </span>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex gap-6",
+                &[
+                    el(
+                        "inline-grid grid-cols-3 gap-4",
+                        &[
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "01",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "02",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "03",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "04",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "05",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "06",
+                            ),
+                        ],
+                    ),
+                    el(
+                        "inline-grid grid-cols-3 gap-4",
+                        &[
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "01",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "02",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "03",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "04",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "05",
+                            ),
+                            labeled(
+                                "size-14 flex items-center justify-center rounded-lg text-white bg-violet-500",
+                                "06",
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Contents",
@@ -148,7 +329,36 @@ white-space: normal;",
 </div>
 <div class="flex-1 ...">04</div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "flex w-full gap-4",
+                        &[
+                            labeled(
+                                "h-14 flex-1 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                                "01",
+                            ),
+                            labeled(
+                                "h-14 flex-1 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                                "02",
+                            ),
+                            labeled(
+                                "h-14 flex-1 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                                "03",
+                            ),
+                            labeled(
+                                "h-14 flex-1 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                                "04",
+                            ),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "contents has no equivalent — the wrapped children are shown flattened into the parent",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Table",
@@ -181,7 +391,32 @@ white-space: normal;",
 </div>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "grid w-full grid-cols-3 gap-2",
+                        &[
+                            el("font-semibold", &[Node::Prose("Song")]),
+                            el("font-semibold", &[Node::Prose("Artist")]),
+                            el("font-semibold", &[Node::Prose("Year")]),
+                            Node::Prose("The Sliding Mr. Bones (Next Stop, Pottersville)"),
+                            Node::Prose("Malcolm Lockyer"),
+                            Node::Prose("1961"),
+                            Node::Prose("Witchy Woman"),
+                            Node::Prose("The Eagles"),
+                            Node::Prose("1972"),
+                            Node::Prose("Shining Star"),
+                            Node::Prose("Earth, Wind, and Fire"),
+                            Node::Prose("1975"),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "table / table-row / table-cell have no equivalent — a grid is shown",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Hidden",
@@ -194,7 +429,23 @@ white-space: normal;",
 <div>02</div>
 <div>03</div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex gap-4",
+                &[
+                    labeled(
+                        "hidden size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "01",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "02",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "03",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Screen-reader only",
@@ -215,7 +466,22 @@ white-space: normal;",
 </svg>
 <span class=\"sr-only sm:not-sr-only\">Settings</span>
 </a>",
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "flex items-center gap-2",
+                        &[
+                            labeled("size-6 rounded-full bg-slate-400", ""),
+                            labeled("hidden", "Settings"),
+                        ],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "sr-only has no equivalent — the label is hidden",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -226,7 +492,23 @@ white-space: normal;",
             snippet: r#"<div class="flex md:inline-flex ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex md:inline-flex gap-4",
+                &[
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "01",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "02",
+                    ),
+                    labeled(
+                        "size-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
+                        "03",
+                    ),
+                ],
+            ),
         },
     ],
 };
