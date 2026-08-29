@@ -135,6 +135,8 @@ enum Story {
     MessageScrollerStory,
     QuestionnaireStory,
     // __STORY_VARIANTS__
+    /// A Tailwind utility docs page: an index into [`crate::tw_docs::PAGES`].
+    Tailwind(usize),
 }
 
 impl Story {
@@ -271,6 +273,7 @@ impl Story {
             Story::MessageScrollerStory => "Message Scroller",
             Story::QuestionnaireStory => "Questionnaire",
             // __STORY_LABELS__
+            Story::Tailwind(index) => crate::tw_docs::PAGES[index].title,
         }
     }
 
@@ -395,6 +398,7 @@ impl Story {
             }
             Story::QuestionnaireStory => "A form-flow step with progress, choices, and actions.",
             // __STORY_DESCRIPTIONS__
+            Story::Tailwind(index) => crate::tw_docs::PAGES[index].description,
         }
     }
 
@@ -402,7 +406,7 @@ impl Story {
     /// `None` for pages without a single backing module.
     fn module(self) -> Option<&'static str> {
         Some(match self {
-            Story::Tokens => return None,
+            Story::Tokens | Story::Tailwind(_) => return None,
             Story::Button => "button",
             Story::Badge => "badge",
             Story::Avatar => "avatar",
@@ -1498,6 +1502,38 @@ impl Storybook {
         let show_components = !components.is_empty();
         let no_results = !show_theme && !show_components;
 
+        // One sidebar group per Tailwind docs section, in docs order.
+        let tailwind_groups: Vec<AnyElement> = crate::tw_docs::TwSection::ALL
+            .iter()
+            .filter_map(|section| {
+                let pages: Vec<(usize, &'static crate::tw_docs::TwPage)> =
+                    crate::tw_docs::pages_in(*section)
+                        .filter(|(_, page)| {
+                            query.is_empty() || page.title.to_lowercase().contains(&query)
+                        })
+                        .collect();
+                if pages.is_empty() {
+                    return None;
+                }
+                Some(
+                    SidebarGroup::new()
+                        .label(format!("Tailwind · {}", section.label()))
+                        .children(pages.into_iter().map(|(index, page)| {
+                            SidebarMenuButton::new(("nav-tailwind", index))
+                                .active(self.story == Story::Tailwind(index))
+                                .on_click(cx.listener(move |this, _, _, cx| {
+                                    this.story = Story::Tailwind(index);
+                                    this.apply_tokens(cx);
+                                    cx.notify();
+                                }))
+                                .child(page.title)
+                        }))
+                        .into_any_element(),
+                )
+            })
+            .collect();
+        let no_results = no_results && tailwind_groups.is_empty();
+
         Sidebar::new()
             .child(
                 SidebarHeader::new()
@@ -1558,6 +1594,7 @@ impl Storybook {
                             }),
                         ))
                     })
+                    .children(tailwind_groups)
                     .when(no_results, |el| {
                         el.child(
                             div()
@@ -1583,6 +1620,189 @@ impl Storybook {
                 ),
             )
     }
+    /// A ported Tailwind docs page (`tw_docs`): the quick-reference table with
+    /// live support marks from the parser, then the page's examples rendered
+    /// through `tw_div`.
+    fn tailwind_canvas(&self, index: usize, cx: &mut Context<Self>) -> AnyElement {
+        use crate::tw::{Support, probe};
+        use crate::tw_docs::{PAGES, sample_class};
+
+        let theme = Theme::of(cx).clone();
+        let page = PAGES[index];
+        const MAX_ROWS: usize = 48;
+
+        let mono = |el: gpui::Div| {
+            el.font_family("Menlo")
+                .text_size(px(12.))
+                .line_height(px(17.))
+        };
+        let mut reference_rows: Vec<AnyElement> = Vec::new();
+        for (class, css) in page.reference.iter().take(MAX_ROWS) {
+            let support = probe(&theme, &sample_class(class));
+            let supported = matches!(support, Support::Supported | Support::Extended);
+            let (mark, mark_color, note): (&str, Hsla, Option<&'static str>) = match support {
+                Support::Supported => ("✓", theme.foreground, None),
+                Support::Extended => ("✓", theme.foreground, Some("via tw_div")),
+                Support::NoEquivalent(reason) => ("—", theme.muted_foreground, Some(reason)),
+                Support::Unknown => ("?", theme.destructive, Some("not handled")),
+            };
+            reference_rows.push(
+                div()
+                    .flex()
+                    .flex_row()
+                    .items_start()
+                    .gap(px(12.))
+                    .py(px(6.))
+                    .border_b_1()
+                    .border_color(theme.border)
+                    .child(
+                        div()
+                            .w(px(16.))
+                            .flex_none()
+                            .text_size(px(12.))
+                            .text_color(mark_color)
+                            .child(mark),
+                    )
+                    .child(
+                        mono(div())
+                            .w(px(240.))
+                            .flex_none()
+                            .text_color(if supported {
+                                theme.foreground
+                            } else {
+                                theme.muted_foreground
+                            })
+                            .child(*class),
+                    )
+                    .child(
+                        mono(div())
+                            .flex_1()
+                            .min_w(px(0.))
+                            .text_color(theme.muted_foreground)
+                            .child(*css),
+                    )
+                    .when_some(note, |el, note| {
+                        el.child(
+                            div()
+                                .flex_none()
+                                .max_w(px(220.))
+                                .text_size(px(11.))
+                                .line_height(px(17.))
+                                .text_color(theme.muted_foreground)
+                                .child(note),
+                        )
+                    })
+                    .into_any_element(),
+            );
+        }
+        let hidden = page.reference.len().saturating_sub(MAX_ROWS);
+
+        let examples: Vec<AnyElement> = page
+            .examples
+            .iter()
+            .enumerate()
+            .map(|(i, example)| {
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(8.))
+                    .child(Self::docs_heading(&theme, example.title))
+                    .children(
+                        example
+                            .prose
+                            .iter()
+                            .map(|paragraph| Self::docs_paragraph(&theme, paragraph)),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .w_full()
+                            .min_h(px(160.))
+                            .items_center()
+                            .justify_center()
+                            .rounded(theme.radius_lg())
+                            .border_1()
+                            .border_color(theme.border)
+                            .p(px(32.))
+                            .child(crate::tw_docs::demo::stage(&theme, &example.demo)),
+                    )
+                    .child(Self::code_block(&theme, ("tw-snippet", i), example.snippet))
+                    .into_any_element()
+            })
+            .collect();
+
+        div()
+            .id("tailwind-canvas")
+            .flex()
+            .flex_col()
+            .flex_1()
+            .min_w(px(0.))
+            .h_full()
+            .overflow_y_scroll()
+            .overflow_x_hidden()
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(24.))
+                    .px(px(28.))
+                    .py(px(24.))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(4.))
+                            .child(
+                                div()
+                                    .text_size(px(12.))
+                                    .line_height(px(16.))
+                                    .text_color(theme.muted_foreground)
+                                    .child(page.section.label()),
+                            )
+                            .child(
+                                div()
+                                    .text_size(px(20.))
+                                    .line_height(px(28.))
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .when_some(theme.heading_font(), |el, font| {
+                                        el.font_family(font)
+                                    })
+                                    .child(page.title),
+                            )
+                            .child(
+                                div()
+                                    .text_size(px(14.))
+                                    .line_height(px(20.))
+                                    .text_color(theme.muted_foreground)
+                                    .child(page.description),
+                            )
+                            .child(
+                                mono(div())
+                                    .text_color(theme.muted_foreground)
+                                    .child(page.url()),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .child(Self::docs_heading(&theme, "Quick reference"))
+                            .children(reference_rows)
+                            .when(hidden > 0, |el| {
+                                el.child(
+                                    div()
+                                        .py(px(6.))
+                                        .text_size(px(12.))
+                                        .text_color(theme.muted_foreground)
+                                        .child(format!("… {hidden} more rows on tailwindcss.com")),
+                                )
+                            }),
+                    )
+                    .children(examples),
+            )
+            .into_any_element()
+    }
+
     fn canvas(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let theme = Theme::of(cx).clone();
         let preview: AnyElement = match self.story {
@@ -1650,6 +1870,8 @@ impl Storybook {
             Story::MessageScrollerStory => self.message_scroller_preview(cx).into_any_element(),
             Story::QuestionnaireStory => self.questionnaire_preview(cx).into_any_element(),
             // __STORY_CANVAS__
+            // Tailwind pages render through `tailwind_canvas` (see `Render`).
+            Story::Tailwind(_) => div().into_any_element(),
         };
         let docs = self
             .story
@@ -1804,7 +2026,11 @@ impl Storybook {
     }
 
     /// A monospace code block (line-per-row so formatting is preserved).
-    fn code_block(theme: &Theme, id: &'static str, code: &str) -> impl IntoElement + use<> {
+    fn code_block<I: Into<ElementId>>(
+        theme: &Theme,
+        id: I,
+        code: &str,
+    ) -> impl IntoElement + use<I> {
         div()
             .id(id)
             .w_full()
@@ -4025,6 +4251,7 @@ impl Storybook {
         let theme = Theme::of(cx).clone();
         let rows: Vec<AnyElement> = match self.story {
             Story::Tokens => self.token_controls(cx),
+            Story::Tailwind(_) => Vec::new(),
             Story::Button => vec![
                 Self::control_row(
                     "variant",
@@ -9790,6 +10017,8 @@ impl Render for Storybook {
             .child(SidebarProvider::new().sidebar(self.sidebar(cx)).inset(
                 if self.story == Story::Tokens {
                     self.showcase(cx)
+                } else if let Story::Tailwind(index) = self.story {
+                    self.tailwind_canvas(index, cx)
                 } else {
                     div()
                         .flex()

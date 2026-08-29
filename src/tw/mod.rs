@@ -572,6 +572,41 @@ fn ledger_map() -> &'static HashMap<&'static str, &'static coverage::Entry> {
     LEDGER_MAP.get_or_init(|| coverage::LEDGER.iter().map(|e| (e.name, e)).collect())
 }
 
+/// How the parser relates to one concrete class — the runtime counterpart of
+/// the coverage ledger, used by the storybook's Tailwind docs to mark each
+/// quick-reference row.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Support {
+    /// Maps onto gpui styles (or the ext channel for `Extended` roots).
+    Supported,
+    /// Handled by ext-aware consumers (`tw_div`, `apply_img`) only.
+    Extended,
+    /// Ledgered as having no gpui equivalent; the parser skips it.
+    NoEquivalent(&'static str),
+    /// Not claimed by any handler and not in the ledger.
+    Unknown,
+}
+
+/// Classify a single class by actually parsing it (with a nominal desktop
+/// viewport so responsive prefixes resolve).
+pub fn probe(theme: &Theme, class: &str) -> Support {
+    let styles = parse_at(theme, gpui::size(px(1280.), px(800.)), class);
+    let unhandled = styles
+        .unknown
+        .iter()
+        .chain(styles.skipped.iter())
+        .any(|t| t == class);
+    // Strip variant prefixes before consulting the ledger.
+    let bare = class.rsplit(':').next().unwrap_or(class);
+    let bare = bare.strip_prefix('-').unwrap_or(bare);
+    match (unhandled, coverage::lookup(bare)) {
+        (true, Some(coverage::Status::NoEquivalent(reason))) => Support::NoEquivalent(reason),
+        (true, _) => Support::Unknown,
+        (false, Some(coverage::Status::Extended)) => Support::Extended,
+        (false, _) => Support::Supported,
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Application to elements
 // ---------------------------------------------------------------------------
@@ -854,5 +889,35 @@ mod tests {
         let styles = parse(&theme, "w-1/2 h-full");
         let expected = StyleRefinement::default().w(relative(0.5)).h(relative(1.));
         assert_style_eq(&styles.base, &expected);
+    }
+}
+
+#[cfg(test)]
+mod probe_tests {
+    use super::{Support, probe};
+    use crate::theme::Theme;
+
+    #[test]
+    fn probe_classifies_plain_prefixed_and_negative_classes() {
+        let theme = Theme::light();
+        assert_eq!(probe(&theme, "p-4"), Support::Supported);
+        assert_eq!(probe(&theme, "-mt-8"), Support::Supported);
+        assert_eq!(probe(&theme, "md:p-4"), Support::Supported);
+        assert_eq!(probe(&theme, "hover:bg-sky-500"), Support::Supported);
+        assert_eq!(probe(&theme, "p-[5px]"), Support::Supported);
+        assert_eq!(probe(&theme, "space-x-4"), Support::Extended);
+        assert!(matches!(
+            probe(&theme, "float-left"),
+            Support::NoEquivalent(_)
+        ));
+        assert_eq!(probe(&theme, "not-a-tailwind-class"), Support::Unknown);
+    }
+
+    #[test]
+    fn probe_dark_only_classes_count_as_supported_in_light_theme() {
+        // `dark:` resolves at parse time: dropped in a light theme, never
+        // reported as skipped/unknown, so the row is marked supported.
+        let theme = Theme::light();
+        assert_eq!(probe(&theme, "dark:bg-sky-500"), Support::Supported);
     }
 }
