@@ -13,6 +13,7 @@
 //! …) and are registered in [`PAGES`] in the docs' own order.
 
 pub mod demo;
+pub mod layout;
 pub mod spacing;
 
 pub use demo::Node;
@@ -216,6 +217,22 @@ mod tests {
                 "{} has no supported reference rows",
                 page.slug
             );
+        }
+    }
+
+    /// Generated pages start with `demo::TODO_DEMO` placeholders; a page is
+    /// only registered once every example has a real demo.
+    #[test]
+    fn no_placeholder_demos_registered() {
+        for page in PAGES {
+            for example in page.examples {
+                assert!(
+                    !matches!(example.demo, Node::Text("TODO: demo")),
+                    "{} / {} still has a placeholder demo",
+                    page.slug,
+                    example.title
+                );
+            }
         }
     }
 

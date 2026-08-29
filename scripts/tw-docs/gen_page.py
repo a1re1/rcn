@@ -21,8 +21,15 @@ out.append("    reference: &[")
 for row in d['rows']:
     if len(row) >= 2: out.append(f"        ({rs(row[0])}, {rs(row[1])}),")
 out.append("    ],")
-out.append("    examples: &[")
+# The docs page's "On this page" TOC and footer sections are <h3>s too; the
+# extractor keeps everything after the Examples <h2>, so cut them here.
+JUNK = {"On this page", "Tailwind CSS", "Resources", "Tailwind Plus", "Community"}
+examples = []
 for e in d['examples']:
+    if e['title'] in JUNK: break
+    examples.append(e)
+out.append("    examples: &[")
+for e in examples:
     snippet = '\n'.join(c.rstrip() for c in e['code']) if e['code'] else ''
     # docs snippets collapse newlines; restore one element per line
     snippet = re.sub(r'>\s*<', '>\n<', snippet)

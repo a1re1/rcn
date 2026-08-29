@@ -47,6 +47,10 @@ pub const fn labeled(classes: &'static str, label: &'static str) -> Node {
     Node::Labeled { classes, label }
 }
 
+/// Placeholder for a generated page whose demos are not written yet. Pages
+/// still carrying it must not be registered in `PAGES` (a test enforces it).
+pub const TODO_DEMO: Node = Node::Text("TODO: demo");
+
 /// `<img class="…" src="…">`.
 pub const fn image(classes: &'static str, src: &'static str) -> Node {
     Node::Image { classes, src }
