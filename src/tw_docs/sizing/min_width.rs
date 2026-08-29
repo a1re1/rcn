@@ -184,12 +184,12 @@ pub static MIN_WIDTH: TwPage = TwPage {
                         "min-w-xs ≈ min-w-[20rem]",
                     ),
                     labeled(
-                        "min-w-[16rem] px-4 py-2 flex items-center justify-center rounded-lg text-white bg-purple-500",
-                        "min-w-2xs ≈ min-w-[16rem]",
+                        "min-w-[18rem] px-4 py-2 flex items-center justify-center rounded-lg text-white bg-purple-500",
+                        "min-w-2xs ≈ min-w-[18rem]",
                     ),
                     labeled(
-                        "min-w-[12rem] px-4 py-2 flex items-center justify-center rounded-lg text-white bg-purple-500",
-                        "min-w-3xs ≈ min-w-[12rem]",
+                        "min-w-[16rem] px-4 py-2 flex items-center justify-center rounded-lg text-white bg-purple-500",
+                        "min-w-3xs ≈ min-w-[16rem]",
                     ),
                 ],
             ),

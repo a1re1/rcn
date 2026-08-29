@@ -4,7 +4,7 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 8 / 69 pages ported.**
+**Progress: 31 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
@@ -35,30 +35,30 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [flex-basis](https://tailwindcss.com/docs/flex-basis) | 6 / 20 |  |
-| ☐ | [flex-direction](https://tailwindcss.com/docs/flex-direction) | 4 / 4 |  |
-| ☐ | [flex-wrap](https://tailwindcss.com/docs/flex-wrap) | 3 / 3 |  |
-| ☐ | [flex](https://tailwindcss.com/docs/flex) | 4 / 7 |  |
-| ☐ | [flex-grow](https://tailwindcss.com/docs/flex-grow) | 2 / 4 |  |
-| ☐ | [flex-shrink](https://tailwindcss.com/docs/flex-shrink) | 2 / 4 |  |
+| ☑ | [flex-basis](https://tailwindcss.com/docs/flex-basis) | 6 / 20 |  |
+| ☑ | [flex-direction](https://tailwindcss.com/docs/flex-direction) | 4 / 4 |  |
+| ☑ | [flex-wrap](https://tailwindcss.com/docs/flex-wrap) | 3 / 3 |  |
+| ☑ | [flex](https://tailwindcss.com/docs/flex) | 4 / 7 |  |
+| ☑ | [flex-grow](https://tailwindcss.com/docs/flex-grow) | 2 / 4 |  |
+| ☑ | [flex-shrink](https://tailwindcss.com/docs/flex-shrink) | 2 / 4 |  |
 | — | [order](https://tailwindcss.com/docs/order) | 0 / 6 | |
-| ☐ | [grid-template-columns](https://tailwindcss.com/docs/grid-template-columns) | 1 / 5 |  |
-| ☐ | [grid-column](https://tailwindcss.com/docs/grid-column) | 11 / 19 |  |
-| ☐ | [grid-template-rows](https://tailwindcss.com/docs/grid-template-rows) | 1 / 5 |  |
-| ☐ | [grid-row](https://tailwindcss.com/docs/grid-row) | 11 / 19 |  |
-| ☐ | [grid-auto-flow](https://tailwindcss.com/docs/grid-auto-flow) | 5 / 5 |  |
-| ☐ | [grid-auto-columns](https://tailwindcss.com/docs/grid-auto-columns) | 4 / 7 |  |
-| ☐ | [grid-auto-rows](https://tailwindcss.com/docs/grid-auto-rows) | 4 / 7 |  |
-| ☐ | [gap](https://tailwindcss.com/docs/gap) | 9 / 12 |  |
-| ☐ | [justify-content](https://tailwindcss.com/docs/justify-content) | 7 / 11 |  |
-| ☐ | [justify-items](https://tailwindcss.com/docs/justify-items) | 4 / 7 |  |
-| ☐ | [justify-self](https://tailwindcss.com/docs/justify-self) | 4 / 7 |  |
-| ☐ | [align-content](https://tailwindcss.com/docs/align-content) | 7 / 9 |  |
-| ☐ | [align-items](https://tailwindcss.com/docs/align-items) | 5 / 8 |  |
-| ☐ | [align-self](https://tailwindcss.com/docs/align-self) | 5 / 9 |  |
-| ☐ | [place-content](https://tailwindcss.com/docs/place-content) | 7 / 10 |  |
-| ☐ | [place-items](https://tailwindcss.com/docs/place-items) | 5 / 7 |  |
-| ☐ | [place-self](https://tailwindcss.com/docs/place-self) | 4 / 7 |  |
+| ☑ | [grid-template-columns](https://tailwindcss.com/docs/grid-template-columns) | 1 / 5 |  |
+| ☑ | [grid-column](https://tailwindcss.com/docs/grid-column) | 11 / 19 |  |
+| ☑ | [grid-template-rows](https://tailwindcss.com/docs/grid-template-rows) | 1 / 5 |  |
+| ☑ | [grid-row](https://tailwindcss.com/docs/grid-row) | 11 / 19 |  |
+| ☑ | [grid-auto-flow](https://tailwindcss.com/docs/grid-auto-flow) | 5 / 5 |  |
+| ☑ | [grid-auto-columns](https://tailwindcss.com/docs/grid-auto-columns) | 4 / 7 |  |
+| ☑ | [grid-auto-rows](https://tailwindcss.com/docs/grid-auto-rows) | 4 / 7 |  |
+| ☑ | [gap](https://tailwindcss.com/docs/gap) | 9 / 12 |  |
+| ☑ | [justify-content](https://tailwindcss.com/docs/justify-content) | 7 / 11 |  |
+| ☑ | [justify-items](https://tailwindcss.com/docs/justify-items) | 4 / 7 |  |
+| ☑ | [justify-self](https://tailwindcss.com/docs/justify-self) | 4 / 7 |  |
+| ☑ | [align-content](https://tailwindcss.com/docs/align-content) | 7 / 9 |  |
+| ☑ | [align-items](https://tailwindcss.com/docs/align-items) | 5 / 8 |  |
+| ☑ | [align-self](https://tailwindcss.com/docs/align-self) | 5 / 9 |  |
+| ☑ | [place-content](https://tailwindcss.com/docs/place-content) | 7 / 10 |  |
+| ☑ | [place-items](https://tailwindcss.com/docs/place-items) | 5 / 7 |  |
+| ☑ | [place-self](https://tailwindcss.com/docs/place-self) | 4 / 7 |  |
 
 ## Spacing (2 in scope of 2)
 

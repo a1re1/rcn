@@ -13,6 +13,7 @@
 //! …) and are registered in [`PAGES`] in the docs' own order.
 
 pub mod demo;
+pub mod flex_grid;
 pub mod layout;
 pub mod sizing;
 pub mod spacing;
@@ -111,6 +112,29 @@ impl TwPage {
 
 /// Every ported page, in docs order. Indexed by `Story::Tailwind(usize)`.
 pub static PAGES: &[&TwPage] = &[
+    &flex_grid::FLEX_BASIS,
+    &flex_grid::FLEX_DIRECTION,
+    &flex_grid::FLEX_WRAP,
+    &flex_grid::FLEX,
+    &flex_grid::FLEX_GROW,
+    &flex_grid::FLEX_SHRINK,
+    &flex_grid::GRID_TEMPLATE_COLUMNS,
+    &flex_grid::GRID_COLUMN,
+    &flex_grid::GRID_TEMPLATE_ROWS,
+    &flex_grid::GRID_ROW,
+    &flex_grid::GRID_AUTO_FLOW,
+    &flex_grid::GRID_AUTO_COLUMNS,
+    &flex_grid::GRID_AUTO_ROWS,
+    &flex_grid::GAP,
+    &flex_grid::JUSTIFY_CONTENT,
+    &flex_grid::JUSTIFY_ITEMS,
+    &flex_grid::JUSTIFY_SELF,
+    &flex_grid::ALIGN_CONTENT,
+    &flex_grid::ALIGN_ITEMS,
+    &flex_grid::ALIGN_SELF,
+    &flex_grid::PLACE_CONTENT,
+    &flex_grid::PLACE_ITEMS,
+    &flex_grid::PLACE_SELF,
     &spacing::PADDING,
     &spacing::MARGIN,
     &sizing::WIDTH,
