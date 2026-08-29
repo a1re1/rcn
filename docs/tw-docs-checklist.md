@@ -4,7 +4,7 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 2 / 69 pages ported.**
+**Progress: 8 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
@@ -71,12 +71,12 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [width](https://tailwindcss.com/docs/width) | 25 / 46 |  |
-| ☐ | [min-width](https://tailwindcss.com/docs/min-width) | 13 / 30 |  |
-| ☐ | [max-width](https://tailwindcss.com/docs/max-width) | 13 / 31 |  |
-| ☐ | [height](https://tailwindcss.com/docs/height) | 25 / 34 |  |
-| ☐ | [min-height](https://tailwindcss.com/docs/min-height) | 13 / 18 |  |
-| ☐ | [max-height](https://tailwindcss.com/docs/max-height) | 13 / 18 |  |
+| ☑ | [width](https://tailwindcss.com/docs/width) | 25 / 46 |  |
+| ☑ | [min-width](https://tailwindcss.com/docs/min-width) | 13 / 30 |  |
+| ☑ | [max-width](https://tailwindcss.com/docs/max-width) | 13 / 31 |  |
+| ☑ | [height](https://tailwindcss.com/docs/height) | 25 / 34 |  |
+| ☑ | [min-height](https://tailwindcss.com/docs/min-height) | 13 / 18 |  |
+| ☑ | [max-height](https://tailwindcss.com/docs/max-height) | 13 / 18 |  |
 | — | [inline-size](https://tailwindcss.com/docs/inline-size) | 0 / 30 | |
 | — | [min-inline-size](https://tailwindcss.com/docs/min-inline-size) | 0 / 30 | |
 | — | [max-inline-size](https://tailwindcss.com/docs/max-inline-size) | 0 / 30 | |

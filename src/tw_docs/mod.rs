@@ -14,6 +14,7 @@
 
 pub mod demo;
 pub mod layout;
+pub mod sizing;
 pub mod spacing;
 
 pub use demo::Node;
@@ -109,7 +110,16 @@ impl TwPage {
 }
 
 /// Every ported page, in docs order. Indexed by `Story::Tailwind(usize)`.
-pub static PAGES: &[&TwPage] = &[&spacing::PADDING, &spacing::MARGIN];
+pub static PAGES: &[&TwPage] = &[
+    &spacing::PADDING,
+    &spacing::MARGIN,
+    &sizing::WIDTH,
+    &sizing::MIN_WIDTH,
+    &sizing::MAX_WIDTH,
+    &sizing::HEIGHT,
+    &sizing::MIN_HEIGHT,
+    &sizing::MAX_HEIGHT,
+];
 
 /// Pages of one section, with their indices into [`PAGES`].
 pub fn pages_in(section: TwSection) -> impl Iterator<Item = (usize, &'static TwPage)> {
