@@ -4,7 +4,7 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 14 / 69 pages ported.**
+**Progress: 22 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
@@ -42,14 +42,14 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 | ☑ | [flex-grow](https://tailwindcss.com/docs/flex-grow) | 2 / 4 |  |
 | ☑ | [flex-shrink](https://tailwindcss.com/docs/flex-shrink) | 2 / 4 |  |
 | — | [order](https://tailwindcss.com/docs/order) | 0 / 6 | |
-| ☐ | [grid-template-columns](https://tailwindcss.com/docs/grid-template-columns) | 1 / 5 |  |
-| ☐ | [grid-column](https://tailwindcss.com/docs/grid-column) | 11 / 19 |  |
-| ☐ | [grid-template-rows](https://tailwindcss.com/docs/grid-template-rows) | 1 / 5 |  |
-| ☐ | [grid-row](https://tailwindcss.com/docs/grid-row) | 11 / 19 |  |
-| ☐ | [grid-auto-flow](https://tailwindcss.com/docs/grid-auto-flow) | 5 / 5 |  |
-| ☐ | [grid-auto-columns](https://tailwindcss.com/docs/grid-auto-columns) | 4 / 7 |  |
-| ☐ | [grid-auto-rows](https://tailwindcss.com/docs/grid-auto-rows) | 4 / 7 |  |
-| ☐ | [gap](https://tailwindcss.com/docs/gap) | 9 / 12 |  |
+| ☑ | [grid-template-columns](https://tailwindcss.com/docs/grid-template-columns) | 1 / 5 |  |
+| ☑ | [grid-column](https://tailwindcss.com/docs/grid-column) | 11 / 19 |  |
+| ☑ | [grid-template-rows](https://tailwindcss.com/docs/grid-template-rows) | 1 / 5 |  |
+| ☑ | [grid-row](https://tailwindcss.com/docs/grid-row) | 11 / 19 |  |
+| ☑ | [grid-auto-flow](https://tailwindcss.com/docs/grid-auto-flow) | 5 / 5 |  |
+| ☑ | [grid-auto-columns](https://tailwindcss.com/docs/grid-auto-columns) | 4 / 7 |  |
+| ☑ | [grid-auto-rows](https://tailwindcss.com/docs/grid-auto-rows) | 4 / 7 |  |
+| ☑ | [gap](https://tailwindcss.com/docs/gap) | 9 / 12 |  |
 | ☐ | [justify-content](https://tailwindcss.com/docs/justify-content) | 7 / 11 |  |
 | ☐ | [justify-items](https://tailwindcss.com/docs/justify-items) | 4 / 7 |  |
 | ☐ | [justify-self](https://tailwindcss.com/docs/justify-self) | 4 / 7 |  |
