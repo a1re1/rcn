@@ -4,7 +4,7 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 53 / 69 pages ported.**
+**Progress: 69 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
@@ -127,8 +127,8 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 |---|---|---|---|
 | — | [background-attachment](https://tailwindcss.com/docs/background-attachment) | 0 / 3 | |
 | — | [background-clip](https://tailwindcss.com/docs/background-clip) | 0 / 4 | |
-| ☐ | [background-color](https://tailwindcss.com/docs/background-color) | 245 / 293 |  |
-| ☐ | [background-image](https://tailwindcss.com/docs/background-image) | 10 / 34 |  |
+| ☑ | [background-color](https://tailwindcss.com/docs/background-color) | 245 / 293 |  |
+| ☑ | [background-image](https://tailwindcss.com/docs/background-image) | 10 / 34 |  |
 | — | [background-origin](https://tailwindcss.com/docs/background-origin) | 0 / 3 | |
 | — | [background-position](https://tailwindcss.com/docs/background-position) | 0 / 11 | |
 | — | [background-repeat](https://tailwindcss.com/docs/background-repeat) | 0 / 6 | |
@@ -138,10 +138,10 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [border-radius](https://tailwindcss.com/docs/border-radius) | 165 / 186 |  |
-| ☐ | [border-width](https://tailwindcss.com/docs/border-width) | 31 / 54 |  |
-| ☐ | [border-color](https://tailwindcss.com/docs/border-color) | 499 / 3516 |  |
-| ☐ | [border-style](https://tailwindcss.com/docs/border-style) | 3 / 12 |  |
+| ☑ | [border-radius](https://tailwindcss.com/docs/border-radius) | 165 / 186 |  |
+| ☑ | [border-width](https://tailwindcss.com/docs/border-width) | 31 / 54 |  |
+| ☑ | [border-color](https://tailwindcss.com/docs/border-color) | 499 / 3516 |  |
+| ☑ | [border-style](https://tailwindcss.com/docs/border-style) | 3 / 12 |  |
 | — | [outline-width](https://tailwindcss.com/docs/outline-width) | 0 / 4 | |
 | — | [outline-color](https://tailwindcss.com/docs/outline-color) | 0 / 293 | |
 | — | [outline-style](https://tailwindcss.com/docs/outline-style) | 0 / 6 | |
@@ -151,9 +151,9 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [box-shadow](https://tailwindcss.com/docs/box-shadow) | 507 / 1189 |  |
+| ☑ | [box-shadow](https://tailwindcss.com/docs/box-shadow) | 507 / 1189 |  |
 | — | [text-shadow](https://tailwindcss.com/docs/text-shadow) | 0 / 300 | |
-| ☐ | [opacity](https://tailwindcss.com/docs/opacity) | 1 / 3 |  |
+| ☑ | [opacity](https://tailwindcss.com/docs/opacity) | 1 / 3 |  |
 | — | [mix-blend-mode](https://tailwindcss.com/docs/mix-blend-mode) | 0 / 18 | |
 | — | [background-blend-mode](https://tailwindcss.com/docs/background-blend-mode) | 0 / 16 | |
 | — | [mask-clip](https://tailwindcss.com/docs/mask-clip) | 0 / 7 | |
@@ -175,7 +175,7 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 | — | [filter-brightness](https://tailwindcss.com/docs/filter-brightness) | 0 / 3 | |
 | — | [filter-contrast](https://tailwindcss.com/docs/filter-contrast) | 0 / 3 | |
 | — | [filter-drop-shadow](https://tailwindcss.com/docs/filter-drop-shadow) | 0 / 301 | |
-| ☐ | [filter-grayscale](https://tailwindcss.com/docs/filter-grayscale) | 1 / 4 |  |
+| ☑ | [filter-grayscale](https://tailwindcss.com/docs/filter-grayscale) | 1 / 4 |  |
 | — | [filter-hue-rotate](https://tailwindcss.com/docs/filter-hue-rotate) | 0 / 4 | |
 | — | [filter-invert](https://tailwindcss.com/docs/filter-invert) | 0 / 4 | |
 | — | [filter-saturate](https://tailwindcss.com/docs/filter-saturate) | 0 / 3 | |
@@ -204,11 +204,11 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [transition-property](https://tailwindcss.com/docs/transition-property) | 5 / 9 |  |
+| ☑ | [transition-property](https://tailwindcss.com/docs/transition-property) | 5 / 9 |  |
 | — | [transition-behavior](https://tailwindcss.com/docs/transition-behavior) | 0 / 2 | |
-| ☐ | [transition-duration](https://tailwindcss.com/docs/transition-duration) | 1 / 4 |  |
-| ☐ | [transition-timing-function](https://tailwindcss.com/docs/transition-timing-function) | 4 / 7 |  |
-| ☐ | [transition-delay](https://tailwindcss.com/docs/transition-delay) | 1 / 3 |  |
+| ☑ | [transition-duration](https://tailwindcss.com/docs/transition-duration) | 1 / 4 |  |
+| ☑ | [transition-timing-function](https://tailwindcss.com/docs/transition-timing-function) | 4 / 7 |  |
+| ☑ | [transition-delay](https://tailwindcss.com/docs/transition-delay) | 1 / 3 |  |
 | — | [animation](https://tailwindcss.com/docs/animation) | 0 / 7 | |
 
 ## Transforms (1 in scope of 11)
@@ -224,7 +224,7 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 | — | [transform](https://tailwindcss.com/docs/transform) | 0 / 5 | |
 | — | [transform-origin](https://tailwindcss.com/docs/transform-origin) | 0 / 11 | |
 | — | [transform-style](https://tailwindcss.com/docs/transform-style) | 0 / 2 | |
-| ☐ | [translate](https://tailwindcss.com/docs/translate) | 15 / 37 |  |
+| ☑ | [translate](https://tailwindcss.com/docs/translate) | 15 / 37 |  |
 | — | [zoom](https://tailwindcss.com/docs/zoom) | 0 / 3 | |
 
 ## Interactivity (1 in scope of 20)
@@ -235,7 +235,7 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 | — | [appearance](https://tailwindcss.com/docs/appearance) | 0 / 2 | |
 | — | [caret-color](https://tailwindcss.com/docs/caret-color) | 0 / 293 | |
 | — | [color-scheme](https://tailwindcss.com/docs/color-scheme) | 0 / 6 | |
-| ☐ | [cursor](https://tailwindcss.com/docs/cursor) | 18 / 38 |  |
+| ☑ | [cursor](https://tailwindcss.com/docs/cursor) | 18 / 38 |  |
 | — | [field-sizing](https://tailwindcss.com/docs/field-sizing) | 0 / 2 | |
 | — | [pointer-events](https://tailwindcss.com/docs/pointer-events) | 0 / 2 | |
 | — | [resize](https://tailwindcss.com/docs/resize) | 0 / 4 | |
@@ -256,7 +256,7 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [fill](https://tailwindcss.com/docs/fill) | 245 / 294 |  |
+| ☑ | [fill](https://tailwindcss.com/docs/fill) | 245 / 294 |  |
 | — | [stroke](https://tailwindcss.com/docs/stroke) | 0 / 294 | |
 | — | [stroke-width](https://tailwindcss.com/docs/stroke-width) | 0 / 3 | |
 

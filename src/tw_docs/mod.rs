@@ -12,11 +12,19 @@
 //! Pages live in one module per Tailwind docs section (`spacing`, `sizing`,
 //! …) and are registered in [`PAGES`] in the docs' own order.
 
+pub mod backgrounds;
+pub mod borders;
 pub mod demo;
+pub mod effects;
+pub mod filters;
 pub mod flex_grid;
+pub mod interactivity;
 pub mod layout;
 pub mod sizing;
 pub mod spacing;
+pub mod svg;
+pub mod transforms;
+pub mod transitions;
 pub mod typography;
 
 pub use demo::Node;
@@ -166,6 +174,22 @@ pub static PAGES: &[&TwPage] = &[
     &typography::TEXT_OVERFLOW,
     &typography::TEXT_WRAP,
     &typography::WHITE_SPACE,
+    &backgrounds::BACKGROUND_COLOR,
+    &backgrounds::BACKGROUND_IMAGE,
+    &borders::BORDER_RADIUS,
+    &borders::BORDER_WIDTH,
+    &borders::BORDER_COLOR,
+    &borders::BORDER_STYLE,
+    &effects::BOX_SHADOW,
+    &effects::OPACITY,
+    &filters::FILTER_GRAYSCALE,
+    &transitions::TRANSITION_PROPERTY,
+    &transitions::TRANSITION_DURATION,
+    &transitions::TRANSITION_TIMING_FUNCTION,
+    &transitions::TRANSITION_DELAY,
+    &transforms::TRANSLATE,
+    &interactivity::CURSOR,
+    &svg::FILL,
 ];
 
 /// Pages of one section, with their indices into [`PAGES`].

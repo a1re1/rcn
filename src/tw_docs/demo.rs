@@ -59,10 +59,15 @@ pub const fn image(classes: &'static str, src: &'static str) -> Node {
 impl Node {
     pub fn render(&self, theme: &Theme) -> AnyElement {
         match self {
+            // Demo trees are `static`, so a node's address is a stable
+            // element id — which is what `tw_div` needs to animate hover
+            // transitions instead of snapping.
             Node::El { classes, children } => tw_div(*classes)
+                .id(("tw-node", self as *const Node as usize))
                 .children(children.iter().map(|child| child.render(theme)))
                 .into_any_element(),
             Node::Labeled { classes, label } => tw_div(*classes)
+                .id(("tw-node", self as *const Node as usize))
                 .child(Node::Text(label).render(theme))
                 .into_any_element(),
             Node::Text(text) => div()
