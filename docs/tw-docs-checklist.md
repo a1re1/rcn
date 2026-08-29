@@ -1,6 +1,6 @@
 # Tailwind docs → storybook checklist
 
-The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page so the `tw` parser's output can be seen live (`src/tw_docs/`). A page is in scope when at least one of its quick-reference classes parses as `Supported`/`Extended` — decided by the parser itself, not by hand (`cargo test dump_support_report -- --ignored --nocapture` with `TW_DOCS_JSON_DIR` pointing at scraped pages; see `scripts/tw-docs/`).
+The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page so the `tw` parser's output can be seen live (`src/tw_docs/`). A page is in scope when at least one of its quick-reference classes parses as `Supported`/`Extended` — decided by the parser itself, not by hand (`cargo test dump_support_report -- --ignored --nocapture` with `TW_DOCS_DIR` pointing at scraped pages; see `scripts/tw-docs/`).
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 

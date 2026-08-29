@@ -232,12 +232,12 @@ mod tests {
     /// page (JSON files with `{"rows": [[class, css], …]}`) and print a
     /// markdown summary — used to regenerate docs/tw-docs-checklist.md.
     ///
-    /// `TW_DOCS_JSON_DIR=/path/to/dir cargo test -p rcn dump_support_report -- --ignored --nocapture`
+    /// `TW_DOCS_DIR=/path/to/dir cargo test -p rcn dump_support_report -- --ignored --nocapture`
     #[test]
     #[ignore]
     fn dump_support_report() {
-        let Ok(dir) = std::env::var("TW_DOCS_JSON_DIR") else {
-            eprintln!("TW_DOCS_JSON_DIR not set");
+        let Ok(dir) = std::env::var("TW_DOCS_DIR") else {
+            eprintln!("TW_DOCS_DIR not set");
             return;
         };
         let theme = Theme::light();

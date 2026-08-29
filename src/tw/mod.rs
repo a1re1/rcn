@@ -891,3 +891,33 @@ mod tests {
         assert_style_eq(&styles.base, &expected);
     }
 }
+
+#[cfg(test)]
+mod probe_tests {
+    use super::{Support, probe};
+    use crate::theme::Theme;
+
+    #[test]
+    fn probe_classifies_plain_prefixed_and_negative_classes() {
+        let theme = Theme::light();
+        assert_eq!(probe(&theme, "p-4"), Support::Supported);
+        assert_eq!(probe(&theme, "-mt-8"), Support::Supported);
+        assert_eq!(probe(&theme, "md:p-4"), Support::Supported);
+        assert_eq!(probe(&theme, "hover:bg-sky-500"), Support::Supported);
+        assert_eq!(probe(&theme, "p-[5px]"), Support::Supported);
+        assert_eq!(probe(&theme, "space-x-4"), Support::Extended);
+        assert!(matches!(
+            probe(&theme, "float-left"),
+            Support::NoEquivalent(_)
+        ));
+        assert_eq!(probe(&theme, "not-a-tailwind-class"), Support::Unknown);
+    }
+
+    #[test]
+    fn probe_dark_only_classes_count_as_supported_in_light_theme() {
+        // `dark:` resolves at parse time: dropped in a light theme, never
+        // reported as skipped/unknown, so the row is marked supported.
+        let theme = Theme::light();
+        assert_eq!(probe(&theme, "dark:bg-sky-500"), Support::Supported);
+    }
+}
