@@ -4,7 +4,7 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 8 / 69 pages ported.**
+**Progress: 14 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
@@ -35,12 +35,12 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [flex-basis](https://tailwindcss.com/docs/flex-basis) | 6 / 20 |  |
-| ☐ | [flex-direction](https://tailwindcss.com/docs/flex-direction) | 4 / 4 |  |
-| ☐ | [flex-wrap](https://tailwindcss.com/docs/flex-wrap) | 3 / 3 |  |
-| ☐ | [flex](https://tailwindcss.com/docs/flex) | 4 / 7 |  |
-| ☐ | [flex-grow](https://tailwindcss.com/docs/flex-grow) | 2 / 4 |  |
-| ☐ | [flex-shrink](https://tailwindcss.com/docs/flex-shrink) | 2 / 4 |  |
+| ☑ | [flex-basis](https://tailwindcss.com/docs/flex-basis) | 6 / 20 |  |
+| ☑ | [flex-direction](https://tailwindcss.com/docs/flex-direction) | 4 / 4 |  |
+| ☑ | [flex-wrap](https://tailwindcss.com/docs/flex-wrap) | 3 / 3 |  |
+| ☑ | [flex](https://tailwindcss.com/docs/flex) | 4 / 7 |  |
+| ☑ | [flex-grow](https://tailwindcss.com/docs/flex-grow) | 2 / 4 |  |
+| ☑ | [flex-shrink](https://tailwindcss.com/docs/flex-shrink) | 2 / 4 |  |
 | — | [order](https://tailwindcss.com/docs/order) | 0 / 6 | |
 | ☐ | [grid-template-columns](https://tailwindcss.com/docs/grid-template-columns) | 1 / 5 |  |
 | ☐ | [grid-column](https://tailwindcss.com/docs/grid-column) | 11 / 19 |  |
