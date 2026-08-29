@@ -11,7 +11,11 @@
   for (const el of all) {
     if (el.tagName === 'H2') { inExamples = /^Examples$/i.test(el.textContent.trim()); if (!inExamples) cur = null; continue; }
     if (!inExamples) continue;
-    if (el.tagName === 'H3') { cur = { title: el.textContent.trim(), prose: [], code: [] }; examples.push(cur); continue; }
+    if (el.tagName === 'H3') {
+      const title = el.textContent.trim();
+      if (title === 'On this page') break; // the TOC and footer follow the article
+      cur = { title, prose: [], code: [] }; examples.push(cur); continue;
+    }
     if (!cur) continue;
     if (el.tagName === 'P') cur.prose.push(el.textContent.trim());
     if (el.tagName === 'PRE') cur.code.push(el.textContent);

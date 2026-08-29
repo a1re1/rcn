@@ -13,6 +13,8 @@
 //! …) and are registered in [`PAGES`] in the docs' own order.
 
 pub mod demo;
+pub mod layout;
+pub mod sizing;
 pub mod spacing;
 
 pub use demo::Node;
@@ -108,7 +110,16 @@ impl TwPage {
 }
 
 /// Every ported page, in docs order. Indexed by `Story::Tailwind(usize)`.
-pub static PAGES: &[&TwPage] = &[&spacing::PADDING, &spacing::MARGIN];
+pub static PAGES: &[&TwPage] = &[
+    &spacing::PADDING,
+    &spacing::MARGIN,
+    &sizing::WIDTH,
+    &sizing::MIN_WIDTH,
+    &sizing::MAX_WIDTH,
+    &sizing::HEIGHT,
+    &sizing::MIN_HEIGHT,
+    &sizing::MAX_HEIGHT,
+];
 
 /// Pages of one section, with their indices into [`PAGES`].
 pub fn pages_in(section: TwSection) -> impl Iterator<Item = (usize, &'static TwPage)> {
@@ -216,6 +227,22 @@ mod tests {
                 "{} has no supported reference rows",
                 page.slug
             );
+        }
+    }
+
+    /// Generated pages start with `demo::TODO_DEMO` placeholders; a page is
+    /// only registered once every example has a real demo.
+    #[test]
+    fn no_placeholder_demos_registered() {
+        for page in PAGES {
+            for example in page.examples {
+                assert!(
+                    !matches!(example.demo, Node::Text("TODO: demo")),
+                    "{} / {} still has a placeholder demo",
+                    page.slug,
+                    example.title
+                );
+            }
         }
     }
 

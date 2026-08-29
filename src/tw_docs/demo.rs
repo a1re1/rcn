@@ -5,7 +5,7 @@
 //! utility's effect and a saturated labeled box for the element) — the same
 //! palette classes work here, so demos read like the snippet plus colors.
 
-use gpui::{AnyElement, IntoElement, ParentElement as _, Styled, div, px};
+use gpui::{AnyElement, IntoElement, ParentElement as _, Refineable as _, Styled, div, px};
 
 use crate::theme::Theme;
 use crate::tw::element::tw_div;
@@ -27,7 +27,13 @@ pub enum Node {
     Text(&'static str),
     /// A text run in the theme's sans font — for prose demos (typography).
     Prose(&'static str),
-    /// Escape hatch for demos the DSL cannot express (images, inputs).
+    /// `<img class="…" src="…">` — styled through the parser, with the
+    /// ext channel (`object-*`, `grayscale`) applied via `tw::apply_img`.
+    Image {
+        classes: &'static str,
+        src: &'static str,
+    },
+    /// Escape hatch for demos the DSL cannot express (inputs, custom art).
     Custom(fn(&Theme) -> AnyElement),
 }
 
@@ -39,6 +45,15 @@ pub const fn el(classes: &'static str, children: &'static [Node]) -> Node {
 /// `<div class="…">label</div>` — the most common docs shape.
 pub const fn labeled(classes: &'static str, label: &'static str) -> Node {
     Node::Labeled { classes, label }
+}
+
+/// Placeholder for a generated page whose demos are not written yet. Pages
+/// still carrying it must not be registered in `PAGES` (a test enforces it).
+pub const TODO_DEMO: Node = Node::Text("TODO: demo");
+
+/// `<img class="…" src="…">`.
+pub const fn image(classes: &'static str, src: &'static str) -> Node {
+    Node::Image { classes, src }
 }
 
 impl Node {
@@ -57,6 +72,12 @@ impl Node {
                 .child(*text)
                 .into_any_element(),
             Node::Prose(text) => div().when_some_font(theme).child(*text).into_any_element(),
+            Node::Image { classes, src } => {
+                let styles = crate::tw::parse(theme, classes);
+                let mut image = gpui::img(*src);
+                image.style().refine(&styles.base);
+                crate::tw::apply_img(image, &styles.ext).into_any_element()
+            }
             Node::Custom(render) => render(theme),
         }
     }
@@ -70,7 +91,7 @@ impl Node {
                     child.walk_classes(visit);
                 }
             }
-            Node::Labeled { classes, .. } => visit(classes),
+            Node::Labeled { classes, .. } | Node::Image { classes, .. } => visit(classes),
             Node::Text(_) | Node::Prose(_) | Node::Custom(_) => {}
         }
     }
