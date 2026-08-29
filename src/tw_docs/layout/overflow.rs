@@ -1,8 +1,8 @@
 //! <https://tailwindcss.com/docs/overflow>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, labeled};
 
-use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
+use crate::tw_docs::{TwExample, TwPage, TwSection};
 
 /// <https://tailwindcss.com/docs/overflow>
 pub static OVERFLOW: TwPage = TwPage {
@@ -37,7 +37,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-visible ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-visible rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-visible",
+                )],
+            ),
         },
         TwExample {
             title: "Hiding content that overflows",
@@ -47,7 +53,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-hidden ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-hidden rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-hidden",
+                )],
+            ),
         },
         TwExample {
             title: "Scrolling if needed",
@@ -59,7 +71,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-auto ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-auto rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-auto",
+                )],
+            ),
         },
         TwExample {
             title: "Scrolling horizontally if needed",
@@ -70,7 +88,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-x-auto ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "w-80 overflow-x-auto rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-16 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-x-auto",
+                )],
+            ),
         },
         TwExample {
             title: "Scrolling vertically if needed",
@@ -81,7 +105,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="h-32 overflow-y-auto ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-y-auto rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-full flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-y-auto",
+                )],
+            ),
         },
         TwExample {
             title: "Scrolling horizontally always",
@@ -92,7 +122,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-x-scroll ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "w-80 overflow-x-scroll rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-16 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-x-scroll",
+                )],
+            ),
         },
         TwExample {
             title: "Scrolling vertically always",
@@ -103,7 +139,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-y-scroll ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-y-scroll rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-full flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-y-scroll",
+                )],
+            ),
         },
         TwExample {
             title: "Scrolling in all directions",
@@ -115,7 +157,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-scroll ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-scroll rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-scroll",
+                )],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -126,7 +174,13 @@ pub static OVERFLOW: TwPage = TwPage {
             snippet: r#"<div class="overflow-auto md:overflow-scroll ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-32 w-80 overflow-auto md:overflow-scroll rounded-lg bg-sky-300 p-2",
+                &[labeled(
+                    "h-48 w-96 flex-none flex items-center justify-center rounded-lg text-white bg-sky-500",
+                    "overflow-auto md:overflow-scroll",
+                )],
+            ),
         },
     ],
 };

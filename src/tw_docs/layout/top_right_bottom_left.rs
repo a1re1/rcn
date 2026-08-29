@@ -1,8 +1,8 @@
 //! <https://tailwindcss.com/docs/top-right-bottom-left>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, labeled};
 
-use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
+use crate::tw_docs::{TwExample, TwPage, TwSection};
 
 /// <https://tailwindcss.com/docs/top-right-bottom-left>
 pub static TOP_RIGHT_BOTTOM_LEFT: TwPage = TwPage {
@@ -286,7 +286,74 @@ pub static TOP_RIGHT_BOTTOM_LEFT: TwPage = TwPage {
 <div class="relative size-32 ...">
 <div class="absolute right-0 bottom-0 size-16 ...">09</div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "grid grid-cols-3 gap-4",
+                &[
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute top-0 left-0 size-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "01",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute inset-x-0 top-0 h-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "02",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute top-0 right-0 size-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "03",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute inset-y-0 left-0 w-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "04",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute inset-0 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "05",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute inset-y-0 right-0 w-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "06",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute bottom-0 left-0 size-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "07",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute inset-x-0 bottom-0 h-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "08",
+                        )],
+                    ),
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute right-0 bottom-0 size-16 text-xs flex items-center justify-center rounded-lg text-white bg-purple-500",
+                            "09",
+                        )],
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Using negative values",
@@ -297,7 +364,13 @@ pub static TOP_RIGHT_BOTTOM_LEFT: TwPage = TwPage {
 <div class="absolute -top-4 -left-4 size-14 ...">
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "relative size-32 rounded-lg bg-purple-300",
+                &[labeled(
+                    "absolute -top-4 -left-4 size-14 rounded-md bg-purple-500",
+                    "",
+                )],
+            ),
         },
         TwExample {
             title: "Using logical properties",
@@ -323,7 +396,22 @@ pub static TOP_RIGHT_BOTTOM_LEFT: TwPage = TwPage {
 </div>
 </div>
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "flex flex-col gap-2",
+                &[
+                    el(
+                        "relative size-32 rounded-lg bg-purple-300",
+                        &[labeled(
+                            "absolute left-0 top-0 size-14 rounded-md bg-purple-500",
+                            "",
+                        )],
+                    ),
+                    labeled(
+                        "text-xs text-slate-500",
+                        "inset-s-0 ≈ left-0 (logical insets map to LTR)",
+                    ),
+                ],
+            ),
         },
         TwExample {
             title: "Using a custom value",
@@ -338,7 +426,13 @@ pub static TOP_RIGHT_BOTTOM_LEFT: TwPage = TwPage {
 <div class="inset-(--my-position) ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "relative size-32 rounded-lg bg-purple-300",
+                &[labeled(
+                    "absolute inset-[3px] rounded-md bg-purple-500 text-white text-xs",
+                    "inset-[3px]",
+                )],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -349,7 +443,13 @@ pub static TOP_RIGHT_BOTTOM_LEFT: TwPage = TwPage {
             snippet: r#"<div class="top-4 md:top-6 ...">
 <!-- ... -->
 </div>"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "relative size-32 rounded-lg bg-purple-300",
+                &[labeled(
+                    "absolute top-4 md:top-6 left-4 size-14 rounded-md bg-purple-500 text-white text-xs",
+                    "top-4 md:top-6",
+                )],
+            ),
         },
     ],
 };

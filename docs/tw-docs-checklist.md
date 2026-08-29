@@ -4,31 +4,31 @@ The storybook's **Tailwind** section ports Tailwind's utility docs page-for-page
 
 Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no supported class). Counts are *supported / total* quick-reference rows.
 
-**Progress: 31 / 69 pages ported.**
+**Progress: 53 / 69 pages ported.**
 
 
 ## Layout (7 in scope of 19)
 
 | | page | supported rows | PR |
 |---|---|---|---|
-| ☐ | [aspect-ratio](https://tailwindcss.com/docs/aspect-ratio) | 2 / 6 |  |
+| ☑ | [aspect-ratio](https://tailwindcss.com/docs/aspect-ratio) | 2 / 6 |  |
 | — | [columns](https://tailwindcss.com/docs/columns) | 0 / 17 | |
 | — | [break-after](https://tailwindcss.com/docs/break-after) | 0 / 8 | |
 | — | [break-before](https://tailwindcss.com/docs/break-before) | 0 / 8 | |
 | — | [break-inside](https://tailwindcss.com/docs/break-inside) | 0 / 4 | |
 | — | [box-decoration-break](https://tailwindcss.com/docs/box-decoration-break) | 0 / 2 | |
 | — | [box-sizing](https://tailwindcss.com/docs/box-sizing) | 0 / 2 | |
-| ☐ | [display](https://tailwindcss.com/docs/display) | 6 / 23 |  |
+| ☑ | [display](https://tailwindcss.com/docs/display) | 6 / 23 |  |
 | — | [float](https://tailwindcss.com/docs/float) | 0 / 5 | |
 | — | [clear](https://tailwindcss.com/docs/clear) | 0 / 6 | |
 | — | [isolation](https://tailwindcss.com/docs/isolation) | 0 / 2 | |
-| ☐ | [object-fit](https://tailwindcss.com/docs/object-fit) | 5 / 5 |  |
+| ☑ | [object-fit](https://tailwindcss.com/docs/object-fit) | 5 / 5 |  |
 | — | [object-position](https://tailwindcss.com/docs/object-position) | 0 / 11 | |
-| ☐ | [overflow](https://tailwindcss.com/docs/overflow) | 15 / 15 |  |
+| ☑ | [overflow](https://tailwindcss.com/docs/overflow) | 15 / 15 |  |
 | — | [overscroll-behavior](https://tailwindcss.com/docs/overscroll-behavior) | 0 / 9 | |
-| ☐ | [position](https://tailwindcss.com/docs/position) | 2 / 5 |  |
-| ☐ | [top-right-bottom-left](https://tailwindcss.com/docs/top-right-bottom-left) | 70 / 121 |  |
-| ☐ | [visibility](https://tailwindcss.com/docs/visibility) | 2 / 12 |  |
+| ☑ | [position](https://tailwindcss.com/docs/position) | 2 / 5 |  |
+| ☑ | [top-right-bottom-left](https://tailwindcss.com/docs/top-right-bottom-left) | 70 / 121 |  |
+| ☑ | [visibility](https://tailwindcss.com/docs/visibility) | 2 / 12 |  |
 | — | [z-index](https://tailwindcss.com/docs/z-index) | 0 / 4 | |
 
 ## Flexbox & Grid (23 in scope of 24)
@@ -89,33 +89,33 @@ Legend: ☑ ported · ☐ in scope, not yet ported · — out of scope (no suppo
 | | page | supported rows | PR |
 |---|---|---|---|
 | — | [font-family](https://tailwindcss.com/docs/font-family) | 0 / 5 | |
-| ☐ | [font-size](https://tailwindcss.com/docs/font-size) | 13 / 15 |  |
+| ☑ | [font-size](https://tailwindcss.com/docs/font-size) | 13 / 15 |  |
 | — | [font-smoothing](https://tailwindcss.com/docs/font-smoothing) | 0 / 2 | |
-| ☐ | [font-style](https://tailwindcss.com/docs/font-style) | 2 / 2 |  |
-| ☐ | [font-weight](https://tailwindcss.com/docs/font-weight) | 9 / 11 |  |
+| ☑ | [font-style](https://tailwindcss.com/docs/font-style) | 2 / 2 |  |
+| ☑ | [font-weight](https://tailwindcss.com/docs/font-weight) | 9 / 11 |  |
 | — | [font-stretch](https://tailwindcss.com/docs/font-stretch) | 0 / 12 | |
-| ☐ | [font-variant-numeric](https://tailwindcss.com/docs/font-variant-numeric) | 8 / 9 |  |
+| ☑ | [font-variant-numeric](https://tailwindcss.com/docs/font-variant-numeric) | 8 / 9 |  |
 | — | [font-feature-settings](https://tailwindcss.com/docs/font-feature-settings) | 0 / 2 | |
 | — | [letter-spacing](https://tailwindcss.com/docs/letter-spacing) | 0 / 8 | |
-| ☐ | [line-clamp](https://tailwindcss.com/docs/line-clamp) | 1 / 4 |  |
-| ☐ | [line-height](https://tailwindcss.com/docs/line-height) | 3 / 7 |  |
+| ☑ | [line-clamp](https://tailwindcss.com/docs/line-clamp) | 1 / 4 |  |
+| ☑ | [line-height](https://tailwindcss.com/docs/line-height) | 3 / 7 |  |
 | — | [list-style-image](https://tailwindcss.com/docs/list-style-image) | 0 / 3 | |
 | — | [list-style-position](https://tailwindcss.com/docs/list-style-position) | 0 / 2 | |
 | — | [list-style-type](https://tailwindcss.com/docs/list-style-type) | 0 / 5 | |
-| ☐ | [text-align](https://tailwindcss.com/docs/text-align) | 5 / 6 |  |
-| ☐ | [color](https://tailwindcss.com/docs/color) | 245 / 293 |  |
-| ☐ | [text-decoration-line](https://tailwindcss.com/docs/text-decoration-line) | 3 / 4 |  |
-| ☐ | [text-decoration-color](https://tailwindcss.com/docs/text-decoration-color) | 246 / 293 |  |
-| ☐ | [text-decoration-style](https://tailwindcss.com/docs/text-decoration-style) | 1 / 5 |  |
-| ☐ | [text-decoration-thickness](https://tailwindcss.com/docs/text-decoration-thickness) | 2 / 5 |  |
+| ☑ | [text-align](https://tailwindcss.com/docs/text-align) | 5 / 6 |  |
+| ☑ | [color](https://tailwindcss.com/docs/color) | 245 / 293 |  |
+| ☑ | [text-decoration-line](https://tailwindcss.com/docs/text-decoration-line) | 3 / 4 |  |
+| ☑ | [text-decoration-color](https://tailwindcss.com/docs/text-decoration-color) | 246 / 293 |  |
+| ☑ | [text-decoration-style](https://tailwindcss.com/docs/text-decoration-style) | 1 / 5 |  |
+| ☑ | [text-decoration-thickness](https://tailwindcss.com/docs/text-decoration-thickness) | 2 / 5 |  |
 | — | [text-underline-offset](https://tailwindcss.com/docs/text-underline-offset) | 0 / 5 | |
 | — | [text-transform](https://tailwindcss.com/docs/text-transform) | 0 / 4 | |
-| ☐ | [text-overflow](https://tailwindcss.com/docs/text-overflow) | 2 / 3 |  |
-| ☐ | [text-wrap](https://tailwindcss.com/docs/text-wrap) | 2 / 4 |  |
+| ☑ | [text-overflow](https://tailwindcss.com/docs/text-overflow) | 2 / 3 |  |
+| ☑ | [text-wrap](https://tailwindcss.com/docs/text-wrap) | 2 / 4 |  |
 | — | [text-indent](https://tailwindcss.com/docs/text-indent) | 0 / 6 | |
 | — | [tab-size](https://tailwindcss.com/docs/tab-size) | 0 / 3 | |
 | — | [vertical-align](https://tailwindcss.com/docs/vertical-align) | 0 / 10 | |
-| ☐ | [white-space](https://tailwindcss.com/docs/white-space) | 2 / 6 |  |
+| ☑ | [white-space](https://tailwindcss.com/docs/white-space) | 2 / 6 |  |
 | — | [word-break](https://tailwindcss.com/docs/word-break) | 0 / 3 | |
 | — | [overflow-wrap](https://tailwindcss.com/docs/overflow-wrap) | 0 / 3 | |
 | — | [hyphens](https://tailwindcss.com/docs/hyphens) | 0 / 3 | |

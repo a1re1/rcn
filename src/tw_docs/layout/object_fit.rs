@@ -1,8 +1,8 @@
 //! <https://tailwindcss.com/docs/object-fit>
 
-use crate::tw_docs::demo::{TODO_DEMO, el, image, labeled};
+use crate::tw_docs::demo::{el, image};
 
-use crate::tw_docs::{Node, TwExample, TwPage, TwSection};
+use crate::tw_docs::{TwExample, TwPage, TwSection};
 
 /// <https://tailwindcss.com/docs/object-fit>
 pub static OBJECT_FIT: TwPage = TwPage {
@@ -24,7 +24,13 @@ pub static OBJECT_FIT: TwPage = TwPage {
                 "Use the object-cover utility to resize an element's content to cover its container:",
             ],
             snippet: r#"<img class="h-48 w-96 object-cover ..." src="/img/mountains.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-48 w-96 overflow-hidden rounded-lg bg-slate-200",
+                &[image(
+                    "h-full w-full object-cover",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
         TwExample {
             title: "Containing within",
@@ -32,7 +38,13 @@ pub static OBJECT_FIT: TwPage = TwPage {
                 "Use the object-contain utility to resize an element's content to stay contained within its container:",
             ],
             snippet: r#"<img class="h-48 w-96 object-contain ..." src="/img/mountains.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-48 w-96 overflow-hidden rounded-lg bg-slate-200",
+                &[image(
+                    "h-full w-full object-contain",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
         TwExample {
             title: "Stretching to fit",
@@ -40,7 +52,13 @@ pub static OBJECT_FIT: TwPage = TwPage {
                 "Use the object-fill utility to stretch an element's content to fit its container:",
             ],
             snippet: r#"<img class="h-48 w-96 object-fill ..." src="/img/mountains.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-48 w-96 overflow-hidden rounded-lg bg-slate-200",
+                &[image(
+                    "h-full w-full object-fill",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
         TwExample {
             title: "Scaling down",
@@ -48,7 +66,13 @@ pub static OBJECT_FIT: TwPage = TwPage {
                 "Use the object-scale-down utility to display an element's content at its original size but scale it down to fit its container if necessary:",
             ],
             snippet: r#"<img class="h-48 w-96 object-scale-down ..." src="/img/mountains.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-48 w-96 overflow-hidden rounded-lg bg-slate-200",
+                &[image(
+                    "h-full w-full object-scale-down",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
         TwExample {
             title: "Using the original size",
@@ -56,7 +80,13 @@ pub static OBJECT_FIT: TwPage = TwPage {
                 "Use the object-none utility to display an element's content at its original size ignoring the container size:",
             ],
             snippet: r#"<img class="h-48 w-96 object-none ..." src="/img/mountains.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-48 w-96 overflow-hidden rounded-lg bg-slate-200",
+                &[image(
+                    "h-full w-full object-none",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
         TwExample {
             title: "Responsive design",
@@ -65,7 +95,13 @@ pub static OBJECT_FIT: TwPage = TwPage {
                 "Learn more about using variants in the variants documentation.",
             ],
             snippet: r#"<img class="object-contain md:object-cover" src="/img/mountains.jpg" />"#,
-            demo: TODO_DEMO,
+            demo: el(
+                "h-48 w-96 overflow-hidden rounded-lg bg-slate-200",
+                &[image(
+                    "h-full w-full object-contain md:object-cover",
+                    "https://images.unsplash.com/photo-1554629947-334ff61d85dc?w=640&h=360&fit=crop",
+                )],
+            ),
         },
     ],
 };
