@@ -119,7 +119,7 @@ pub static GRID_TEMPLATE_ROWS: TwPage = TwPage {
                         "row-span-3 grid grid-rows-3 gap-4 rounded-lg bg-indigo-300 p-2",
                         &[labeled(
                             "row-start-2 w-16 flex items-center justify-center rounded-lg text-white bg-indigo-500",
-                            "06",
+                            "06 (subgrid ≈ nested grid)",
                         )],
                     ),
                     labeled(

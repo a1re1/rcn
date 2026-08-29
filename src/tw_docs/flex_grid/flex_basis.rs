@@ -121,12 +121,12 @@ pub static FLEX_BASIS: TwPage = TwPage {
                 "flex w-full flex-row gap-4",
                 &[
                     labeled(
-                        "basis-[12rem] h-14 flex items-center justify-center rounded-lg text-white bg-fuchsia-500",
-                        "basis-3xs ≈ basis-[12rem]",
+                        "basis-[16rem] h-14 flex items-center justify-center rounded-lg text-white bg-fuchsia-500",
+                        "basis-3xs ≈ basis-[16rem]",
                     ),
                     labeled(
-                        "basis-[16rem] h-14 flex items-center justify-center rounded-lg text-white bg-fuchsia-500",
-                        "basis-2xs ≈ basis-[16rem]",
+                        "basis-[18rem] h-14 flex items-center justify-center rounded-lg text-white bg-fuchsia-500",
+                        "basis-2xs ≈ basis-[18rem]",
                     ),
                     labeled(
                         "basis-[20rem] h-14 flex items-center justify-center rounded-lg text-white bg-fuchsia-500",

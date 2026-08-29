@@ -237,7 +237,7 @@ pub static JUSTIFY_CONTENT: TwPage = TwPage {
                 &[
                     labeled(
                         "h-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
-                        "01",
+                        "01 (grid-cols-[4rem_auto_4rem] ≈ grid-cols-3)",
                     ),
                     labeled(
                         "h-14 flex items-center justify-center rounded-lg text-white bg-sky-500",
