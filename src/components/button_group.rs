@@ -93,13 +93,9 @@ impl RenderOnce for ButtonGroup {
                             .border_color(alpha(theme.ring, 0.5))
                             .map(|el| match position {
                                 GroupPosition::Only => el.rounded(ring_radius),
-                                GroupPosition::First => {
-                                    el.rounded_l(ring_radius).rounded_r(px(3.))
-                                }
+                                GroupPosition::First => el.rounded_l(ring_radius).rounded_r(px(3.)),
                                 GroupPosition::Middle => el.rounded(px(3.)),
-                                GroupPosition::Last => {
-                                    el.rounded_r(ring_radius).rounded_l(px(3.))
-                                }
+                                GroupPosition::Last => el.rounded_r(ring_radius).rounded_l(px(3.)),
                             });
                         div()
                             .flex()

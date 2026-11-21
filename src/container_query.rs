@@ -137,7 +137,9 @@ impl Element for ContainerQuery {
         cx: &mut App,
     ) -> Self::PrepaintState {
         let measured = bounds.size.width;
-        window.with_element_state(global_id.unwrap(), |_, _| ((), MeasuredWidth(Some(measured))));
+        window.with_element_state(global_id.unwrap(), |_, _| {
+            ((), MeasuredWidth(Some(measured)))
+        });
         if needs_rebuild(layout.built_with, measured) {
             // The child on screen was built from a stale width; draw it this
             // frame (avoids a blank flash) and rebuild on the next.

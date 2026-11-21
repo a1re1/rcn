@@ -111,10 +111,7 @@ impl RenderOnce for Dialog {
         let theme = Theme::of(cx).clone();
         let viewport = window.viewport_size();
         let show_close_button = self.show_close_button;
-        let content_w = self
-            .max_w
-            .unwrap_or(px(448.))
-            .min(viewport.width - px(32.));
+        let content_w = self.max_w.unwrap_or(px(448.)).min(viewport.width - px(32.));
 
         // Controlled snapshot vs keyed-state (accordion pattern).
         let (is_open, uncontrolled_state): (bool, Option<Entity<bool>>) =
@@ -233,26 +230,20 @@ impl RenderOnce for Dialog {
                     // Close: ghost icon-sm Button, absolute top-4 right-4
                     .when(show_close_button, |el| {
                         el.child(
-                            div()
-                                .absolute()
-                                .top(px(16.))
-                                .right(px(16.))
-                                .child(
-                                    Button::new("dialog-close")
-                                        .variant(ButtonVariant::Ghost)
-                                        .size(ButtonSize::IconSm)
-                                        .on_click(move |_, window, cx| {
-                                            close_button(false, window, cx)
-                                        })
-                                        .child(
-                                            // base-nova ghost has no own text color —
-                                            // the X inherits the content's foreground.
-                                            svg()
-                                                .path(theme.icons.x())
-                                                .size(px(16.))
-                                                .text_color(theme.popover_foreground),
-                                        ),
-                                ),
+                            div().absolute().top(px(16.)).right(px(16.)).child(
+                                Button::new("dialog-close")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::IconSm)
+                                    .on_click(move |_, window, cx| close_button(false, window, cx))
+                                    .child(
+                                        // base-nova ghost has no own text color —
+                                        // the X inherits the content's foreground.
+                                        svg()
+                                            .path(theme.icons.x())
+                                            .size(px(16.))
+                                            .text_color(theme.popover_foreground),
+                                    ),
+                            ),
                         )
                     });
                 content.with_animation("dialog-in", motion::enter_fast(), |el, delta| {
@@ -402,10 +393,7 @@ impl DialogFooter {
     }
 
     /// Handler invoked when the footer's Close button is clicked.
-    pub fn on_close(
-        mut self,
-        handler: impl Fn(&mut Window, &mut App) + 'static,
-    ) -> Self {
+    pub fn on_close(mut self, handler: impl Fn(&mut Window, &mut App) + 'static) -> Self {
         self.on_close = Some(Rc::new(handler));
         self
     }

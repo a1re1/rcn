@@ -444,21 +444,16 @@ impl RenderOnce for FieldError {
             return base.child(unique.remove(0));
         }
         // ml-4 flex list-disc flex-col gap-1
-        base.child(
-            div()
-                .ml(px(16.))
-                .flex()
-                .flex_col()
-                .gap(px(4.))
-                .children(unique.into_iter().map(|message| {
-                    div()
-                        .flex()
-                        .flex_row()
-                        .gap(px(8.))
-                        .child("•")
-                        .child(message)
-                })),
-        )
+        base.child(div().ml(px(16.)).flex().flex_col().gap(px(4.)).children(
+            unique.into_iter().map(|message| {
+                div()
+                    .flex()
+                    .flex_row()
+                    .gap(px(8.))
+                    .child("•")
+                    .child(message)
+            }),
+        ))
     }
 }
 
